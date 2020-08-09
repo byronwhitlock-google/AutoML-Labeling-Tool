@@ -5,12 +5,12 @@ import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListIcon from '@material-ui/icons/List';
 import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
+import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
+import DescriptionTwoToneIcon from '@material-ui/icons/DescriptionTwoTone';
 
 class NavigationDrawer extends Component {
   classes = makeStyles({
@@ -22,6 +22,7 @@ class NavigationDrawer extends Component {
               },
             });
   state = {
+      bucket: "gs://byrons-bucket", // TODO: user configuration 
       data: null,
       documentList: Array()
       
@@ -72,9 +73,15 @@ class NavigationDrawer extends Component {
       onClick={this.toggleDrawer(anchor, false)}
       onKeyDown={this.toggleDrawer(anchor, false)}
     >
-      <List>
+    <List>    
+        <ListItem selected key="">
+        <ListIcon/>
+          <ListItemText primary={this.state.bucket} />
+        </ListItem>
+        <Divider/>    
         {this.state.documentList.map((text, index) => (
           <ListItem button key={text}>
+          <DescriptionTwoToneIcon/>
             <ListItemText primary={text} />
           </ListItem>
         ))}
