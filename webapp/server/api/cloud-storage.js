@@ -49,7 +49,7 @@ module.exports = class CloudStorage {
     console.log('Files:');
     files.forEach(file => {
       if (file.name.endsWith(this.config.sourceDocumentType))
-      documentList.push(file.name);
+        documentList.push(file.name);
     });
     return documentList
   }

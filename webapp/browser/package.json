@@ -11,6 +11,8 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
+    "react-sortable-hoc": "^1.11.0",
+    "react-window": "^1.8.5",
     "sentence-splitter": "^3.2.0"
   },
   "scripts": {
