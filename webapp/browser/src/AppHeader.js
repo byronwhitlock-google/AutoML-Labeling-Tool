@@ -19,14 +19,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function AppHeader() {
+export default function AppHeader(props) {
   const classes = useStyles();
 
   return (
     <div className={classes.root}>
       <AppBar position="static">
         <Toolbar>
-          <NavigationDrawer/>
+          <NavigationDrawer handleDocumentUpdate={props.handleDocumentUpdate} />
           <Typography variant="h6" className={classes.title}>
            Google PSO - ML Labeling Tool
           </Typography>

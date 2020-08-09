@@ -24,7 +24,8 @@ class NavigationDrawer extends Component {
   state = {
       bucket: "gs://byrons-bucket", // TODO: user configuration 
       data: null,
-      documentList: Array()
+      documentList: Array(),
+      selectedDocument: null
       
   };
 
@@ -39,7 +40,7 @@ class NavigationDrawer extends Component {
   parseDocumentList(res)
   {
     console.log(res.data)
-    this.setState({documentList: res.data })
+    this.setState({...this.state, documentList: res.data })
     //this.setState({ data: res.data })
   }
   
@@ -55,8 +56,12 @@ class NavigationDrawer extends Component {
     return body;
   };
 
+  handleDocumentClick =  (newDocumentSrc) => {
+    this.props.handleDocumentUpdate(newDocumentSrc)
+  }
 
   toggleDrawer = (anchor, open) => (event) => {
+    
     if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
@@ -82,7 +87,7 @@ class NavigationDrawer extends Component {
         {this.state.documentList.map((text, index) => (
           <ListItem button key={text}>
           <DescriptionTwoToneIcon/>
-            <ListItemText primary={text} />
+            <ListItemText onClick={()=>this.handleDocumentClick(text)} selected={text==this.state.selectedDocument? true:false} primary={text} />
           </ListItem>
         ))}
       </List>
