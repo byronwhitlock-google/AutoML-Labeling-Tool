@@ -17,12 +17,12 @@ class App extends Component {
     super(props);
     // This binding is necessary to make `this` work in the callback
     this.handleDocumentUpdate = this.handleDocumentUpdate.bind(this);
-  
-    // this is evil but i don't fully understand react cest la vie
+    this.handleInputChanged = this.handleInputChanged.bind(this);    
     this.forceUpdateHandler = this.forceUpdateHandler.bind(this);
-
   }
-  forceUpdateHandler(){
+
+  // this is evil but i don't fully understand react cest la vie
+  forceUpdateHandler(){    
     this.forceUpdate();
   };
 
@@ -31,7 +31,10 @@ class App extends Component {
     this.setState({selectedDocument: newSrc}); 
     this.forceUpdateHandler();
   }
-
+  handleInputChanged(evt) {
+  //  return; // i think this is bubbling extra events
+    this.handleDocumentUpdate(evt.target.value);
+  }
   componentDidMount() {
       // Call our fetch function below once the component mounts   
   }
@@ -40,7 +43,7 @@ class App extends Component {
     return (
       <div className="App">
       <AppHeader handleDocumentUpdate={this.handleDocumentUpdate} />
-      <UserInput value={this.state.selectedDocument}/>
+      <UserInput value={this.state.selectedDocument} key={this.state.selectedDocument} onChange={this.handleInputChanged}/>
       <hr/>
       <blockquote>
       <Document src={this.state.selectedDocument} key={this.state.selectedDocument}/>

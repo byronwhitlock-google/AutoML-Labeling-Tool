@@ -28,7 +28,7 @@ export default function AppHeader(props) {
         <Toolbar>
           <NavigationDrawer handleDocumentUpdate={props.handleDocumentUpdate} />
           <Typography variant="h6" className={classes.title}>
-           Google PSO - ML Labeling Tool
+          AutoML Labeling Tool
           </Typography>
           <Button color="inherit">Login</Button>
         </Toolbar>

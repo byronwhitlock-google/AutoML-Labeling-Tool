@@ -32,7 +32,7 @@ module.exports = class CloudStorage {
         .catch( (err) => {
           let errorMessage = "Cannot read cloud storage object: " + err.message
           console.error(errorMessage)
-          
+          throw(errorMessage)
 
           // TODO Return error code
           //return (errorMessage);

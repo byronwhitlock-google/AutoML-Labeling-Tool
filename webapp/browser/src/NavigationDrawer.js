@@ -85,9 +85,9 @@ class NavigationDrawer extends Component {
         </ListItem>
         <Divider/>    
         {this.state.documentList.map((text, index) => (
-          <ListItem button key={text}>
+          <ListItem button key={text} selected={text.localeCompare(this.state.selectedDocument)==0? true:false} primary={text} >
           <DescriptionTwoToneIcon/>
-            <ListItemText onClick={()=>this.handleDocumentClick(text)} selected={text==this.state.selectedDocument? true:false} primary={text} />
+            <ListItemText onClick={()=>this.handleDocumentClick(text)} primary={text} />
           </ListItem>
         ))}
       </List>

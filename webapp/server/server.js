@@ -25,7 +25,15 @@ app.get('/list_documents', async (req, res) => {
 
 app.get('/load_document', async (req, res) => {
     var gcs = new CloudStorage();    
-    var data = await gcs.readDocument(req.query.d);
+    try {
+        var data = await gcs.readDocument(req.query.d);
+    } catch (e) {
+        res.send({'error': e});
+    }
+    if (data.length > 9999) // we don't support documents > 10k chars
+    {
+        res.send({'error': 'Document length greater than 10,000 characters not supported'})
+    }
     //console.log(Dumper(data))
     res.send({'data': data});
 });
