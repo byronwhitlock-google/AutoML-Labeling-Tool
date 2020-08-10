@@ -13,6 +13,10 @@ import MenuIcon from '@material-ui/icons/Menu';
 import DescriptionTwoToneIcon from '@material-ui/icons/DescriptionTwoTone';
 
 class NavigationDrawer extends Component {
+  constructor(props) {
+      super(props);
+  }
+
   classes = makeStyles({
               list: {
                 width: 250,
@@ -24,9 +28,7 @@ class NavigationDrawer extends Component {
   state = {
       bucket: "gs://byrons-bucket", // TODO: user configuration 
       data: null,
-      documentList: Array(),
-      selectedDocument: null
-      
+      documentList: Array()      
   };
 
 
@@ -69,7 +71,9 @@ class NavigationDrawer extends Component {
     this.setState({ ...this.state, [anchor]: open });
   };
 
-  list = (anchor) => (
+  list() { 
+    let anchor = 'left'
+    return (    
     <div
       className={clsx(this.classes.list, {
         [this.classes.fullList]: anchor === 'top' || anchor === 'bottom',
@@ -85,14 +89,15 @@ class NavigationDrawer extends Component {
         </ListItem>
         <Divider/>    
         {this.state.documentList.map((text, index) => (
-          <ListItem button key={text} selected={text.localeCompare(this.state.selectedDocument)==0? true:false} primary={text} >
+          <ListItem button key={text} selected={text.localeCompare(this.props.selectedDocument)==0? true:false} primary={text} >
           <DescriptionTwoToneIcon/>
             <ListItemText onClick={()=>this.handleDocumentClick(text)} primary={text} />
           </ListItem>
         ))}
       </List>
     </div>
-  );
+    );
+  }
   render() {
     return (
         <React.Fragment >

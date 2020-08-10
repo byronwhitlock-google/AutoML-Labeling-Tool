@@ -42,7 +42,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-      <AppHeader handleDocumentUpdate={this.handleDocumentUpdate} />
+      <AppHeader selectedDocument={this.state.selectedDocument}  handleDocumentUpdate={this.handleDocumentUpdate} />
       <UserInput value={this.state.selectedDocument} key={this.state.selectedDocument} onChange={this.handleInputChanged}/>
       <hr/>
       <blockquote>

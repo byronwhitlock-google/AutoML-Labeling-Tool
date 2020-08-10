@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    outline: 'none !important'
+    outline: 'none !important' // this doesn't remove the blue outline
   },
   paper: {
     backgroundColor: theme.palette.background.paper,

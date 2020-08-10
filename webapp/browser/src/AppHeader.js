@@ -4,7 +4,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import NavigationDrawer from './NavigationDrawer.js'
 
 const useStyles = makeStyles((theme) => ({
@@ -26,11 +26,13 @@ export default function AppHeader(props) {
     <div className={classes.root}>
       <AppBar position="static">
         <Toolbar>
-          <NavigationDrawer handleDocumentUpdate={props.handleDocumentUpdate} />
+          <NavigationDrawer {...props} handleDocumentUpdate={props.handleDocumentUpdate} />
           <Typography variant="h6" className={classes.title}>
           AutoML Labeling Tool
           </Typography>
-          <Button color="inherit">Login</Button>
+          <Button color="inherit" onClick={()=>{window.open("https://github.com/byronwhitlock-google/AutoML-Labeling-Tool")}}>
+            <HelpOutlineIcon />
+          </Button>
         </Toolbar>
       </AppBar>
     </div>
