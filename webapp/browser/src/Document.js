@@ -17,6 +17,7 @@ class Document extends Component {
   state = {
       data: null,
       sentenceData: Array(),
+      menuItems: Array(),
       error : {
         title:null,
         content:null,
@@ -29,8 +30,36 @@ class Document extends Component {
     this.loadDocumentContent()
       .then(res=>this.parseDocument(res))
       .catch(err => console.log(err));
+    
+    //let menuItems = this.state.menuItems;
+    //menuItems = await this.loadMenuItems();
+    //this.setState({...this.state,menuItems})
   }
 
+  getMenuItems(text) {
+    // TODO: Add automl API call for prediction here.
+    return [
+      {
+        key: 1,
+        text:"Problem",
+        confidence: 0, //Math.floor(Math.random()*1000)/10
+        color: "#F2D7D5"
+        },
+      {
+        key: 2,
+        text:"Cause",
+        confidence: 0,//Math.floor(Math.random()*1000)/10
+        color: "#EBDEF0"
+      },
+      {
+        key: 3,
+        text:"Remediation",
+        confidence: 0,//Math.floor(Math.random()*1000)/10
+        color: "#D4E6F1"
+      }
+    ]    
+  }
+  
   setError(text)
   {
       let error = this.state.error
@@ -53,6 +82,12 @@ class Document extends Component {
     {
       let sentencesSplit = split(res.data)
       console.log(sentencesSplit)
+      /*let keyedSentencesSplit = Array();
+      let i=0;
+      sentencesSplit.map((sentence) => {
+        sentence.key = i++;
+        keyedSentencesSplit.push(sentence)
+      })*/
       this.setState({...this.state, sentenceData: sentencesSplit })
     }
     else if (res.hasOwnProperty('error'))
@@ -73,7 +108,7 @@ class Document extends Component {
     }
     return body;
   };
-
+  
   render() {
     return (      
       <div  className="Document-body">
@@ -86,10 +121,8 @@ class Document extends Component {
         {this.state.sentenceData.map((item, key) =>
           <RenderSentence
           key ={key}
-          type = {item.type}          
-          problem_confidence="0" 
-          cause_confidence="0" 
-          remediation_confidence="0" 
+          type = {item.type}    
+          menuItems={this.getMenuItems(item.raw)}      
           text = {item.raw}/>          
         )}
         </div>

@@ -20,7 +20,7 @@ class UserInput extends React.Component {
     }));
     return (
       <form className={classes.root} noValidate autoComplete="off">
-        <TextField id="standard-basic" label="Document Source" value={this.state.documentSrc} onChange={this.props.onChange}/>
+        <TextField id="standard-basic" label="Document Source:" value={this.state.documentSrc} onChange={this.props.onChange}/>
       </form>
     );
   }
