@@ -10,7 +10,7 @@ class App extends Component {
   state = {
     data: null,
     sentenceData: Array(),
-    selectedDocument: 'unlabeled.txt'
+    selectedDocument: '1384.txt'
   };
   
   constructor(props) {

@@ -18,6 +18,7 @@ class RenderSentence extends Component {
   state = {
     mouseX: null,
     mouseY: null,
+    label: null
   };
   static defaultProps = { 
     menuItems: Array(),
@@ -93,12 +94,14 @@ class RenderSentence extends Component {
 
   render()
   {    
+    if(this.props.type == "WhiteSpace" && this.props.text != " ") 
+      return <p/> 
+    if(this.props.type == "WhiteSpace" && this.props.text == " ") 
+      return " "
+
     return (      
       
       <span onContextMenu={this.handleRightClick} style={{ cursor: 'context-menu' }}>
-      
-      {this.props.type == "WhiteSpace" && this.props.text != " " ? <p/> : false }
-
       <span onMouseOver={this.handleMouseOver}>
         {this.props.text}
       </span>
