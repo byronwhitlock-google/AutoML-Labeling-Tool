@@ -5,8 +5,11 @@ const fs = require('fs');
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
-const CloudStorage = require('api/cloud-storage.js');
+const CloudStorage = require('lib/cloud-storage.js');
+const AnnotatedDocument = require('lib/annotated-document.js');
 const UserConfig =  require('user-config.js')
+const BodyParser = require('body-parser');
+app.use(BodyParser.json());
 
 // console.log that your server is up and running
 app.listen(port, () => console.log(`Listening on port ${port}`));
@@ -17,27 +20,42 @@ app.get('/express_backend', (req, res) => {
 });
 
 app.get('/list_documents', async (req, res) => {
-    var gcs = new CloudStorage();    
-    var data = await gcs.listDocuments();
-    console.log(Dumper(data))
-    res.send({'data': data});
+    try {
+        var gcs = new CloudStorage();    
+        var data = await gcs.listDocuments();
+        console.log(Dumper(data))
+        res.send({'data': data});
+    } catch (e) {
+        Dumper(e)
+        res.send({'error': e.message, 'trace':e.stack });
+    }
 });
 
 app.get('/load_document', async (req, res) => {
-    var gcs = new CloudStorage();    
+    var doc = new AnnotatedDocument();    
     try {
-        var data = await gcs.readDocument(req.query.d);
+        var data = await doc.load(req.query.d);
+        //console.log(Dumper(data))
+        res.send({'data': data});
     } catch (e) {
-        res.send({'error': e});
+          Dumper(e)
+          res.send({'error': e.message, 'trace':e.stack });
     }
-    if (data.length > 9999) // we don't support documents > 10k chars
-    {
-        res.send({'error': 'Document length greater than 10,000 characters not supported'})
-    }
-    //console.log(Dumper(data))
-    res.send({'data': data});
 });
 
+app.post('/save_document',async(req,res) =>{
+    //Dumper(req.body)
+    var doc = new AnnotatedDocument();    
+    try {
+        // TODO: validate json against schema        
+        var data = await doc.save(req.query.d,req.body);
+        //console.log(Dumper(data))
+        res.send({'data': data});
+    } catch (e) {
+          Dumper(e)
+          res.send({'error': e.message, 'trace':e.stack });
+    }
+});
 
 app.get('/load_labels', async (req, res) => {
     var gcs = new CloudStorage();    

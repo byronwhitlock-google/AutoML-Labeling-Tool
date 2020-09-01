@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
-import ReactDOM from 'react-dom';
 import AppHeader from './AppHeader.js';
 import Document from './Document.js';
 import UserInput from './UserInput.js';
@@ -9,8 +7,8 @@ import UserInput from './UserInput.js';
 class App extends Component {
   state = {
     data: null,
-    sentenceData: Array(),
-    selectedDocument: '1384.txt'
+    sentenceData: [],
+    selectedDocument: 'test.txt'
   };
   
   constructor(props) {
@@ -48,7 +46,7 @@ class App extends Component {
       </blockquote>
       <hr/>
       <blockquote>
-      <Document src={this.state.selectedDocument} key={this.state.selectedDocument}/>
+        <Document src={this.state.selectedDocument} key={this.state.selectedDocument}/>
       </blockquote>
      
       </div>

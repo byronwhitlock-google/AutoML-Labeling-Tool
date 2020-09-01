@@ -23,21 +23,27 @@ module.exports = class CloudStorage {
     let buffer = "";
     // Return file contents
     return this.bucket
-        .file(documentName)
-        .download()
-        .then (contents=> {
-            //console.log("file data: "+contents);   
-            return (contents.toString('utf-8'));
-        })
-        .catch( (err) => {
-          let errorMessage = "Cannot read cloud storage object: " + err.message
-          console.error(errorMessage)
-          throw(errorMessage)
+      .file(documentName)
+      .download()
+      .then (contents=> {
+          //console.log("file data: "+contents);   
+          return (contents.toString('utf-8'));
+      })
+      .catch( (err) => {
+        let errorMessage = "Cannot read cloud storage object: " + err.message
+        console.error(errorMessage)
+        throw new Error(errorMessage)
 
-          // TODO Return error code
-          //return (errorMessage);
-        });
-    }
+        // TODO Return error code
+        //return (errorMessage);
+      });
+  }
+
+  async writeDocument(documentName, contents) {
+    return this.bucket
+      .file(documentName)
+      .save(contents);
+  }
   
   // read from cloud storage syncronously.
   async listDocuments()  {
@@ -52,5 +58,12 @@ module.exports = class CloudStorage {
         documentList.push(file.name);
     });
     return documentList
+  }
+
+  async fileExists(filename)
+  {
+    let file = this.bucket.file(filename);
+    let res = await file.exists();
+    return res[0];
   }
 }

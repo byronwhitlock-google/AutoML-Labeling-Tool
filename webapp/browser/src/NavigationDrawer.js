@@ -41,9 +41,14 @@ class NavigationDrawer extends Component {
 
   parseDocumentList(res)
   {
-    console.log(res.data)
-    this.setState({...this.state, documentList: res.data })
-    //this.setState({ data: res.data })
+    if (res.hasOwnProperty('data'))
+    {
+      this.setState({...this.state, documentList: res.data })
+    }
+    else if (res.hasOwnProperty('error'))
+      console.error(res.error)
+    else
+      console.error("Unknown Error : "+JSON.stringify(res));
   }
   
     // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js

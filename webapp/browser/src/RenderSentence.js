@@ -1,19 +1,29 @@
 import React, { Component } from 'react';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
-import Text from 'react'
-import AddBoxIcon from '@material-ui/icons/AddBox';
+import SentenceAnnotator from './SentenceAnnotator.js'
+/*import PropTypes from 'prop-types'
+
+RenderSentence.propTypes = {
+  onLabelUpdate= PropTypes.function,
+  annotations= PropTypes.string,
+  sentenceId = PropTypes.string,
+  type =  PropTypes.string,
+  menuItems= PropTypes.object,     
+  text = PropTypes.string
+}*/
 
 class RenderSentence extends Component {
   constructor(props) {
       super(props);
 
+      this.sentenceRef = React.createRef();
+
       this.handleMouseOver = this.handleMouseOver.bind(this)
       this.handleRightClick = this.handleRightClick.bind(this)
       this.handleClose = this.handleClose.bind(this)
       this.handleMenuClick = this.handleMenuClick.bind(this)
-      this.highlightSelection = this.highlightSelection.bind(this)
+      
   }
   state = {
     mouseX: null,
@@ -21,7 +31,7 @@ class RenderSentence extends Component {
     label: null
   };
   static defaultProps = { 
-    menuItems: Array(),
+    menuItems: [],
     type:"WhiteSpace", 
     text:""
   }
@@ -57,27 +67,23 @@ class RenderSentence extends Component {
       range.surroundContents(newNode);
   }
 
-
-  handleMouseOver(event) {
+  // we pass the parent node because e is the inner spans
+  handleMouseOver(event, parentNode) {
     event.preventDefault();
-    this.selectText(event.target)
+    this.selectText(parentNode.current)
   }
 
-  handleMenuClick(e, menuItem){
+  handleMenuClick(e, menuItem, sentenceId){
     e.preventDefault();
-    this.highlightSelection(menuItem.color)
-    
-    //selectText(sentenceRef.current)
-    //if (event.button == 1){  selectText(event.target); return false; }
     this.handleClose()
+    // make the call async because yeah.
+    setTimeout(()=>{this.props.onLabelUpdate(sentenceId,menuItem)},0)
+    
   }
-  
-  handleRightClick(event){
-    event.preventDefault();
-    //selectText(sentenceRef.current)
-    //if (event.button == 1){  selectText(event.target); return false; }
-
-    this.selectText(event.target)
+    // we pass the parent node because e is the inner spans
+  handleRightClick(event, parentNode){
+    event.preventDefault();    
+    this.selectText(parentNode.current)
     this.setState({...this.state,
       mouseX: event.clientX - 2,
       mouseY: event.clientY - 4,
@@ -94,39 +100,49 @@ class RenderSentence extends Component {
 
   render()
   {    
-    if(this.props.type == "WhiteSpace" && this.props.text != " ") 
+
+
+
+    if(this.props.type === "WhiteSpace" && this.props.text !== " ") 
       return <p/> 
-    if(this.props.type == "WhiteSpace" && this.props.text == " ") 
+    if(this.props.type === "WhiteSpace" && this.props.text === " ") 
       return " "
 
     return (      
       
-      <span onContextMenu={this.handleRightClick} style={{ cursor: 'context-menu' }}>
-      <span onMouseOver={this.handleMouseOver}>
-        {this.props.text}
-      </span>
-      <Menu
-        keepMounted
-        open={this.state.mouseY !== null}
-        onClose={this.handleClose}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          this.state.mouseY !== null && this.state.mouseX !== null
-            ? { top: this.state.mouseY, left: this.state.mouseX }
-            : undefined
-        }
+      <span ref={this.sentenceRef} style={{ cursor: 'context-menu' }} 
+        ref={this.sentenceRef} 
+        onMouseOver={(e)=>{this.handleMouseOver(e, this.sentenceRef)}}
+        onContextMenu={(e)=>{this.handleRightClick(e, this.sentenceRef)}}
       >
-          {this.props.menuItems.map((menuItem) => 
-            <MenuItem key={menuItem.key} onClick={(e)=>this.handleMenuClick(e,menuItem)}>             
-              <span style={{backgroundColor: menuItem.color}}>              
-               &nbsp;{menuItem.text}&nbsp;
-              </span>({menuItem.confidence}%)
-            </MenuItem>
-              
-          )}
-          <MenuItem onClick={this.handleClose}>None</MenuItem>
-      </Menu>
-    </span>
+        <SentenceAnnotator 
+          sentenceOffset={this.props.sentenceOffset} 
+          annotations={this.props.annotations} 
+          menuItems={this.props.MenuItems}>
+          {this.props.text}
+        </SentenceAnnotator>
+        <Menu
+          keepMounted
+          open={this.state.mouseY !== null}
+          onClose={this.handleClose}
+          anchorReference="anchorPosition"
+          anchorPosition={
+            this.state.mouseY !== null && this.state.mouseX !== null
+              ? { top: this.state.mouseY, left: this.state.mouseX }
+              : undefined
+          }
+        >
+            {this.props.menuItems.map((menuItem) => 
+              <MenuItem key={menuItem.key} onClick={(e)=>this.handleMenuClick(e,menuItem,this.props.sentenceId)}>             
+                <span style={{backgroundColor: menuItem.color}}>              
+                &nbsp;{menuItem.text}&nbsp;
+                </span>({menuItem.confidence}%)
+              </MenuItem>
+                
+            )}
+            <MenuItem onClick={this.handleClose}>None</MenuItem>
+        </Menu>
+      </span>
   );
 }
 }

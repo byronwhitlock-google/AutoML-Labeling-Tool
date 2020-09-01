@@ -1,22 +1,23 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
-import ReactDOM from 'react-dom';
-import AppHeader from './AppHeader.js';
 import RenderSentence from './RenderSentence.js'
 import ModalPopup from './ModalPopup.js'
 import {split, Syntax} from "sentence-splitter";
-
+import SentenceTokenizer from './lib/SentenceTokenizer.js'
+import UserConfig from './lib/UserConfig.js'
 
 class Document extends Component {
   constructor(props) {
       super(props);
 
+      this.userConfig = new UserConfig();
       this.handleClose = this.handleClose.bind(this)
+      this.onLabelUpdate = this.onLabelUpdate.bind(this)
   }
   state = {
       data: null,
-      sentenceData: Array(),
+      sentenceData: Array(), // each sentence 
+      documentData: {}, // suitable for storing jsonl or sending to automl for training.
       menuItems: Array(),
       error : {
         title:null,
@@ -36,34 +37,46 @@ class Document extends Component {
     //this.setState({...this.state,menuItems})
   }
 
-  getMenuItems(text) {
-    // TODO: Add automl API call for prediction here.
-    return [
-      {
-        key: 1,
-        text:"Problem",
-        confidence: 0, //Math.floor(Math.random()*1000)/10
-        color: "#F2D7D5"
-        },
-      {
-        key: 2,
-        text:"Cause",
-        confidence: 0,//Math.floor(Math.random()*1000)/10
-        color: "#EBDEF0"
-      },
-      {
-        key: 3,
-        text:"Remediation",
-        confidence: 0,//Math.floor(Math.random()*1000)/10
-        color: "#D4E6F1"
-      }
-    ]    
+  onLabelUpdate(sentenceId,menuItem)
+  {
+    var tk = new SentenceTokenizer();
+    console.log(`sentenceId ${sentenceId} menuItem ${menuItem}`)
+
+    // grab current sentence
+    var sentence = this.state.sentenceData[sentenceId].raw
+    
+    // grab the sentence offset so our tokens are document based
+    var sentenceOffset =this.state.sentenceData[sentenceId].range[0]
+
+    //tokenize our sentence into automl annotation format 
+    var annotations = tk.annotate(sentenceOffset, menuItem.text, sentence)
+
+    console.log(annotations)
+
+    //grab the global label data structure
+    var documentData = this.state.documentData
+        
+    // TODO: advanced check for duplicates!
+    // advanced dupe check would verify ranges to make sure there are no overlaps
+    // simple dupe check implmeneted looking at first item 
+    // index of annotations after merge is the start index of the label within the document.
+    documentData.annotations = tk.mergeAnnotations(documentData.annotations, annotations)
+
+    //save the jsonL file asyncronously to cloud storage
+    ///??????
+    this.saveDocument(documentData)
+
+    // update state
+    this.setState({...this.state, documentData: documentData})
+
   }
-  
-  setError(text)
+
+
+    
+  setError(text,title="Error Loading Document")
   {
       let error = this.state.error
-      error.title = "Error Loading Document"
+      error.title = title
       error.content = text;
       error.isOpen = true      
       this.setState({...this.state,error})
@@ -76,19 +89,48 @@ class Document extends Component {
     this.setState({...this.state,state})
   };
 
+  async saveDocument(doc)
+  {
+    // simple type checking, 
+    // TODO: json schema validation
+    if (doc.hasOwnProperty('annotations') && 
+        doc.hasOwnProperty('text_snippet') && 
+        doc.text_snippet.hasOwnProperty('content'))
+    {
+      try
+      {
+
+        var res = await this.saveDocumentContent(doc)
+
+        if (res.hasOwnProperty('error'))
+          this.setError(res.error,"Error Saving Document");
+
+      } catch (e) {
+          this.setError(JSON.stringify(e))
+      }
+    }
+     else
+     {
+       this.setError("Cannot save, Invalid Document")
+     }
+
+  }
+
   parseDocument(res)
   {
-    if (res.hasOwnProperty('data'))
+    if (res.hasOwnProperty('data') && 
+        res.data.hasOwnProperty('text_snippet') && 
+        res.data.text_snippet.hasOwnProperty('content'))
     {
-      let sentencesSplit = split(res.data)
+      console.log("*****Reparsing data from file****")
+      let documentData = res.data
+      let sentencesSplit = split(res.data.text_snippet.content)
       console.log(sentencesSplit)
-      /*let keyedSentencesSplit = Array();
-      let i=0;
-      sentencesSplit.map((sentence) => {
-        sentence.key = i++;
-        keyedSentencesSplit.push(sentence)
-      })*/
-      this.setState({...this.state, sentenceData: sentencesSplit })
+
+      this.setState({...this.state, 
+        documentData: res.data,
+        sentenceData: sentencesSplit 
+      });
     }
     else if (res.hasOwnProperty('error'))
       this.setError(res.error);
@@ -109,7 +151,28 @@ class Document extends Component {
     return body;
   };
   
+  async saveDocumentContent(doc) {
+
+    const response = await fetch('/save_document?d='+this.props.src, {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(doc)
+        });
+    console.log('/save_document?d='+this.props.src)
+    console.log(doc)
+    const body = await response.json();
+    console.log(body)
+    if (response.status !== 200) {
+      throw Error(body.message) 
+    }
+    return body;
+  }
+
   render() {
+
+
+
+
     return (      
       <div  className="Document-body">
         <ModalPopup           
@@ -121,8 +184,12 @@ class Document extends Component {
         {this.state.sentenceData.map((item, key) =>
           <RenderSentence
           key ={key}
+          onLabelUpdate={this.onLabelUpdate}
+          annotations={this.state.documentData.annotations}
+          sentenceId ={key}
+          sentenceOffset={item.range[0]}
           type = {item.type}    
-          menuItems={this.getMenuItems(item.raw)}      
+          menuItems={this.userConfig.getMenuItems(item.raw)}      
           text = {item.raw}/>          
         )}
         </div>
