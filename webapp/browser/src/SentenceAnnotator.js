@@ -13,63 +13,141 @@ class SentenceAnnotator extends Component {
     }
 
 
+    getAnnotationColorsInRange(sentenceStartOffset, sentenceEndOffset)
+    {
+      // console.log("in render "+ this.props.sentenceOffset)
+      //console.log(this.props.annotations)
+      var coloredAnnotations = []
+      for (var aIdx in this.props.annotations)
+      {
+        var annotation = this.props.annotations[aIdx]
+        if (annotation==null) continue;
+       // make sure the annotation falls within our current sentence
+       // |sentence|
+       // [annotation]
+       // index: 01234......
+       // good  |  [  ] | 
+       //       0  1  2 3
+ 
+       // bad [] |  | 
+      //      01 2  3
+
+       // bad | | []
+       //     0 1 23
+
+       // what about? | [ | ]
+       //             0 1 2 3
+
+       // or  [ | ] |
+       //     0 1 2 3
+
+
+        //annotations offsets are based document, but we want based on sentence   
+        // so and eo are based on the sentence              
+        var so =  annotation.text_extraction.text_segment.start_offset //- sentenceStartOffset
+        // since we can have a start offset before the beginning of this sentence, if so is negative, set it to zero.
+        if (so < sentenceStartOffset) so = -1;              
+        if (so >= sentenceEndOffset) so = -1;
+        
+        var eo =  annotation.text_extraction.text_segment.end_offset //- sentenceStartOffset
+        // since we can have an end offset after the end of this sentence, if eo > sentenceEndOffset, set it to sentenceEndOffset.
+        if (eo > sentenceEndOffset) eo = -1;
+        if (eo <= sentenceStartOffset) eo = -1;
+
+      //console.log(`${sentenceStartOffset} so ${so} eo ${eo} ${sentenceEndOffset}`)
+
+        if (so>0 && eo > 0)
+        {
+          //  so and eo ažre bounded by the length of the sentence so no out of range errors.
+          //console.log(`${sentenceStartOffset} so ${so} eo ${eo} ${sentenceEndOffset}`)
+          var menuItem = this.userConfig.getMenuItemByText(annotation.text_extraction.display_name);
+        //  words.push(sentence.substr(so- sentenceStartOffset,eo- sentenceStartOffset))
+//console.log(`(${so}- ${sentenceStartOffset},${eo}- ${sentenceStartOffset})`)
+//console.log(so- sentenceStartOffset,eo- sentenceStartOffset)
+
+          coloredAnnotations.push({
+            color: menuItem.color                
+          })
+        }
+      }
+      return coloredAnnotations
+
+    }
     render()
     {
-     // console.log("in render "+ this.props.sentenceOffset)
-      //console.log(this.props.annotations)
-      var text = ""
-//      var words = this.props.children.split(/\s/);
-     
+      // go through the annotations and add labels.
+      const sentence = this.props.children
+      const sentenceStartOffset = this.props.sentenceOffset
+      const sentenceEndOffset = sentenceStartOffset + sentence.length
+      
+      var words = []
 
       // get offsets for each word 
       var words = this.tokenizer.tokenize(this.props.children)
       var wordsColored = []
+      
+      var annotatedColors = this.getAnnotationColorsInRange(sentenceStartOffset,sentenceEndOffset)
 
       // compare to the annotations prop
       for (var idx in words)
       {
         var word = {text: words[idx].text, color:""}
-        // remember merged annotions are keyed by GLOBAL start index.
-        var checkOffset = words[idx].startOffset+this.props.sentenceOffset
-        if (this.props.annotations.hasOwnProperty(checkOffset))
+        //var annotatedColors = this.getAnnotationColorsInRange(words[idx].startOffset,words[idx].endOffset)
+        //ugh need to put lookuop or somthing this is bad swe
+
+
+        /// TOODO:: need to look at prediction to determine best color.
+        if (annotatedColors.length > 0)
         {
-          var annotation = this.props.annotations[checkOffset]
-          //console.log("annotation in SA")
-          //console.log(annotation)
-          if (annotation) // if this is null then no need to highlight since the word hasn't been labeled
-          {
-            // we need to color this selection based on the title of the annotation
-            // the title relates back to the menuitem....
-            // we will hard cord the color based on name here but needs to do a lookuop so we can dynamically generate label types other tahn cause remedieaitionetc.
-            var menuItem = this.userConfig.getMenuItemByText(annotation.text_extraction.display_name);
-            word.color = menuItem.color
-          }
-          
+          if (annotatedColors.hasOwnProperty(idx)) //should normally match the word array because tokenized with same tokenizer
+            word.color = annotatedColors[idx].color
+          else
+            word.color = annotatedColors[0].color
+
+          //word.annotatedColors = annotatedColors
         }
+
         //console.log(`idx: ${idx} checkoffset ${checkOffset}`)
         //console.log(this.props.annotations)        
+        
         wordsColored.push(word)
       }
 
-    //console.log("words SA")
-  //  console.log(words)
+     //console.log("words SA")
+     //console.log(words)
 
-//    console.log("wordsColored SA")
-  //  console.log(wordsColored)
+    //console.log("wordsColored SA")
+    //console.log(wordsColored)
 //    console.log("Annotations SA")
   //  console.log(this.props.annotations)
       return (
         <span>
           {wordsColored.map((item, key) =>
-            <span key={key} style={{
-              backgroundColor: item.color, 
-              display: 'inline'
-            }}>
-              {item.text}&nbsp;
-            </span>
+            <React.Fragment key={key}>
+              <span style={{
+                backgroundColor: item.color, 
+                display: 'inline'
+              }}>
+                {item.text}
+              </span>
+              &nbsp;
+            </React.Fragment>
            )}
         </span>)
+/*
+        return ( <Highlighter
+                   // highlightClassName="YourHighlightClass"
+                    searchWords={words}
+                    autoEscape={true}
+                    textToHighlight={sentence}
+                    activeStyle={{
+                      backgroundColor: 'gray', 
+                      display: 'inline'
+                    }}
+        />)*/
     }
+
+
 }
 
 export default SentenceAnnotator;

@@ -36,7 +36,7 @@ class NavigationDrawer extends Component {
       // Call our fetch function below once the component mounts
     this.loadDocumentList()
       .then(res=>this.parseDocumentList(res))
-      .catch(err => console.log(err));
+      .catch(err => console.error(err));
   }
 
   parseDocumentList(res)

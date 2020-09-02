@@ -18,6 +18,7 @@
           confidence: 0,//Math.floor(Math.random()*1000)/10
           color: "#D4E6F1"
         }
+
       ]   
     
     getMenuItemByText(text)

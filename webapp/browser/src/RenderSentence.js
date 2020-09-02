@@ -140,7 +140,9 @@ class RenderSentence extends Component {
               </MenuItem>
                 
             )}
-            <MenuItem onClick={this.handleClose}>None</MenuItem>
+            <MenuItem key="none" onClick={(e)=>this.handleMenuClick(e,{text:'None'},this.props.sentenceId)}>             
+              None
+            </MenuItem>
         </Menu>
       </span>
   );

@@ -41,26 +41,31 @@ class Document extends Component {
   {
     var tk = new SentenceTokenizer();
     console.log(`sentenceId ${sentenceId} menuItem ${menuItem}`)
-
+    
     // grab current sentence
     var sentence = this.state.sentenceData[sentenceId].raw
     
     // grab the sentence offset so our tokens are document based
     var sentenceOffset =this.state.sentenceData[sentenceId].range[0]
 
-    //tokenize our sentence into automl annotation format 
-    var annotations = tk.annotate(sentenceOffset, menuItem.text, sentence)
-
-    console.log(annotations)
-
     //grab the global label data structure
     var documentData = this.state.documentData
-        
-    // TODO: advanced check for duplicates!
-    // advanced dupe check would verify ranges to make sure there are no overlaps
-    // simple dupe check implmeneted looking at first item 
-    // index of annotations after merge is the start index of the label within the document.
-    documentData.annotations = tk.mergeAnnotations(documentData.annotations, annotations)
+
+    //tokenize our sentence into automl annotation format 
+    var annotations =[]
+    if (menuItem.text == "None")
+      documentData.annotations = tk.removeAnnotations(documentData.annotations, sentenceOffset, sentence.length + sentenceOffset)
+    else
+    {
+      annotations = tk.annotate(sentenceOffset, menuItem.text, sentence)
+
+      // TODO: advanced check for duplicates!
+      // advanced dupe check would verify ranges to make sure there are no overlaps
+      // simple dupe check implmeneted looking at first item 
+      // index of annotations after merge is the start index of the label within the document.
+      documentData.annotations = tk.mergeAnnotations(documentData.annotations, annotations)
+    }
+    console.log(documentData.annotations)
 
     //save the jsonL file asyncronously to cloud storage
     ///??????

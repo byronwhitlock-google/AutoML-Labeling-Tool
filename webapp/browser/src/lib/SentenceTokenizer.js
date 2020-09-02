@@ -7,16 +7,16 @@ class SentenceTokenizer {
   constructor(text) {      
   }
   
-  //create lookup for annotations. lookup by global start offset
-  // also has a nice side effect of deduping
-  mergeAnnotations(a,b){return this.indexAnnotations(a.concat(b))}
-  indexAnnotations(annotations)
+  //dedupeAnnotations by start index of each annotation.
+  mergeAnnotations(a,b){return this.dedupeAnnotations(a.concat(b))}
+  dedupeAnnotations(annotations)
   {
     var annotationLookup = []
 
     for(var i in annotations)
     {
       var a =annotations[i]
+      if (!a) continue;
       /*
       annotations: { 
         "text_extraction": {
@@ -37,7 +37,7 @@ class SentenceTokenizer {
         console.log(a)
       }
     }
-    return annotationLookup
+    return Object.values(annotationLookup)
   }
   // returns automl format
   // global start offset so we get tokens offset from the whole doc not just the sentence
@@ -46,7 +46,6 @@ class SentenceTokenizer {
   {
     var tokens = this.tokenize(sentence);
     var annotations = [];
-
     // we need to get the offsets of each word, lets be clever.
     for(var idx in tokens)
     {
@@ -63,6 +62,25 @@ class SentenceTokenizer {
     }
     return annotations
   }
+
+// returns annotations array but with items in the offsets removed.
+  removeAnnotations(annotations, startOffset, endOffset)
+  {
+    var newAnnotations = []
+    for(var i in annotations)
+    {
+      var annotation =annotations[i]
+      if (!annotation) continue;
+
+      if (this.inRange(annotation.text_extraction.text_segment.start_offset,startOffset,endOffset))
+        continue;
+      
+      newAnnotations.push(annotation)
+    }
+    return newAnnotations
+  }
+
+
   // turn a sentence into offsets
   tokenize(sentence)
   {
@@ -111,6 +129,9 @@ class SentenceTokenizer {
   }
 
   
+    inRange(x, min, max) {
+        return ((x-min)*(x-max) <= 0);
+    }
 } 
 
 
