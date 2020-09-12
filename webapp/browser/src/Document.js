@@ -1,16 +1,31 @@
+/*
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#            http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
 import React, { Component } from 'react';
 import './App.css';
 import RenderSentence from './RenderSentence.js'
 import ModalPopup from './ModalPopup.js'
 import {split, Syntax} from "sentence-splitter";
 import SentenceTokenizer from './lib/SentenceTokenizer.js'
-import UserConfig from './lib/UserConfig.js'
+import GlobalConfig from './lib/GlobalConfig.js'
 
 class Document extends Component {
   constructor(props) {
       super(props);
 
-      this.userConfig = new UserConfig();
+      this.config = new GlobalConfig();
       this.handleClose = this.handleClose.bind(this)
       this.onLabelUpdate = this.onLabelUpdate.bind(this)
   }
@@ -143,11 +158,26 @@ class Document extends Component {
       this.setError("Unknown Error : "+JSON.stringify(res));
   }
   
+  getHeaders()
+  {
+    
+  }
     // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
   loadDocumentContent = async () => {
 
-    const response = await fetch('/load_document?d='+this.props.src);
-    console.log('/load_document?d='+this.props.src)
+    const response = await fetch(`/load_document?d=${this.props.src}`,{
+          method: "GET",
+          headers: { 
+            'X-Project-Id': this.config.projectId,
+            'X-Bearer-Token': this.props.accessToken,
+            'X-Bucket-Name': this.config.bucketName
+        }});
+    console.log(`/load_document?d=${this.props.src}`)
+    console.log({headers: { 
+            'X-Project-Id': this.config.projectId,
+            'X-Bearer-Token': this.props.accessToken,
+            'X-Bucket-Name': this.config.bucketName
+        }})
     const body = await response.json();
 
     if (response.status !== 200) {
@@ -160,7 +190,12 @@ class Document extends Component {
 
     const response = await fetch('/save_document?d='+this.props.src, {
           method: "POST",
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json' ,
+            'X-Bearer-Token': this.props.accessToken,
+            'X-Project-Id': this.config.projectId,
+            'X-Bucket-Name': this.config.bucketName
+          },
           body: JSON.stringify(doc)
         });
     console.log('/save_document?d='+this.props.src)
@@ -174,10 +209,6 @@ class Document extends Component {
   }
 
   render() {
-
-
-
-
     return (      
       <div  className="Document-body">
         <ModalPopup           
@@ -188,15 +219,15 @@ class Document extends Component {
 
         {this.state.sentenceData.map((item, key) =>
           <RenderSentence
-          key ={key}
-          onLabelUpdate={this.onLabelUpdate}
-          annotations={this.state.documentData.annotations}
-          sentenceId ={key}
-          sentenceOffset={item.range[0]}
-          type = {item.type}    
-          menuItems={this.userConfig.getMenuItems(item.raw)}      
-          text = {item.raw}/>          
-        )}
+            key ={key}
+            onLabelUpdate={this.onLabelUpdate}
+            annotations={this.state.documentData.annotations}
+            sentenceId ={key}
+            sentenceOffset={item.range[0]}
+            type = {item.type}    
+            menuItems={this.config.getMenuItems(item.raw)}      
+            text = {item.raw}/>          
+          )}
         </div>
      );
   }

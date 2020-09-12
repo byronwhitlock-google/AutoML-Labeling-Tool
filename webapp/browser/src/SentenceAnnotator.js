@@ -1,14 +1,30 @@
 
+/*
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#            http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+
 import React, { Component } from 'react';
 import SentenceTokenizer from './lib/SentenceTokenizer.js'
-import UserConfig from './lib/UserConfig.js'
+import GlobalConfig from './lib/GlobalConfig.js'
 
 class SentenceAnnotator extends Component {
     constructor(props) {
       super(props);
 
      this.tokenizer = new SentenceTokenizer();
-     this.userConfig = new UserConfig();
+     this.config = new GlobalConfig();
       
     }
 
@@ -60,7 +76,7 @@ class SentenceAnnotator extends Component {
         {
           //  so and eo ažre bounded by the length of the sentence so no out of range errors.
           //console.log(`${sentenceStartOffset} so ${so} eo ${eo} ${sentenceEndOffset}`)
-          var menuItem = this.userConfig.getMenuItemByText(annotation.text_extraction.display_name);
+          var menuItem = this.config.getMenuItemByText(annotation.text_extraction.display_name);
         //  words.push(sentence.substr(so- sentenceStartOffset,eo- sentenceStartOffset))
 //console.log(`(${so}- ${sentenceStartOffset},${eo}- ${sentenceStartOffset})`)
 //console.log(so- sentenceStartOffset,eo- sentenceStartOffset)

@@ -1,14 +1,26 @@
-// Byron Whitlock byronwhitlock@google.com 
+/*
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#            http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
 "use strict";
-const UserConfig =  require('user-config.js')
 const Dumper = require('dumper').dumper;
 const CloudStorage = require('lib/cloud-storage.js');
 const SimpleSplitter = require("split");
 
 module.exports = class AnnotatedDocument {
-  constructor() {
-    this.config = new UserConfig();
-    this.gcs = new CloudStorage();   
+  constructor(options) {
+    this.gcs = new CloudStorage(options);   
   }
   
 
@@ -71,27 +83,24 @@ module.exports = class AnnotatedDocument {
     // If it does, read from cloud storage convert from JSON to object and return
     // if it does not, load the .txt file, generate a JSON object and return
     
-    let jsonFileExists = await this.gcs.fileExists(jsonlFilename)    
+    let data =  ""
+    let jsonFileExists=true;
+    try {
+      console.error("About to read document "+ jsonlFilename)
+      data = await this.gcs.readDocument(jsonlFilename)    
+    } catch (e)
+    {
+      if (e.message == "not found") {
+         jsonFileExists=false;;
+      } else {
+        throw new Error(e.message)
+      }
+    }
     
     if (jsonFileExists){      
-      console.error("About to read document "+ jsonlFilename)
-      let data = await this.gcs.readDocument(jsonlFilename);
-      return JSON.parse(data);
-      /* This is not needed. json files will only contain a single record, no need to stream it in!
-      // jsonl files have to be parsed line by line.
-      // https://www.npmjs.com/package/split#ndj---newline-delimited-json
-      let fs = this.gcs.bucket.file(jsonlFilename);
-      fs.createReadStream()
-        .pipe(SimpleSplitter(JSON.parse))
-        .on('data', function (obj) {
-          //each chunk now is a a js object
-          jsonlArray.push(obj)
-        })
-        .on('error', function (err) {
-          //syntax errors will land here
-          //note, this ends the stream.
-          throw new Error(err);
-        })*/
+      //return JSON.parse(data);
+      return data;
+      
     } else {
       // read the data
       // run through the sentence splitter

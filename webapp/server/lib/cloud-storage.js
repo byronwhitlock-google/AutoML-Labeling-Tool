@@ -1,69 +1,117 @@
-// Byron Whitlock byronwhitlock@google.com 
+/*
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#            http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+//https://cloud.google.com/storage/docs/json_api/v1/objects/get
 "use strict";
-const UserConfig =  require('user-config.js')
 const Dumper = require('dumper').dumper;
+const GoogleCloud = require('./google-cloud.js')
 
-const {Storage} = require('@google-cloud/storage');
 //https://googleapis.dev/nodejs/storage/latest/index.html
-module.exports = class CloudStorage {
-  constructor() {
-    this.config = new UserConfig();
-    this.storage = new Storage({projectId: this.config.projectId})
-    this.bucket = this.storage.bucket(this.config.bucketName);
+
+module.exports = class CloudStorage extends GoogleCloud {
+  constructor(options) {
+    options.hostName = 'storage.googleapis.com'
+    super(options)
+    this.projectId = options.projectId
+    this.bucketName = options.bucketName
   }
 
-  // List documents annotate if jsonl file exists too.
-  /*function ListDocuments(){}
-  function ReadDocument(documentName){}
-  function WriteDocument(documentName,content){}*/
 
   // read from cloud storage syncronously.
-  async readDocument(documentName)  {
+  async readDocument(documentName,metadataOnly=false)  {
 
-    let buffer = "";
-    // Return file contents
-    return this.bucket
-      .file(documentName)
-      .download()
-      .then (contents=> {
-          //console.log("file data: "+contents);   
-          return (contents.toString('utf-8'));
-      })
-      .catch( (err) => {
-        let errorMessage = "Cannot read cloud storage object: " + err.message
-        console.error(errorMessage)
-        throw new Error(errorMessage)
+    //https://cloud.google.com/storage/docs/json_api/v1/objects/get
 
-        // TODO Return error code
-        //return (errorMessage);
-      });
+    // serously cant do ouath flow usign the standard lib? wtf? annoying as heck.
+    var path = `/storage/v1/b/${this.bucketName}/o/${documentName}`
+
+    if (metadataOnly)
+      path += "?alt=json"
+    else
+      path += "?alt=media"
+
+    var res = await(this.httpGet(path));
+    var json = ""
+    try {
+      json = JSON.parse(res);
+    } 
+    catch (e) 
+    {
+      throw new Error(res)
+    }
+    
+    //console.log(res);
+    if (json.hasOwnProperty('error'))
+      throw new Error(json.error.message)
+    
+    return json;
+
   }
-
+//https://cloud.google.com/storage/docs/json_api/v1/objects/insert
   async writeDocument(documentName, contents) {
-    return this.bucket
-      .file(documentName)
-      .save(contents);
+    var path = `/upload/storage/v1/b/${this.bucketName}/o?uploadType=media&name=${documentName}`
+    var res = await this.httpPost(path,contents);
+    var json = ""
+    try {
+      json = JSON.parse(res);
+    } 
+    catch (e) 
+    {
+      throw new Error(res)
+    }
+    
+    //console.log(res);
+    if (json.hasOwnProperty('error'))
+      throw new Error(json.error.message)
+    
+    return json;
   }
   
   // read from cloud storage syncronously.
-  async listDocuments()  {
+  async listDocuments()   {
 
-    // Lists files in the bucket
-    const [files] = await this.bucket.getFiles();
+    //https://cloud.google.com/storage/docs/json_api/v1/objects/get
 
-    let documentList = []
-    console.log('Files:');
-    files.forEach(file => {
-      if (file.name.endsWith(this.config.sourceDocumentType))
-        documentList.push(file.name);
-    });
-    return documentList
+    // serously cant do ouath flow usign the standard lib? wtf? annoying as heck.
+    var path = `/storage/v1/b/${this.bucketName}/o/`
+    var documentList = []
+    var maxItems = 2000;
+    try {
+      do
+      {
+        console.log("About to list documents")
+        var res = await(this.httpGet(path));
+        var json = JSON.parse(res);
+        if (json.hasOwnProperty('error'))
+          throw new Error(json.error.message)
+    
+        for(var i=0;i<json.items.length;i++)
+        {
+          if (items[i].name.endsWith(".txt"))
+          {
+            documentList.push(item[i].name)
+          }
+        }
+      }
+      while (json.nextPageToken != "" || documentList.length < maxItems)
+    } 
+    catch (e) 
+    {
+      throw new Error(res)
+    }
+    return documentList;
   }
 
-  async fileExists(filename)
-  {
-    let file = this.bucket.file(filename);
-    let res = await file.exists();
-    return res[0];
-  }
 }

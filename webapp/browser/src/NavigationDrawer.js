@@ -1,3 +1,19 @@
+/*
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#            http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+
 import React, { Component } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
@@ -15,6 +31,10 @@ import DescriptionTwoToneIcon from '@material-ui/icons/DescriptionTwoTone';
 class NavigationDrawer extends Component {
   constructor(props) {
       super(props);
+
+      this.config = props.config
+    console.log("NavigationDrawer: WTF??!?!?")
+console.log(props)
   }
 
   classes = makeStyles({
@@ -26,13 +46,15 @@ class NavigationDrawer extends Component {
               },
             });
   state = {
-      bucket: "gs://byrons-bucket", // TODO: user configuration 
       data: null,
-      documentList: Array()      
+      documentList: Array(),
+      isOpen: false
   };
 
 
   componentDidMount() {
+    console.log("componentDidMount??!?!?")
+console.log(this.props)
       // Call our fetch function below once the component mounts
     this.loadDocumentList()
       .then(res=>this.parseDocumentList(res))
@@ -53,7 +75,16 @@ class NavigationDrawer extends Component {
   
     // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
   loadDocumentList = async () => {
-    const response = await fetch('/list_documents');
+    console.log("in loadDocumentList()")
+
+    const response = await fetch('/list_documents', {
+      method: "GET",
+      headers: { 
+        'X-Bearer-Token': this.config.accessToken,
+        'X-Project-Id': this.config.projectId,
+        'X-Bucket-Name': this.config.bucketName
+      }
+    });
 
     const body = await response.json();
 
@@ -67,30 +98,29 @@ class NavigationDrawer extends Component {
     this.props.handleDocumentUpdate(newDocumentSrc)
   }
 
-  toggleDrawer = (anchor, open) => (event) => {
+  toggleDrawer = (open) => (event) => {
     
     if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
-
-    this.setState({ ...this.state, [anchor]: open });
+    
+    this.setState({ ...this.state, isOpen: !this.state.isOpen });
   };
 
   list() { 
-    let anchor = 'left'
     return (    
     <div
       className={clsx(this.classes.list, {
-        [this.classes.fullList]: anchor === 'top' || anchor === 'bottom',
+        [this.classes.fullList]: false,
       })}
       role="presentation"
-      onClick={this.toggleDrawer(anchor, false)}
-      onKeyDown={this.toggleDrawer(anchor, false)}
+      onClick={this.toggleDrawer(false)}
+      onKeyDown={this.toggleDrawer(false)}
     >
     <List>    
         <ListItem selected key="">
         <ListIcon/>
-          <ListItemText primary={this.state.bucket} />
+          <ListItemText primary={this.config.bucketName} />
         </ListItem>
         <Divider/>    
         {this.state.documentList.map((text, index) => (
@@ -104,6 +134,8 @@ class NavigationDrawer extends Component {
     );
   }
   render() {
+
+
     return (
         <React.Fragment >
             <IconButton edge="start" className={this.classes.menuButton} color="inherit" aria-label="menu">
@@ -111,7 +143,7 @@ class NavigationDrawer extends Component {
             </IconButton>          
             <SwipeableDrawer
               anchor='left'
-              open={this.state['left']}
+              open={this.state.isOpen}
               onClose={this.toggleDrawer('left', false)}
               onOpen={this.toggleDrawer('left', true)}
             >
