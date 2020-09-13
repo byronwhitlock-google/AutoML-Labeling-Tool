@@ -148,7 +148,12 @@ class App extends Component {
     return body;
   };
 
-
+  renderSelectedDocument() {
+    if (this.state.isLoggedIn && this.state.selectedDocument)
+        return (<h2>{this.state.selectedDocument}</h2>)
+    else
+      return (<h2>...</h2>)
+  }
   renderDocument () {
       if (!this.state.selectedDocument)
         return (          
@@ -177,7 +182,7 @@ class App extends Component {
         documentList = {this.state.documentList}
       />
         <blockquote>
-          <h2>{this.state.selectedDocument?this.state.selectedDocument:''}</h2>
+          {this.renderSelectedDocument()}
         </blockquote>
         <hr/>
         <blockquote>
