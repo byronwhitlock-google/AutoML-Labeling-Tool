@@ -163,7 +163,7 @@ class App extends Component {
         return (<Document src={this.state.selectedDocument} key={this.state.selectedDocument} accessToken={this.state.accessToken}/> )
   }
   render() {
-
+    var config = new GlobalConfig();
     return (
     <div className="App">
       <AppHeader 
@@ -177,7 +177,7 @@ class App extends Component {
         documentList = {this.state.documentList}
       />
         <blockquote>
-          <h2>{this.state.isLoggedIn?this.state.selectedDocument:'...'}</h2>
+          <h2>{this.state.selectedDocument?this.state.selectedDocument:''}</h2>
         </blockquote>
         <hr/>
         <blockquote>
