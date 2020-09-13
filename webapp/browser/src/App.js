@@ -31,6 +31,7 @@ class App extends Component {
     sentenceData: [],
     selectedDocument: 'test.txt',
     isLoggedIn: false,
+    userProfile: null,
     accessToken: null
   };
   
@@ -66,22 +67,23 @@ class App extends Component {
   }
 
   handleLogoutSuccess (res) {
-    alert('logout')
-    this.setState({...this.state,isLoggedIn:false})
-    //window.location.reload(true);
-    this.forceUpdate();
     
+    //var result = window.confirm('Logout Success')
+    //if (result)        
+    setTimeout(()=>this.setState({...this.state,isLoggedIn:false,accessToken:null,userProfile:null}),0)
+    setTimeout(()=>window.location.reload(true),1);
   }
 
   handleLoginSuccess (res) {
-    this.setState({...this.state,isLoggedIn:true,accessToken:res.accessToken})
+    
+    this.setState({...this.state,isLoggedIn:true,accessToken:res.accessToken, userProfile:res.profileObj})
 
     console.log('Login Success: currentUser:', res.profileObj);
     console.log(res)
     /*alert(
       `Logged in successfully welcome ${res.profileObj.name} 😍. \n See console for full profile object.`
     );*/
-    refreshTokenSetup(res,(newToken)=>{this.setState({accessToken:newToken})})
+    refreshTokenSetup(res,(newToken)=>{console.log("TOken REFERESHSED"+newToken);this.setState({accessToken:newToken});})
   };
 
   handleLoginFailure (res) {
@@ -107,6 +109,7 @@ class App extends Component {
         selectedDocument={this.state.selectedDocument}  
         handleDocumentUpdate={this.handleDocumentUpdate} 
         config = {this.config}
+        userProfile = {this.state.userProfile}
       />
         <blockquote>
           <h2>{this.state.isLoggedIn?this.state.selectedDocument:'...'}</h2>

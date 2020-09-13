@@ -16,6 +16,7 @@
 
 require('app-module-path').addPath(__dirname);
 const Dumper = require('dumper').dumper;
+const CloudStorage = require('./lib/cloud-storage.js')
 
 const fs = require('fs');
 const express = require('express');
@@ -102,9 +103,9 @@ app.get('/list_datasets', async (req, res) => {
     try {        
 
         var options ={
-            accessToken: 'ya29.a0AfH6SMArNNo1raQ11vju0UT8Z1ry9i-GeoCljvPEpnvMIoKb6LLAiPhfhyKJMnfhra97w8wOA0o8xbrgdeulqtlFO8PDEJ5N17x-Z3_w4ClkBnsYxVhHrg27nh6Bvrgbh3yXxxYjV8fWh7C6KPQjVs19DebjsTZwSyg',// req.header("X-Bearer-Token"),
-            projectId: 'byron-internal',//req.header("X-Project-Id"),
-            locationId:'us-central1' //req.header("X-Location-Id"),
+            accessToken: req.header("X-Bearer-Token"),
+            projectId: req.header("X-Project-Id"),
+            locationId:req.header("X-Location-Id"),
         }
         console.log("trying to list datasets")
         console.log(options)

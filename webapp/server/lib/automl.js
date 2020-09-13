@@ -41,7 +41,7 @@ module.exports = class AutoML extends GoogleCloud {
 
     var path = `/v1/projects/${this.projectId}/locations/${this.locationId}/datasets`
 
-    var res = await(this.httpGet(path));
+    var res = await this.httpGet(path) ;
     var json = ""
     try {
       json = JSON.parse(res);

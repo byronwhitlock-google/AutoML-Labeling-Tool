@@ -27,6 +27,7 @@ import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import DescriptionTwoToneIcon from '@material-ui/icons/DescriptionTwoTone';
+import Tooltip from '@material-ui/core/Tooltip';
 
 class NavigationDrawer extends Component {
   constructor(props) {
@@ -137,19 +138,22 @@ console.log(this.props)
 
 
     return (
-        <React.Fragment >
-            <IconButton edge="start" className={this.classes.menuButton} color="inherit" aria-label="menu">
-              <MenuIcon  onClick={this.toggleDrawer('left', true)} />
-            </IconButton>          
-            <SwipeableDrawer
-              anchor='left'
-              open={this.state.isOpen}
-              onClose={this.toggleDrawer('left', false)}
-              onOpen={this.toggleDrawer('left', true)}
-            >
-              {this.list('left')}
-            </SwipeableDrawer>
-          </React.Fragment>
+      <React.Fragment>
+        <Tooltip title="Select another file from cloud storage to label">          
+          <IconButton edge="start" className={this.classes.menuButton} color="inherit" aria-label="menu">
+            <MenuIcon  onClick={this.toggleDrawer('left', true)} />
+          </IconButton>      
+        </Tooltip>    
+        <SwipeableDrawer
+          anchor='left'
+          open={this.state.isOpen}
+          onClose={this.toggleDrawer('left', false)}
+          onOpen={this.toggleDrawer('left', true)}
+        >
+          {this.list('left')}
+        </SwipeableDrawer>
+    
+      </React.Fragment>
     );
   }
 }
