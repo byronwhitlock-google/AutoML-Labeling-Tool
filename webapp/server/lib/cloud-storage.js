@@ -28,22 +28,8 @@ module.exports = class CloudStorage extends GoogleCloud {
     this.bucketName = options.bucketName
   }
 
-
-  // read from cloud storage syncronously.
-  async readDocument(documentName,metadataOnly=false)  {
-
-    //https://cloud.google.com/storage/docs/json_api/v1/objects/get
-
-    // serously cant do ouath flow usign the standard lib? wtf? annoying as heck.
-    var path = `/storage/v1/b/${this.bucketName}/o/${documentName}`
-
-    if (metadataOnly)
-      path += "?alt=json"
-    else
-      path += "?alt=media"
-
-    var res = await(this.httpGet(path));
-    var json = ""
+  async readJsonDocument(documentName,metadataOnly=false) {
+    var json = await this.readDocument(documentName,metadataOnly) 
     try {
       json = JSON.parse(res);
     } 
@@ -57,6 +43,22 @@ module.exports = class CloudStorage extends GoogleCloud {
       throw new Error(json.error.message)
     
     return json;
+  }
+  // read from cloud storage syncronously.
+  async readDocument(documentName,metadataOnly=false)  {
+
+    //https://cloud.google.com/storage/docs/json_api/v1/objects/get
+
+    // serously cant do ouath flow usign the standard lib? wtf? annoying as heck.
+    var path = `/storage/v1/b/${this.bucketName}/o/${documentName}`
+
+    if (metadataOnly)
+      path += "?alt=json"
+    else
+      path += "?alt=media"
+
+    var res = await this.httpGet(path);
+    return res;
 
   }
 //https://cloud.google.com/storage/docs/json_api/v1/objects/insert
@@ -89,28 +91,29 @@ module.exports = class CloudStorage extends GoogleCloud {
     var documentList = []
     var maxItems = 2000;
     try {
-      do
+      //do
       {
         console.log("About to list documents")
-        var res = await(this.httpGet(path));
+        var res = await this.httpGet(path);
         var json = JSON.parse(res);
         if (json.hasOwnProperty('error'))
           throw new Error(json.error.message)
     
         for(var i=0;i<json.items.length;i++)
         {
-          if (items[i].name.endsWith(".txt"))
+          if (json.items[i].name.endsWith(".txt"))
           {
-            documentList.push(item[i].name)
+            documentList.push(json.items[i].name)
           }
         }
       }
-      while (json.nextPageToken != "" || documentList.length < maxItems)
+      //while (json.nextPageToken != "" || documentList.length < maxItems)
     } 
     catch (e) 
     {
-      throw new Error(res)
+      throw new Error(e.message)
     }
+    Dumper(documentList)
     return documentList;
   }
 

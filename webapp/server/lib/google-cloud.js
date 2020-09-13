@@ -45,8 +45,8 @@ module.exports = class GoogleCloud {
             'Content-Length': postData.length
           }
     };
-    console.log("POST: "+path)
-    Dumper(options)
+    //console.log("POST: "+path)
+    //Dumper(options)
 
     return new Promise((resolve, reject) => {
         var req = https.request(
@@ -76,8 +76,8 @@ module.exports = class GoogleCloud {
             Authorization:  "Bearer "+ this.accessToken
           }
     };
-    console.log("GET: "+path)
-    Dumper(options)
+    //console.log("GET: "+path)
+    //Dumper(options)
 
     return new Promise((resolve, reject) => {
         https.get(

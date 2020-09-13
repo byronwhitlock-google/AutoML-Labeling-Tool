@@ -28,14 +28,15 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import DescriptionTwoToneIcon from '@material-ui/icons/DescriptionTwoTone';
 import Tooltip from '@material-ui/core/Tooltip';
+import GlobalConfig from './lib/GlobalConfig.js'
 
 class NavigationDrawer extends Component {
   constructor(props) {
       super(props);
 
-      this.config = props.config
+     // this.config = props.config
     console.log("NavigationDrawer: WTF??!?!?")
-console.log(props)
+    console.log(props)
   }
 
   classes = makeStyles({
@@ -48,55 +49,14 @@ console.log(props)
             });
   state = {
       data: null,
-      documentList: Array(),
       isOpen: false
   };
 
 
-  componentDidMount() {
-    console.log("componentDidMount??!?!?")
-console.log(this.props)
-      // Call our fetch function below once the component mounts
-    this.loadDocumentList()
-      .then(res=>this.parseDocumentList(res))
-      .catch(err => console.error(err));
-  }
-
-  parseDocumentList(res)
-  {
-    if (res.hasOwnProperty('data'))
-    {
-      this.setState({...this.state, documentList: res.data })
-    }
-    else if (res.hasOwnProperty('error'))
-      console.error(res.error)
-    else
-      console.error("Unknown Error : "+JSON.stringify(res));
-  }
-  
-    // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
-  loadDocumentList = async () => {
-    console.log("in loadDocumentList()")
-
-    const response = await fetch('/list_documents', {
-      method: "GET",
-      headers: { 
-        'X-Bearer-Token': this.config.accessToken,
-        'X-Project-Id': this.config.projectId,
-        'X-Bucket-Name': this.config.bucketName
-      }
-    });
-
-    const body = await response.json();
-
-    if (response.status !== 200) {
-      throw Error(body.message) 
-    }
-    return body;
-  };
-
   handleDocumentClick =  (newDocumentSrc) => {
-    this.props.handleDocumentUpdate(newDocumentSrc)
+    // do a full refresh for new docuemnt keep things snappy?
+    window.location = '/'+newDocumentSrc
+    // this.props.handleDocumentUpdate(newDocumentSrc)
   }
 
   toggleDrawer = (open) => (event) => {
@@ -109,6 +69,7 @@ console.log(this.props)
   };
 
   list() { 
+    var config = new GlobalConfig();
     return (    
     <div
       className={clsx(this.classes.list, {
@@ -121,10 +82,10 @@ console.log(this.props)
     <List>    
         <ListItem selected key="">
         <ListIcon/>
-          <ListItemText primary={this.config.bucketName} />
+          <ListItemText primary={config.bucketName} />
         </ListItem>
         <Divider/>    
-        {this.state.documentList.map((text, index) => (
+        {this.props.documentList.map((text, index) => (
           <ListItem button key={text} selected={text.localeCompare(this.props.selectedDocument)==0? true:false} primary={text} >
           <DescriptionTwoToneIcon/>
             <ListItemText onClick={()=>this.handleDocumentClick(text)} primary={text} />

@@ -25,7 +25,6 @@ class Document extends Component {
   constructor(props) {
       super(props);
 
-      this.config = new GlobalConfig();
       this.handleClose = this.handleClose.bind(this)
       this.onLabelUpdate = this.onLabelUpdate.bind(this)
   }
@@ -83,7 +82,6 @@ class Document extends Component {
     console.log(documentData.annotations)
 
     //save the jsonL file asyncronously to cloud storage
-    ///??????
     this.saveDocument(documentData)
 
     // update state
@@ -164,19 +162,19 @@ class Document extends Component {
   }
     // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
   loadDocumentContent = async () => {
-
+    var config = new GlobalConfig();
     const response = await fetch(`/load_document?d=${this.props.src}`,{
           method: "GET",
           headers: { 
-            'X-Project-Id': this.config.projectId,
+            'X-Project-Id': config.projectId,
             'X-Bearer-Token': this.props.accessToken,
-            'X-Bucket-Name': this.config.bucketName
+            'X-Bucket-Name': config.bucketName
         }});
     console.log(`/load_document?d=${this.props.src}`)
     console.log({headers: { 
-            'X-Project-Id': this.config.projectId,
+            'X-Project-Id': config.projectId,
             'X-Bearer-Token': this.props.accessToken,
-            'X-Bucket-Name': this.config.bucketName
+            'X-Bucket-Name': config.bucketName
         }})
     const body = await response.json();
 
@@ -187,14 +185,14 @@ class Document extends Component {
   };
   
   async saveDocumentContent(doc) {
-
+    var config = new GlobalConfig();
     const response = await fetch('/save_document?d='+this.props.src, {
           method: "POST",
           headers: { 
             'Content-Type': 'application/json' ,
             'X-Bearer-Token': this.props.accessToken,
-            'X-Project-Id': this.config.projectId,
-            'X-Bucket-Name': this.config.bucketName
+            'X-Project-Id': config.projectId,
+            'X-Bucket-Name': config.bucketName
           },
           body: JSON.stringify(doc)
         });
@@ -209,6 +207,7 @@ class Document extends Component {
   }
 
   render() {
+    var config = new GlobalConfig();
     return (      
       <div  className="Document-body">
         <ModalPopup           
@@ -225,7 +224,7 @@ class Document extends Component {
             sentenceId ={key}
             sentenceOffset={item.range[0]}
             type = {item.type}    
-            menuItems={this.config.getMenuItems(item.raw)}      
+            menuItems={config.getMenuItems(item.raw)}      
             text = {item.raw}/>          
           )}
         </div>

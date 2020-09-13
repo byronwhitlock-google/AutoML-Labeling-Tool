@@ -86,27 +86,24 @@ module.exports = class AnnotatedDocument {
     let data =  ""
     let jsonFileExists=true;
     try {
-      console.error("About to read document "+ jsonlFilename)
-      data = await this.gcs.readDocument(jsonlFilename)    
+      console.log("About to read document "+ jsonlFilename)
+      data = await this.gcs.readJsonDocument(jsonlFilename)    
     } catch (e)
     {
-      if (e.message == "not found") {
-         jsonFileExists=false;;
-      } else {
-        throw new Error(e.message)
-      }
+      console.log(`${jsonlFilename} does not exist`)
+      jsonFileExists=false; // not found comes as an exception. excuse the sloppy handling    
     }
     
     if (jsonFileExists){      
       //return JSON.parse(data);
-      return data;
-      
+      return data;      
     } else {
       // read the data
       // run through the sentence splitter
       //  reformat to jsonl format
-      console.error("About to read document "+ filename)
+      console.log("About to read document "+ filename)
       let data = await this.gcs.readDocument(filename);
+      console.log(`Got document length: ${data.length}`)
       if (data.length > 9999) // we don't support documents > 10k chars
       {
           throw new Error( 'Document length greater than 10,000 characters not supported')

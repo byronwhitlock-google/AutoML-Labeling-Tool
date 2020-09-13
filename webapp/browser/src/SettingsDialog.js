@@ -75,17 +75,17 @@ export default function  SettingsDialog(props) {
 
          <Divider />
 
-        <ListItem>
-          <form className={classes.root} noValidate autoComplete="off">
-            <TextField id="projectId" label="Project ID"  onChange={handleUpdateProjectId} defaultValue={config.projectId}/>
-          </form>
-        </ListItem> 
+
          <ListItem>
           <form className={classes.root} noValidate autoComplete="off">
             <TextField id="bucketName" label="Bucket Name" onChange={handleUpdateBucketName} defaultValue={config.bucketName}/>
           </form>
         </ListItem> 
-
+        <ListItem>
+          <form className={classes.root} noValidate autoComplete="off">
+            <TextField id="projectId" label="Project ID (optional)"  onChange={handleUpdateProjectId} defaultValue={config.projectId}/>
+          </form>
+        </ListItem> 
       </List>
     </Dialog>
   );
