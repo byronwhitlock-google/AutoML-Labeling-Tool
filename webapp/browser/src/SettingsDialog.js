@@ -19,7 +19,7 @@ import Logout from './Logout.js'
 import Divider from '@material-ui/core/Divider';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import TextField from '@material-ui/core/TextField';
-
+import GlobalConfig from './lib/GlobalConfig.js'
 
 const useStyles = makeStyles((theme) =>({
   root: {
@@ -37,13 +37,25 @@ const useStyles = makeStyles((theme) =>({
 export default function  SettingsDialog(props) {
   const classes = useStyles();
   const { onClose, selectedValue, open } = props;
+  var config = new GlobalConfig();
 
   const handleClose = () => {
     onClose(selectedValue);
+    setTimeout(()=>window.location.reload(true),1);
   };
 
   const handleListItemClick = (value) => {
     onClose(value);
+  };
+
+  const handleUpdateProjectId = (evt)=> {
+    config.projectId = evt.target.value;
+    config.persist();
+  };
+
+  const handleUpdateBucketName = (evt)=> {
+    config.bucketName = evt.target.value;
+    config.persist();
   };
 
   // always turns into table layout for what you want. ;) <font size=+2><blink>old tricks are best</bink></font>
@@ -65,12 +77,12 @@ export default function  SettingsDialog(props) {
 
         <ListItem>
           <form className={classes.root} noValidate autoComplete="off">
-            <TextField id="projectId" label="Project ID" />
+            <TextField id="projectId" label="Project ID"  onChange={handleUpdateProjectId} defaultValue={config.projectId}/>
           </form>
         </ListItem> 
          <ListItem>
           <form className={classes.root} noValidate autoComplete="off">
-            <TextField id="bucketName" label="Bucket Name" />
+            <TextField id="bucketName" label="Bucket Name" onChange={handleUpdateBucketName} defaultValue={config.bucketName}/>
           </form>
         </ListItem> 
 

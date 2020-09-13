@@ -43,7 +43,7 @@ class App extends Component {
     this.forceUpdateHandler = this.forceUpdateHandler.bind(this);
     this.handleLoginSuccess = this.handleLoginSuccess.bind(this);
     this.handleLoginFailure = this.handleLoginFailure.bind(this)
-
+    // load this from a cookie instead.
     this.config = new GlobalConfig();
   }
 
@@ -113,7 +113,6 @@ class App extends Component {
       />
         <blockquote>
           <h2>{this.state.isLoggedIn?this.state.selectedDocument:'...'}</h2>
-          <h3>{this.state.accessToken}</h3>
         </blockquote>
         <hr/>
         <blockquote>

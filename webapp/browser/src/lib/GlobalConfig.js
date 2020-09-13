@@ -15,10 +15,17 @@
 */
 
 class GlobalConfig {
-  clientId =
-  '976239279537-uo7h85trcol8nl5shb0k9ai7iufbs2ta.apps.googleusercontent.com';
-  bucketName = "byrons-bucket"
-  projectId =  "byron-internal"
+    // This only changes per server installation!
+  clientId =  '976239279537-uo7h85trcol8nl5shb0k9ai7iufbs2ta.apps.googleusercontent.com';
+
+  constructor(){
+    this.bucketName = localStorage.getItem("bucketName")
+    this.projectId = localStorage.getItem("projectId")
+  }
+  persist() {
+    localStorage.setItem("bucketName",this.bucketName)
+    localStorage.setItem("projectId",this.projectId)
+  }
   menuItems = [
       {
         key: "problem",
