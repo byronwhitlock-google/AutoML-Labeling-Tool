@@ -59,6 +59,15 @@ module.exports = class CloudStorage extends GoogleCloud {
       path += "?alt=media"
 
     var res = await this.httpGet(path);
+    /// since we didn't check the http return code look at the text to see if we got not found
+    // AND since we aren't looking at json for errors do this funky monkey
+    if (res.startsWith("No such object: ") || res.startsWith("Not Found"))
+    {
+      throw new Error(res)
+      return "";
+    }
+
+    //Dumper(res)
     return res;
 
   }

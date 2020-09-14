@@ -64,7 +64,7 @@ app.get('/load_document', async (req, res) => {
         });    
 
         var data = await doc.load(req.query.d);
-        //console.log(Dumper(data))
+        console.log("We got some data from load_document len:"+ data.length)
         res.send({'data': data});
     } catch (e) {
           Dumper(e)

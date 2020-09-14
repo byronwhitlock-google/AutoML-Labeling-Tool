@@ -24,7 +24,7 @@ import GlobalConfig from './lib/GlobalConfig.js'
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Typography from '@material-ui/core/Typography';
-
+import ModalPopup from './ModalPopup.js'
 import SettingsOutlineIcon from '@material-ui/icons/Settings';
 
 
@@ -39,21 +39,27 @@ class App extends Component {
     isLoggedIn: false,
     userProfile: null,
     accessToken: null,
-    documentList: []
+    documentList: [],
+    error : {
+        title:null,
+        content:null,
+        isOpen:false
+      }
   };
   
   constructor(props) {
     super(props);
     // This binding is necessary to make `this` work in the callback
     this.handleDocumentUpdate = this.handleDocumentUpdate.bind(this);
-    this.handleInputChanged = this.handleInputChanged.bind(this);    
     this.forceUpdateHandler = this.forceUpdateHandler.bind(this);
     this.handleLoginSuccess = this.handleLoginSuccess.bind(this);
     this.handleLoginFailure = this.handleLoginFailure.bind(this)
-
+    this.handleErrorClose = this.handleErrorClose.bind(this)
+    this.setError = this.setError.bind(this)
 
     // set selected document from the url string
     this.state.selectedDocument = window.location.pathname.replace(/^\/+/g, '');
+    this.config = new GlobalConfig();
   }
 
   // this is evil but i don't fully understand react cest la vie
@@ -66,14 +72,29 @@ class App extends Component {
     this.setState({selectedDocument: newSrc}); 
     this.forceUpdateHandler();
   }
-  handleInputChanged(evt) {
-  //  return; // i think this is bubbling extra events
-    this.handleDocumentUpdate(evt.target.value);
-  }
-  
+
   componentDidMount() {
       // Call our fetch function below once the component mounts   
   }
+
+
+
+
+  setError(text,title="Error")
+  {
+      let error = this.state.error
+      error.title = title
+      error.content = text;
+      error.isOpen = true      
+      this.setState({...this.state,error})
+  }
+  
+  handleErrorClose() {
+    let error = this.state.error
+    error.isOpen = false
+    this.setState({...this.state,error})
+  };
+
 
   handleLogoutSuccess (res) {
     
@@ -98,25 +119,39 @@ class App extends Component {
   };
 
   handleLoginFailure (res) {
-    console.error('Login failed: res:', res);
+    console.error('Login failed.');
+    console.log(res)
     this.setState({...this.state,isLoggedIn:false,accessToken:null,userProfile:null})
-    alert(
-      `Failed to login.`
-    );
+    this.setError(`Failed to login. `);
   };
 
+  // does the current state of the app mean we can try to load the document?
+  canLoadDocument()
+  {
+    return (this.state.isLoggedIn && this.config.bucketName  && this.state.selectedDocument);
+  }
+
+  canLoadDocumentList()
+  {
+    return (this.state.isLoggedIn && this.config.bucketName);
+  }
 
   async refreshDocumentList() {
     console.log("refreshDocumentList??!?!?")
-    if(! this.state.isLoggedIn)
+    if(!this.canLoadDocumentList())
     {
-      console.log("Not logged in, returning")
-      return;
+      console.log("Not logged in, missing bucket, or no selected document. Not loading document list.")
+  //    return;
     }
       // Call our fetch function below once the component mounts
     this.loadDocumentList()
       .then(res=>this.parseDocumentList(res))
-      .catch(err => { console.error(`Could not list documents. ${err.message}`)});
+      .catch(err => { 
+        if (err.message == "Not Found")
+          this.setError("Bucket '"+this.config.bucketName+"' "+err.message,"Bucket Not Found")
+        else
+          this.setError(err.message,"Could not List Documents")
+        });
   }
 
   async parseDocumentList(res)
@@ -134,15 +169,15 @@ class App extends Component {
     // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
   async  loadDocumentList () {
     
-    var config = new GlobalConfig();
+    this.config = new GlobalConfig();
     console.log("in loadDocumentList()")
 
     const options = {
       method: "GET",
       headers: { 
         'X-Bearer-Token': this.state.accessToken,
-        'X-Project-Id': config.projectId,
-        'X-Bucket-Name': config.bucketName
+        'X-Project-Id': this.config.projectId,
+        'X-Bucket-Name': this.config.bucketName
       }
     }
     console.log(options)
@@ -155,15 +190,14 @@ class App extends Component {
     }
     return body;
   };
-
+  
   renderSelectedDocument() {
-    if (this.state.isLoggedIn && this.state.selectedDocument)
+    if (this.canLoadDocument())
         return (<h2>{this.state.selectedDocument}</h2>)
     else
       return (<h2>...</h2>)
   }
-  renderDocument () {
-    var config = new GlobalConfig();
+  renderDocument () {    
     if (!this.state.selectedDocument)
       return (          
         <React.Fragment>
@@ -173,7 +207,7 @@ class App extends Component {
           </Typography>
         </React.Fragment>
         )
-    if (!config.bucketName)
+    if (!this.config.bucketName)
       return (          
         <React.Fragment>
           <Typography variant="h6">Bucket name not specified. </Typography>
@@ -182,13 +216,18 @@ class App extends Component {
           </Typography>
         </React.Fragment>
         )
-    if (this.state.isLoggedIn && config.bucketName && this.state.selectedDocument)
+    if (this.state.isLoggedIn && this.config.bucketName && this.state.selectedDocument)
       return (<Document src={this.state.selectedDocument} key={this.state.selectedDocument} accessToken={this.state.accessToken}/> )
   }
   render() {
-    var config = new GlobalConfig();
+    this.config = new GlobalConfig();
     return (
     <div className="App">
+      <ModalPopup           
+        title={this.state.error.title} 
+        content={this.state.error.content} 
+        open={this.state.error.isOpen} 
+        onClose={this.handleErrorClose} />
       <AppHeader 
         isLoggedIn = {this.state.isLoggedIn}
         onLoginSuccess = {this.handleLoginSuccess}

@@ -87,14 +87,13 @@ module.exports = class AnnotatedDocument {
     let jsonFileExists=false;
     try {
       console.log("About to read document "+ jsonlFilename)
-      data = await this.gcs.readJsonDocument(jsonlFilename)    
+      data = await this.gcs.readJsonDocument(jsonlFilename)   
+      jsonFileExists=true; 
     } catch (e)
     {
       console.log(`${jsonlFilename} does not exist >>${e.message}<<`)
-    //  jsonFileExists=false; // not found comes as an exception. excuse the sloppy handling    
+      //jsonFileExists=false; // not found comes as an exception. excuse the sloppy handling    
     }
-    if (data)
-      jsonFileExists=true;
     
     if (jsonFileExists){      
       //return JSON.parse(data);
