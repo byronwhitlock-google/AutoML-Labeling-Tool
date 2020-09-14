@@ -26,6 +26,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Typography from '@material-ui/core/Typography';
 import ModalPopup from './ModalPopup.js'
 import SettingsOutlineIcon from '@material-ui/icons/Settings';
+import DocumentHeader from './DocumentHeader.js'
 
 
 // refresh token
@@ -40,6 +41,7 @@ class App extends Component {
     userProfile: null,
     accessToken: null,
     documentList: [],
+    autoMLDatasetList: [],
     error : {
         title:null,
         content:null,
@@ -56,7 +58,7 @@ class App extends Component {
     this.handleLoginFailure = this.handleLoginFailure.bind(this)
     this.handleErrorClose = this.handleErrorClose.bind(this)
     this.setError = this.setError.bind(this)
-
+    this.refreshAutoMLDatasetList = this.refreshAutoMLDatasetList.bind(this)
     // set selected document from the url string
     this.state.selectedDocument = window.location.pathname.replace(/^\/+/g, '');
     this.config = new GlobalConfig();
@@ -76,9 +78,6 @@ class App extends Component {
   componentDidMount() {
       // Call our fetch function below once the component mounts   
   }
-
-
-
 
   setError(text,title="Error")
   {
@@ -125,6 +124,64 @@ class App extends Component {
     this.setError(`Failed to login. `);
   };
 
+
+  //====== AUTOML =======
+  canLoadAutoMLDatasetList()
+  {
+    return this.canLoadDocument();
+  }
+
+  async refreshAutoMLDatasetList() {
+    console.log("refreshAutoMLDatasetList??!?!?")
+    if(!this.canLoadAutoMLDatasetList())
+    {
+      console.log("canLoadAutoMLDatasetList failed.")
+      return;
+    }
+      // Call our fetch function below once the component mounts
+    this.loadAutoMLDatasetList()
+      .then(res=>this.parseAutoMLDatasetList(res))
+      .catch(err => {this.setError(err.message,"Could not List Documents")});
+  }
+
+  async parseAutoMLDatasetList(res)
+  {
+    if (res.hasOwnProperty('data'))
+    {
+      this.setState({...this.state, autoMLDatasetList: res.data.datasets })
+    }
+    else if (res.hasOwnProperty('error'))
+      throw new Error(res.error)
+    else
+      throw new Error("Unknown Error : "+JSON.stringify(res));
+  }
+  
+    // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
+  async  loadAutoMLDatasetList () {
+    
+    this.config = new GlobalConfig();
+    console.log("in loadAutoMLDatasetList()")
+
+    const options = {
+      method: "GET",
+      headers: { 
+        'X-Bearer-Token': this.state.accessToken,
+        'X-Project-Id': this.config.projectId,
+        'X-Location-Id': this.config.locationId
+      }
+    }
+    console.log(options)
+    const response = await fetch('/list_datasets', options);
+
+    const body = await response.json();
+
+    if (response.status !== 200) {
+      throw Error(body.message) 
+    }
+    return body;
+  };
+
+  //====== CLOUD STORAGE =======
   // does the current state of the app mean we can try to load the document?
   canLoadDocument()
   {
@@ -141,8 +198,10 @@ class App extends Component {
     if(!this.canLoadDocumentList())
     {
       console.log("Not logged in, missing bucket, or no selected document. Not loading document list.")
-  //    return;
+      return;
     }
+    this.refreshAutoMLDatasetList();
+
       // Call our fetch function below once the component mounts
     this.loadDocumentList()
       .then(res=>this.parseDocumentList(res))
@@ -191,13 +250,17 @@ class App extends Component {
     return body;
   };
   
-  renderSelectedDocument() {
-    if (this.canLoadDocument())
-        return (<h2>{this.state.selectedDocument}</h2>)
-    else
-      return (<h2>...</h2>)
-  }
   renderDocument () {    
+
+    if (!this.config.bucketName)
+      return (          
+        <React.Fragment>
+          <Typography variant="h6">Bucket name not specified. </Typography>
+          <Typography>
+             Click your avatar icon in the upper right, then choose a Google Cloud Storage bucket.
+          </Typography>
+        </React.Fragment>
+        )
     if (!this.state.selectedDocument)
       return (          
         <React.Fragment>
@@ -207,15 +270,7 @@ class App extends Component {
           </Typography>
         </React.Fragment>
         )
-    if (!this.config.bucketName)
-      return (          
-        <React.Fragment>
-          <Typography variant="h6">Bucket name not specified. </Typography>
-          <Typography>
-            Select a bucket in settings. Click your avatar icon in the upper right to begin.
-          </Typography>
-        </React.Fragment>
-        )
+
     if (this.state.isLoggedIn && this.config.bucketName && this.state.selectedDocument)
       return (<Document src={this.state.selectedDocument} key={this.state.selectedDocument} accessToken={this.state.accessToken}/> )
   }
@@ -238,13 +293,17 @@ class App extends Component {
         userProfile = {this.state.userProfile}
         documentList = {this.state.documentList}
       />
-        <blockquote>
-          {this.renderSelectedDocument()}
-        </blockquote>
-        <hr/>
-        <blockquote>
-          {this.renderDocument()}
-        </blockquote>    
+      <DocumentHeader  
+        selectedDocument={this.state.selectedDocument}  
+        canLoadDocument={this.canLoadDocument()}
+        autoMLDatasetList={this.state.autoMLDatasetList}
+        selectedAutoMLDataset={this.state.selectedAutoMLDataset}
+        refreshAutoMLDatasetList ={this.refreshAutoMLDatasetList}
+      />
+      <hr/>
+      <blockquote>
+        {this.renderDocument()}
+      </blockquote>    
     </div>
     );
   }

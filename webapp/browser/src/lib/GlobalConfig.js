@@ -21,11 +21,18 @@ class GlobalConfig {
   constructor(){
     this.bucketName = localStorage.getItem("bucketName")
     this.projectId = localStorage.getItem("projectId")
+
+    this.locationId = localStorage.getItem("locationId")
+    if (!this.locationId)  
+      this.locationId = 'us-central1' // default location
   }
+  
   persist() {
     localStorage.setItem("bucketName",this.bucketName)
     localStorage.setItem("projectId",this.projectId)
+    localStorage.setItem("locationId",this.locationId)
   }
+
   menuItems = [
       {
         key: "problem",

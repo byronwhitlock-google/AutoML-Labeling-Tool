@@ -53,6 +53,11 @@ export default function  SettingsDialog(props) {
     config.persist();
   };
 
+  const handleUpdateLocationId = (evt)=> {
+    config.locationId = evt.target.value;
+    config.persist();
+  };
+
   const handleUpdateBucketName = (evt)=> {
     config.bucketName = evt.target.value;
     config.persist();
@@ -83,9 +88,14 @@ export default function  SettingsDialog(props) {
         </ListItem> 
         <ListItem>
           <form className={classes.root} noValidate autoComplete="off">
-            <TextField id="projectId" label="Project ID (optional)"  onChange={handleUpdateProjectId} defaultValue={config.projectId}/>
+            <TextField id="projectId" label="Project ID"  onChange={handleUpdateProjectId} defaultValue={config.projectId}/>
           </form>
         </ListItem> 
+        <ListItem>
+          <form className={classes.root} noValidate autoComplete="off">
+            <TextField id="locationId" label="Location"  onChange={handleUpdateLocationId} defaultValue={config.locationId}/>
+          </form>
+        </ListItem>         
       </List>
     </Dialog>
   );
