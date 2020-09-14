@@ -21,22 +21,17 @@ const CloudStorage = require('./lib/cloud-storage.js')
 const fs = require('fs');
 const express = require('express');
 const app = express();
+const path = require('path');
 const port = process.env.PORT || 5000;
 
 const AutoML = require('lib/automl.js');
 const AnnotatedDocument = require('lib/annotated-document.js');
-const UserConfig =  require('user-config.js')
 const BodyParser = require('body-parser');
 
 app.use(BodyParser.json());
 
 // console.log that your server is up and running
 app.listen(port, () => console.log(`Listening on port ${port}`));
-
-// create a GET route
-app.get('/express_backend', (req, res) => {
-  res.send({ express: 'YOUR EXPRESS BACKEND IS CONNECTED TO REACT' });
-});
 
 app.get('/list_documents', async (req, res) => {
     try {        
@@ -119,4 +114,11 @@ app.get('/list_datasets', async (req, res) => {
         res.send({'error': e.message, 'trace':e.stack });
     }
 });
+
+// production endpoint served from here
+app.use(express.static(path.join(__dirname, '../browser/build')));
+app.get('/*', function(req, res) {
+  res.sendFile(path.join(__dirname, '../browser/build', 'index.html'));
+});
+
 
