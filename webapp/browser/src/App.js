@@ -25,6 +25,9 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Typography from '@material-ui/core/Typography';
 
+import SettingsOutlineIcon from '@material-ui/icons/Settings';
+
+
 // refresh token
 import { refreshTokenSetup } from './lib/refreshToken';
 
@@ -81,7 +84,7 @@ class App extends Component {
   }
 
   handleLoginSuccess (res) {
-
+    
     this.setState({...this.state,isLoggedIn:true,accessToken:res.accessToken, userProfile:res.profileObj})
     // async update the document list 
     this.refreshDocumentList()
@@ -95,7 +98,8 @@ class App extends Component {
   };
 
   handleLoginFailure (res) {
-    console.log('Login failed: res:', res);
+    console.error('Login failed: res:', res);
+    this.setState({...this.state,isLoggedIn:false,accessToken:null,userProfile:null})
     alert(
       `Failed to login.`
     );
@@ -104,11 +108,15 @@ class App extends Component {
 
   async refreshDocumentList() {
     console.log("refreshDocumentList??!?!?")
-
+    if(! this.state.isLoggedIn)
+    {
+      console.log("Not logged in, returning")
+      return;
+    }
       // Call our fetch function below once the component mounts
     this.loadDocumentList()
       .then(res=>this.parseDocumentList(res))
-      .catch(err => window.alert(`Could not list documents. ${err.message}`));
+      .catch(err => { console.error(`Could not list documents. ${err.message}`)});
   }
 
   async parseDocumentList(res)
@@ -155,17 +163,27 @@ class App extends Component {
       return (<h2>...</h2>)
   }
   renderDocument () {
-      if (!this.state.selectedDocument)
-        return (          
-          <React.Fragment>
-            <Typography variant="h6">No document selected. </Typography>
-            <Typography>
-              Select a document using the <MenuIcon/> icon to begin.
-            </Typography>
-          </React.Fragment>
-          )
-      if (this.state.isLoggedIn)
-        return (<Document src={this.state.selectedDocument} key={this.state.selectedDocument} accessToken={this.state.accessToken}/> )
+    var config = new GlobalConfig();
+    if (!this.state.selectedDocument)
+      return (          
+        <React.Fragment>
+          <Typography variant="h6">No document selected. </Typography>
+          <Typography>
+            Select a document using the <MenuIcon/> icon to begin.
+          </Typography>
+        </React.Fragment>
+        )
+    if (!config.bucketName)
+      return (          
+        <React.Fragment>
+          <Typography variant="h6">Bucket name not specified. </Typography>
+          <Typography>
+            Select a bucket in settings. Click your avatar icon in the upper right to begin.
+          </Typography>
+        </React.Fragment>
+        )
+    if (this.state.isLoggedIn && config.bucketName && this.state.selectedDocument)
+      return (<Document src={this.state.selectedDocument} key={this.state.selectedDocument} accessToken={this.state.accessToken}/> )
   }
   render() {
     var config = new GlobalConfig();
