@@ -3,7 +3,7 @@
 #  docker build -t automl-labeling-tool
 #  docker run -p 5000:5000 -t automl-labeling-tool
 # Go to port 5000 on localhost to see.
-from node
+from node:alpine
 WORKDIR /app
 
 RUN npm install pm2 -g
@@ -20,9 +20,10 @@ RUN npm install
 WORKDIR /app
 COPY . .
 
-WORKDIR /app/webapp/server
-RUN npm build
+WORKDIR /app/webapp/browser
+RUN npm run-script build
 
+WORKDIR /app/webapp/server
 EXPOSE 5000
 CMD ["pm2-runtime", "server.js"]
 

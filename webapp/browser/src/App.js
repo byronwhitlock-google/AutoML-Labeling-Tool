@@ -141,7 +141,15 @@ class App extends Component {
       // Call our fetch function below once the component mounts
     this.loadAutoMLDatasetList()
       .then(res=>this.parseAutoMLDatasetList(res))
-      .catch(err => {this.setError(err.message,"Could not List Documents")});
+      .catch(err => {
+        var message = err.message
+        if (err.message == 'List of found errors:	1.Field: parent; Message: Required field is invalid	')
+          message = "Invalid ProjectId or LocationId. Check User Settings. ";
+
+        console.error(message)
+        this.setError(message,"Could not initialize AutoML")
+        
+        });
   }
 
   async parseAutoMLDatasetList(res)

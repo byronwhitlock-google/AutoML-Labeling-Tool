@@ -19,10 +19,10 @@ class GlobalConfig {
   clientId =  '976239279537-uo7h85trcol8nl5shb0k9ai7iufbs2ta.apps.googleusercontent.com';
 
   constructor(){
-    this.bucketName = localStorage.getItem("bucketName")
-    this.projectId = localStorage.getItem("projectId")
+    this.bucketName = localStorage.getItem("bucketName")|| ""
+    this.projectId = localStorage.getItem("projectId") || ""
 
-    this.locationId = localStorage.getItem("locationId")
+    this.locationId = localStorage.getItem("locationId")|| ""
     if (!this.locationId)  
       this.locationId = 'us-central1' // default location
   }
