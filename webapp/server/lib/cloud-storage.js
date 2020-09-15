@@ -92,11 +92,11 @@ module.exports = class CloudStorage extends GoogleCloud {
   }
   
   // read from cloud storage syncronously.
-  async listDocuments()   {
+  async listDocuments(suffix=".txt")   {
 
     //https://cloud.google.com/storage/docs/json_api/v1/objects/get
     //TODO: Fetch next page tokens. rightn now buggy doesn't work. only fetches 1000 items maxs
-    // serously cant do ouath flow usign the standard lib? wtf? annoying as heck.
+    // we would ues the standard libaray that handles this but it doesn't support oauth 
     var path = `/storage/v1/b/${this.bucketName}/o/`
     var documentList = []
     var maxItems = 2000;
@@ -111,7 +111,7 @@ module.exports = class CloudStorage extends GoogleCloud {
     
         for(var i=0;i<json.items.length;i++)
         {
-          if (json.items[i].name.endsWith(".txt"))
+          if (json.items[i].name.endsWith(suffix))
           {
             documentList.push(json.items[i].name)
           }

@@ -29,14 +29,19 @@ import MenuIcon from '@material-ui/icons/Menu';
 import DescriptionTwoToneIcon from '@material-ui/icons/DescriptionTwoTone';
 import Tooltip from '@material-ui/core/Tooltip';
 import GlobalConfig from './lib/GlobalConfig.js'
+import FileSaver  from 'file-saver';
+import GetAppIcon from '@material-ui/icons/GetApp';
+import Blob from 'blob'
 
 class NavigationDrawer extends Component {
   constructor(props) {
       super(props);
 
+    this.handleDownloadClick = this.handleDownloadClick.bind(this)
      // this.config = props.config
-    console.log("NavigationDrawer: WTF??!?!?")
+    console.log("NavigationDrawer props")
     console.log(props)
+    
   }
 
   classes = makeStyles({
@@ -53,6 +58,23 @@ class NavigationDrawer extends Component {
   };
 
 
+
+
+  async handleDownloadClick() {
+    var config = new GlobalConfig();
+    
+    try {
+      // grab the csv, stub for now.
+      var csv = await this.props.loadCsv()
+      var blob = new Blob([csv.data], {type: "text/plain;charset=utf-8"});
+      FileSaver.saveAs(blob, `automl-labeled-${config.bucketName}.csv`);
+    } 
+    catch (e)
+    {
+      this.props.setError(e.message,"Download Failed")
+    }
+  }
+
   handleDocumentClick =  (newDocumentSrc) => {
     // do a full refresh for new docuemnt keep things snappy?
     window.location = '/'+newDocumentSrc
@@ -68,6 +90,16 @@ class NavigationDrawer extends Component {
     this.setState({ ...this.state, isOpen: !this.state.isOpen });
   };
 
+  renderDownloadCsv()
+  {
+    if (this.props.documentList.length > 0)
+      return (
+        <ListItem onClick={this.handleDownloadClick} button key="download-csv">
+          <GetAppIcon color="primary"/>
+          <ListItemText primary="Download Training CSV" secondary="AutoML Natural Language format"/>
+        </ListItem>
+        )
+  }
   list() { 
     var config = new GlobalConfig();
     return (    
@@ -79,16 +111,22 @@ class NavigationDrawer extends Component {
       onClick={this.toggleDrawer(false)}
       onKeyDown={this.toggleDrawer(false)}
     >
-    <List>    
-        <ListItem selected key="">
-        <ListIcon/>
+    <List color="primary">    
+        <ListItem  key="">
+          <ListIcon/>
           <ListItemText primary={config.bucketName} />
         </ListItem>
         <Divider/>    
+        {this.renderDownloadCsv()}
+        <Divider/>    
         {this.props.documentList.map((text, index) => (
-          <ListItem button key={text} selected={text.localeCompare(this.props.selectedDocument)==0? true:false} primary={text} >
-          <DescriptionTwoToneIcon/>
-            <ListItemText onClick={()=>this.handleDocumentClick(text)} primary={text} />
+          <ListItem button  
+          onClick={()=>this.handleDocumentClick(text)} 
+          key={text} 
+          selected={text.localeCompare(this.props.selectedDocument)==0? true:false} 
+          primary={text} >
+          <DescriptionTwoToneIcon  color="action"/>
+            <ListItemText primary={text} />
           </ListItem>
         ))}
       </List>

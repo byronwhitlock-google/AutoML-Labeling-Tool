@@ -25,6 +25,7 @@ const path = require('path');
 const port = process.env.PORT || 5000;
 
 const AutoML = require('lib/automl.js');
+const DownloadCsv = require('lib/download-csv');
 const AnnotatedDocument = require('lib/annotated-document.js');
 const BodyParser = require('body-parser');
 
@@ -41,8 +42,8 @@ app.get('/list_documents', async (req, res) => {
             projectId: req.header("X-Project-Id"),
             bucketName: req.header("X-Bucket-Name"),
         }
-        console.log("trying to list docs")
-        console.log(options)
+        //console.log("trying to list docs")
+        //console.log(options)
 
         var gcs = new CloudStorage(options);    
 
@@ -92,7 +93,23 @@ app.post('/save_document',async(req,res) =>{
     }
 });
 
+app.get('/download_csv', async (req, res) => {    
+try {
+    var csv = new DownloadCsv({
+        accessToken: req.header("X-Bearer-Token"),
+        projectId: req.header("X-Project-Id"),
+        bucketName: req.header("X-Bucket-Name"),
+    });    
 
+    var data = await csv.download();
+    console.log("We got some data from download_csv len:"+ data.length)
+    res.send({'data': data});
+    console.log ({'data': data})
+} catch (e) {
+        Dumper(e)
+        res.send({'error': e.message, 'trace':e.stack });
+}
+});
 
 app.get('/list_datasets', async (req, res) => {
     try {        

@@ -57,6 +57,7 @@ class App extends Component {
     this.handleLoginSuccess = this.handleLoginSuccess.bind(this);
     this.handleLoginFailure = this.handleLoginFailure.bind(this)
     this.handleErrorClose = this.handleErrorClose.bind(this)
+    this.loadCsv = this.loadCsv.bind(this)
     this.setError = this.setError.bind(this)
     this.refreshAutoMLDatasetList = this.refreshAutoMLDatasetList.bind(this)
     // set selected document from the url string
@@ -124,11 +125,44 @@ class App extends Component {
     this.setError(`Failed to login. `);
   };
 
+  //====== DOWNLOAD CSV ====
+  async loadCsv () {
+    
+    this.config = new GlobalConfig();
+    console.log("in loadCsv()")
+
+    const options = {
+      method: "GET",
+      headers: { 
+        'X-Bearer-Token': this.state.accessToken,
+        'X-Project-Id': this.config.projectId,
+        'X-Bucket-Name': this.config.bucketName
+      }
+    }
+    console.log(options)
+    const response = await fetch('/download_csv', options);
+
+    const res = await response.json();
+
+    if (response.status !== 200) {
+      throw Error(res.message) 
+    }
+
+    if (res.hasOwnProperty('data'))
+    {
+      return res;
+    }
+    else if (res.hasOwnProperty('error'))
+      throw new Error(res.error)
+    else
+      throw new Error("Unknown Error : "+JSON.stringify(res));
+  };
 
   //====== AUTOML =======
   canLoadAutoMLDatasetList()
   {
-    return this.canLoadDocument();
+    // TODO: fix dataset loading buggy now.
+    return false;//  this.canLoadDocument();
   }
 
   async refreshAutoMLDatasetList() {
@@ -298,6 +332,8 @@ class App extends Component {
         onLogoutSuccess =  {this.handleLogoutSuccess}
         selectedDocument={this.state.selectedDocument}  
         handleDocumentUpdate={this.handleDocumentUpdate} 
+        setError = {this.setError}
+        loadCsv = {this.loadCsv}
         userProfile = {this.state.userProfile}
         documentList = {this.state.documentList}
       />
