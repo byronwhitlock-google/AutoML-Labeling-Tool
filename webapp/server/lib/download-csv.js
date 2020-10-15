@@ -33,7 +33,22 @@ module.exports = class DownloadCsv {
     {
       csv.push(`,gs://${this.gcs.bucketName}/${docs[i]}`);
     }
+
+    if (!csv.length > 0)
+    {
+      throw new error("No Labeled Documents Found")
+    }
     return csv.join("\n")
+  }
+
+  async persist(name)
+  {
+    var csvData = await this.download()
+    
+    console.log("About to persist csv data")
+    console.log(csvData)
+
+    this.gcs.writeDocument(name,csvData)
   }
   
 }

@@ -81,7 +81,6 @@ app.post('/save_document',async(req,res) =>{
             projectId: req.header("X-Project-Id"),
             bucketName: req.header("X-Bucket-Name"),
         });    
-
         
         // TODO: validate json against schema        
         var data = await doc.save(req.query.d,req.body);
@@ -95,22 +94,22 @@ app.post('/save_document',async(req,res) =>{
 
 app.get('/generate_csv', async (req, res) => {    
     try {
+        const bucketName = req.header("X-Bucket-Name") 
         var csv = new DownloadCsv({
             accessToken: req.header("X-Bearer-Token"),
             projectId: req.header("X-Project-Id"),
-            bucketName: req.header("X-Bucket-Name"),
-        });    
-
-        var data = await csv.download();
-        console.log("We got some data from download_csv len:"+ data.length)
-        // so now we store the data cloud storage, and then return the path
-    // res.send({'data': data});
-        res.send({'data': "the bucket data csv  file should be this data"})
-        console.log ({'data': "the bucket data csv  file should be this data"})
+            bucketName: bucketName,
+        });   
+        
+        // persist downloads and saves to bucket
+        csv.persist("training.csv");        
+        var data = {'data': `${bucketName}/training.csv`}
+        res.send(data)
+        console.log (data)
     } catch (e) {
         Dumper(e)
         res.send({'error': e.message, 'trace':e.stack });
-}
+    }
 });
 
 app.get('/list_datasets', async (req, res) => {

@@ -45,14 +45,14 @@ class DocumentApi extends BaseApi {
 
   }
   
-  async saveDocumentContent(doc) {
+  async saveDocumentContent(documentPath,doc) {
     // simple type checking, 
     // TODO: json schema validation
     if (doc.hasOwnProperty('annotations') && 
         doc.hasOwnProperty('text_snippet') && 
         doc.text_snippet.hasOwnProperty('content'))
     {
-      return this.post('/save_document?d='+this.props.src, doc)
+      return this.post(`/save_document?d=${documentPath}`, doc)
     }
     else
     {

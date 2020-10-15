@@ -68,11 +68,11 @@ class SentenceTokenizer {
       annotations.push({
         text_extraction: {
           text_segment: {
-            start_offset: token.startOffset + globalStartOffset,
-            end_offset: token.endOffset + globalStartOffset
-          },
-          display_name: title
-        }
+            end_offset: token.endOffset + globalStartOffset,
+            start_offset: token.startOffset + globalStartOffset            
+          }          
+        },
+        display_name: title
       });      
     }
     return annotations

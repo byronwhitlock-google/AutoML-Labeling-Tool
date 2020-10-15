@@ -76,7 +76,7 @@ class SentenceAnnotator extends Component {
         {
           //  so and eo ažre bounded by the length of the sentence so no out of range errors.
           //console.log(`${sentenceStartOffset} so ${so} eo ${eo} ${sentenceEndOffset}`)
-          var menuItem = this.config.getMenuItemByText(annotation.text_extraction.display_name);
+          var menuItem = this.config.getMenuItemByText(annotation.display_name);
         //  words.push(sentence.substr(so- sentenceStartOffset,eo- sentenceStartOffset))
 //console.log(`(${so}- ${sentenceStartOffset},${eo}- ${sentenceStartOffset})`)
 //console.log(so- sentenceStartOffset,eo- sentenceStartOffset)

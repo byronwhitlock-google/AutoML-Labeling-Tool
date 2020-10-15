@@ -112,7 +112,7 @@ class Document extends Component {
   {
       try {
         var dApi = new DocumentApi(this.props.accessToken)
-        dApi.saveDocumentContent(doc)
+        dApi.saveDocumentContent(this.props.src, doc)
       } catch (err) {
           this.setError(err.message,"Error Saving Document");
       }
