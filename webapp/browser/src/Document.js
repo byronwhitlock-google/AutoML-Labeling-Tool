@@ -17,9 +17,9 @@ import React, { Component } from 'react';
 import './App.css';
 import RenderSentence from './RenderSentence.js'
 import ModalPopup from './ModalPopup.js'
-import {split, Syntax} from "sentence-splitter";
 import SentenceTokenizer from './lib/SentenceTokenizer.js'
 import GlobalConfig from './lib/GlobalConfig.js'
+import DocumentApi from './api/DocumentApi.js'
 
 class Document extends Component {
   constructor(props) {
@@ -41,14 +41,7 @@ class Document extends Component {
     };
 
   async componentDidMount() {
-      // Call our fetch function below once the component mounts
-    this.loadDocumentContent()
-      .then(res=>this.parseDocument(res))
-      .catch(err => console.log(err));
-    
-    //let menuItems = this.state.menuItems;
-    //menuItems = await this.loadMenuItems();
-    //this.setState({...this.state,menuItems})
+    this.loadDocument()
   }
 
   onLabelUpdate(sentenceId,menuItem)
@@ -86,10 +79,7 @@ class Document extends Component {
 
     // update state
     this.setState({...this.state, documentData: documentData})
-
   }
-
-
     
   setError(text,title="Error Loading Document")
   {
@@ -107,103 +97,25 @@ class Document extends Component {
     this.setState({...this.state,state})
   };
 
+  async loadDocument()
+  {
+    try {
+      var dApi = new DocumentApi(this.props.accessToken);
+      var doc = await dApi.loadDocumentContent(this.props.src)
+      this.setState({...this.state,...doc})      
+    } catch (err) {
+      this.setError(err.message)
+    }
+  }
+
   async saveDocument(doc)
   {
-    // simple type checking, 
-    // TODO: json schema validation
-    if (doc.hasOwnProperty('annotations') && 
-        doc.hasOwnProperty('text_snippet') && 
-        doc.text_snippet.hasOwnProperty('content'))
-    {
-      try
-      {
-
-        var res = await this.saveDocumentContent(doc)
-
-        if (res.hasOwnProperty('error'))
-          this.setError(res.error,"Error Saving Document");
-
-      } catch (e) {
-          this.setError(JSON.stringify(e))
+      try {
+        var dApi = new DocumentApi(this.props.accessToken)
+        dApi.saveDocumentContent(doc)
+      } catch (err) {
+          this.setError(err.message,"Error Saving Document");
       }
-    }
-     else
-     {
-       this.setError("Cannot save, Invalid Document")
-     }
-
-  }
-
-  parseDocument(res)
-  {
-    if (res.hasOwnProperty('data') && 
-        res.data.hasOwnProperty('text_snippet') && 
-        res.data.text_snippet.hasOwnProperty('content'))
-    {
-      console.log("*****Reparsing data from file****")
-      let documentData = res.data
-      let sentencesSplit = split(res.data.text_snippet.content)
-      console.log(sentencesSplit)
-
-      this.setState({...this.state, 
-        documentData: res.data,
-        sentenceData: sentencesSplit 
-      });
-    }
-    else if (res.hasOwnProperty('error'))
-      this.setError(res.error);
-    else
-      this.setError("Unknown Error : "+JSON.stringify(res));
-  }
-  
-  getHeaders()
-  {
-    
-  }
-    // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
-  loadDocumentContent = async () => {
-    var config = new GlobalConfig();
-    const response = await fetch(`/load_document?d=${this.props.src}`,{
-          method: "GET",
-          headers: { 
-            'X-Project-Id': config.projectId,
-            'X-Bearer-Token': this.props.accessToken,
-            'X-Bucket-Name': config.bucketName
-        }});
-    console.log(`/load_document?d=${this.props.src}`)
-    console.log({headers: { 
-            'X-Project-Id': config.projectId,
-            'X-Bearer-Token': this.props.accessToken,
-            'X-Bucket-Name': config.bucketName
-        }})
-    const body = await response.json();
-
-    if (response.status !== 200) {
-      throw Error(body.message) 
-    }
-    return body;
-  };
-  
-  async saveDocumentContent(doc) {
-    var config = new GlobalConfig();
-    const response = await fetch('/save_document?d='+this.props.src, {
-          method: "POST",
-          headers: { 
-            'Content-Type': 'application/json' ,
-            'X-Bearer-Token': this.props.accessToken,
-            'X-Project-Id': config.projectId,
-            'X-Bucket-Name': config.bucketName
-          },
-          body: JSON.stringify(doc)
-        });
-    console.log('/save_document?d='+this.props.src)
-    console.log(doc)
-    const body = await response.json();
-    console.log(body)
-    if (response.status !== 200) {
-      throw Error(body.message) 
-    }
-    return body;
   }
 
   render() {

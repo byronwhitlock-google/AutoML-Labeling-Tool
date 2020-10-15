@@ -27,7 +27,9 @@ import Typography from '@material-ui/core/Typography';
 import ModalPopup from './ModalPopup.js'
 import SettingsOutlineIcon from '@material-ui/icons/Settings';
 import DocumentHeader from './DocumentHeader.js'
-
+import GenerateCsvApi from './api/GenerateCsvApi.js'
+import DocumentListApi from './api/DocumentListApi.js'
+import PredictionApi from './api/PredictionApi.js'
 
 // refresh token
 import { refreshTokenSetup } from './lib/refreshToken';
@@ -49,6 +51,8 @@ class App extends Component {
       }
   };
   
+  // TODO: Refactor all API calls to another library 
+  // TODO: Switch to using context for access token instead of state 
   constructor(props) {
     super(props);
     // This binding is necessary to make `this` work in the callback
@@ -57,7 +61,8 @@ class App extends Component {
     this.handleLoginSuccess = this.handleLoginSuccess.bind(this);
     this.handleLoginFailure = this.handleLoginFailure.bind(this)
     this.handleErrorClose = this.handleErrorClose.bind(this)
-    this.loadCsv = this.loadCsv.bind(this)
+    //this.loadCsv = this.loadCsv.bind(this)
+    this.generateCsv = this.generateCsv.bind(this)
     this.setError = this.setError.bind(this)
     this.refreshAutoMLDatasetList = this.refreshAutoMLDatasetList.bind(this)
     // set selected document from the url string
@@ -125,44 +130,12 @@ class App extends Component {
     this.setError(`Failed to login. `);
   };
 
-  //====== DOWNLOAD CSV ====
-  async loadCsv () {
-    
-    this.config = new GlobalConfig();
-    console.log("in loadCsv()")
-
-    const options = {
-      method: "GET",
-      headers: { 
-        'X-Bearer-Token': this.state.accessToken,
-        'X-Project-Id': this.config.projectId,
-        'X-Bucket-Name': this.config.bucketName
-      }
-    }
-    console.log(options)
-    const response = await fetch('/download_csv', options);
-
-    const res = await response.json();
-
-    if (response.status !== 200) {
-      throw Error(res.message) 
-    }
-
-    if (res.hasOwnProperty('data'))
-    {
-      return res;
-    }
-    else if (res.hasOwnProperty('error'))
-      throw new Error(res.error)
-    else
-      throw new Error("Unknown Error : "+JSON.stringify(res));
-  };
-
   //====== AUTOML =======
   canLoadAutoMLDatasetList()
   {
     // TODO: fix dataset loading buggy now.
-    return false;//  this.canLoadDocument();
+    //return false;//  
+    this.canLoadDocument();
   }
 
   async refreshAutoMLDatasetList() {
@@ -172,57 +145,36 @@ class App extends Component {
       console.log("canLoadAutoMLDatasetList failed.")
       return;
     }
-      // Call our fetch function below once the component mounts
-    this.loadAutoMLDatasetList()
-      .then(res=>this.parseAutoMLDatasetList(res))
-      .catch(err => {
-        var message = err.message
-        if (err.message == 'List of found errors:	1.Field: parent; Message: Required field is invalid	')
-          message = "Invalid ProjectId or LocationId. Check User Settings. ";
+    try {
+      var pApi = new PredictionApi(this.state.accessToken);
+      var datasets = await pApi.loadAutoMLDatasetList()
 
-        console.error(message)
-        this.setError(message,"Could not initialize AutoML")
-        
-        });
+      //console.log(`we got ${documents} from loadDocumentList`)
+      this.setState({...this.state, autoMLDatasetList: datasets })
+    } catch (err){
+      if (err.message == "Not Found")
+        this.setError("Bucket '"+this.config.bucketName+"' "+err.message,"Bucket Not Found")
+      else
+        this.setError(err.message,"Could not List Documents")
+    }    
   }
 
-  async parseAutoMLDatasetList(res)
-  {
-    if (res.hasOwnProperty('data'))
+  // ====== Generate CSV =====
+  async generateCsv() {
+
+    var csvApi = new GenerateCsvApi(this.state.accessToken)
+    if(!this.canLoadDocumentList())
     {
-      this.setState({...this.state, autoMLDatasetList: res.data.datasets })
+      console.log("Not logged in, missing bucket, or no selected document. Not calling generateCsv .")
+      return;
     }
-    else if (res.hasOwnProperty('error'))
-      throw new Error(res.error)
-    else
-      throw new Error("Unknown Error : "+JSON.stringify(res));
+    try {
+      return csvApi.generateCsv()
+    } catch(err) {
+        this.setError(err.message,"Could not Generate CSV")
+    }
   }
-  
-    // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
-  async  loadAutoMLDatasetList () {
-    
-    this.config = new GlobalConfig();
-    console.log("in loadAutoMLDatasetList()")
-
-    const options = {
-      method: "GET",
-      headers: { 
-        'X-Bearer-Token': this.state.accessToken,
-        'X-Project-Id': this.config.projectId,
-        'X-Location-Id': this.config.locationId
-      }
-    }
-    console.log(options)
-    const response = await fetch('/list_datasets', options);
-
-    const body = await response.json();
-
-    if (response.status !== 200) {
-      throw Error(body.message) 
-    }
-    return body;
-  };
-
+ 
   //====== CLOUD STORAGE =======
   // does the current state of the app mean we can try to load the document?
   canLoadDocument()
@@ -244,53 +196,19 @@ class App extends Component {
     }
     this.refreshAutoMLDatasetList();
 
-      // Call our fetch function below once the component mounts
-    this.loadDocumentList()
-      .then(res=>this.parseDocumentList(res))
-      .catch(err => { 
-        if (err.message == "Not Found")
-          this.setError("Bucket '"+this.config.bucketName+"' "+err.message,"Bucket Not Found")
-        else
-          this.setError(err.message,"Could not List Documents")
-        });
+    try {
+      var dlApi = new DocumentListApi(this.state.accessToken);
+      var documents = await dlApi.loadDocumentList()
+
+      //console.log(`we got ${documents} from loadDocumentList`)
+      this.setState({...this.state, documentList: documents })
+    } catch (err){
+      if (err.message == "Not Found")
+        this.setError("Bucket '"+this.config.bucketName+"' "+err.message,"Bucket Not Found")
+      else
+        this.setError(err.message,"Could not List Documents")
+    }    
   }
-
-  async parseDocumentList(res)
-  {
-    if (res.hasOwnProperty('data'))
-    {
-      this.setState({...this.state, documentList: res.data })
-    }
-    else if (res.hasOwnProperty('error'))
-      throw new Error(res.error)
-    else
-      throw new Error("Unknown Error : "+JSON.stringify(res));
-  }
-  
-    // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
-  async  loadDocumentList () {
-    
-    this.config = new GlobalConfig();
-    console.log("in loadDocumentList()")
-
-    const options = {
-      method: "GET",
-      headers: { 
-        'X-Bearer-Token': this.state.accessToken,
-        'X-Project-Id': this.config.projectId,
-        'X-Bucket-Name': this.config.bucketName
-      }
-    }
-    console.log(options)
-    const response = await fetch('/list_documents', options);
-
-    const body = await response.json();
-
-    if (response.status !== 200) {
-      throw Error(body.message) 
-    }
-    return body;
-  };
   
   renderDocument () {    
 
@@ -333,7 +251,8 @@ class App extends Component {
         selectedDocument={this.state.selectedDocument}  
         handleDocumentUpdate={this.handleDocumentUpdate} 
         setError = {this.setError}
-        loadCsv = {this.loadCsv}
+        //loadCsv = {this.loadCsv}
+        generateCsv = {this.generateCsv}
         userProfile = {this.state.userProfile}
         documentList = {this.state.documentList}
       />

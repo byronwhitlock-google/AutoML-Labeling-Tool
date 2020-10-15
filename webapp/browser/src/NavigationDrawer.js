@@ -30,14 +30,14 @@ import DescriptionTwoToneIcon from '@material-ui/icons/DescriptionTwoTone';
 import Tooltip from '@material-ui/core/Tooltip';
 import GlobalConfig from './lib/GlobalConfig.js'
 import FileSaver  from 'file-saver';
-import GetAppIcon from '@material-ui/icons/GetApp';
+import SettingsIcon from '@material-ui/icons/Settings';
 import Blob from 'blob'
 
 class NavigationDrawer extends Component {
   constructor(props) {
       super(props);
 
-    this.handleDownloadClick = this.handleDownloadClick.bind(this)
+    this.handleGenerateCsvClick = this.handleGenerateCsvClick.bind(this)
      // this.config = props.config
     console.log("NavigationDrawer props")
     console.log(props)
@@ -58,11 +58,16 @@ class NavigationDrawer extends Component {
   };
 
 
-
-
-  async handleDownloadClick() {
+  async handleGenerateCsvClick() {
     var config = new GlobalConfig();
-    
+    try {
+      var csv = await this.props.generateCsv()
+      this.props.setError("Success",`gs://${csv}`)
+    } catch (e)
+    {
+      this.props.setError(e.message,"CSV Generation Failed")
+    }
+    /*
     try {
       // grab the csv, stub for now.
       var csv = await this.props.loadCsv()
@@ -72,7 +77,7 @@ class NavigationDrawer extends Component {
     catch (e)
     {
       this.props.setError(e.message,"Download Failed")
-    }
+    }*/
   }
 
   handleDocumentClick =  (newDocumentSrc) => {
@@ -90,13 +95,13 @@ class NavigationDrawer extends Component {
     this.setState({ ...this.state, isOpen: !this.state.isOpen });
   };
 
-  renderDownloadCsv()
+  renderGenerateCsv()
   {
     if (this.props.documentList.length > 0)
       return (
-        <ListItem onClick={this.handleDownloadClick} button key="download-csv">
-          <GetAppIcon color="primary"/>
-          <ListItemText primary="Download Training CSV" secondary="AutoML Natural Language format"/>
+        <ListItem onClick={this.handleGenerateCsvClick} button key="generate-csv">
+          <SettingsIcon color="primary"/>
+          <ListItemText primary="Generate Training CSV" secondary="AutoML Natural Language format"/>
         </ListItem>
         )
   }
@@ -117,7 +122,7 @@ class NavigationDrawer extends Component {
           <ListItemText primary={config.bucketName} />
         </ListItem>
         <Divider/>    
-        {this.renderDownloadCsv()}
+        {this.renderGenerateCsv()}
         <Divider/>    
         {this.props.documentList.map((text, index) => (
           <ListItem button  

@@ -93,19 +93,21 @@ app.post('/save_document',async(req,res) =>{
     }
 });
 
-app.get('/download_csv', async (req, res) => {    
-try {
-    var csv = new DownloadCsv({
-        accessToken: req.header("X-Bearer-Token"),
-        projectId: req.header("X-Project-Id"),
-        bucketName: req.header("X-Bucket-Name"),
-    });    
+app.get('/generate_csv', async (req, res) => {    
+    try {
+        var csv = new DownloadCsv({
+            accessToken: req.header("X-Bearer-Token"),
+            projectId: req.header("X-Project-Id"),
+            bucketName: req.header("X-Bucket-Name"),
+        });    
 
-    var data = await csv.download();
-    console.log("We got some data from download_csv len:"+ data.length)
-    res.send({'data': data});
-    console.log ({'data': data})
-} catch (e) {
+        var data = await csv.download();
+        console.log("We got some data from download_csv len:"+ data.length)
+        // so now we store the data cloud storage, and then return the path
+    // res.send({'data': data});
+        res.send({'data': "the bucket data csv  file should be this data"})
+        console.log ({'data': "the bucket data csv  file should be this data"})
+    } catch (e) {
         Dumper(e)
         res.send({'error': e.message, 'trace':e.stack });
 }
