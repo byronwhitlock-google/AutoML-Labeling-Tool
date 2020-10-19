@@ -45,10 +45,15 @@ class App extends Component {
     documentList: [],
     autoMLDatasetList: [],
     error : {
-        title:null,
-        content:null,
-        isOpen:false
-      }
+      title:null,
+      content:null,
+      isOpen:false
+    },
+    alert : {
+      title:null,
+      content:null,
+      isOpen:false
+    }      
   };
   
   // TODO: Refactor all API calls to another library 
@@ -64,6 +69,7 @@ class App extends Component {
     //this.loadCsv = this.loadCsv.bind(this)
     this.generateCsv = this.generateCsv.bind(this)
     this.setError = this.setError.bind(this)
+    this.setAlert = this.setAlert.bind(this)
     this.refreshAutoMLDatasetList = this.refreshAutoMLDatasetList.bind(this)
     // set selected document from the url string
     this.state.selectedDocument = window.location.pathname.replace(/^\/+/g, '');
@@ -93,11 +99,25 @@ class App extends Component {
       error.isOpen = true      
       this.setState({...this.state,error})
   }
+
+  setAlert(text,title="Alert")
+  {
+      let alert = this.state.alert
+      alert.title = title
+      alert.content = text;
+      alert.isOpen = true      
+      this.setState({...this.state,alert})
+  }
   
+  // also closes alert box
   handleErrorClose() {
     let error = this.state.error
     error.isOpen = false
-    this.setState({...this.state,error})
+
+    let alert = this.state.alert
+    alert.isOpen = false
+
+    this.setState({...this.state,alert,error})
   };
 
 
@@ -232,7 +252,14 @@ class App extends Component {
         )
 
     if (this.state.isLoggedIn && this.config.bucketName && this.state.selectedDocument)
-      return (<Document src={this.state.selectedDocument} key={this.state.selectedDocument} accessToken={this.state.accessToken}/> )
+      return (
+        <Document 
+          src={this.state.selectedDocument} 
+          key={this.state.selectedDocument} 
+          accessToken={this.state.accessToken}
+          setError = {this.setError}
+          setAlert = {this.setAlert}
+          /> )
   }
   render() {
     this.config = new GlobalConfig();
@@ -243,7 +270,14 @@ class App extends Component {
         content={this.state.error.content} 
         open={this.state.error.isOpen} 
         onClose={this.handleErrorClose} />
+      <ModalPopup           
+          title={this.state.alert.title} 
+          content={this.state.alert.content} 
+          open={this.state.alert.isOpen} 
+          severity="info"
+          onClose={this.handleErrorClose} />        
       <AppHeader 
+      // TODO: use context this is getting messy
         isLoggedIn = {this.state.isLoggedIn}
         onLoginSuccess = {this.handleLoginSuccess}
         onLoginFailure = {this.handleLoginFailure}
@@ -251,6 +285,7 @@ class App extends Component {
         selectedDocument={this.state.selectedDocument}  
         handleDocumentUpdate={this.handleDocumentUpdate} 
         setError = {this.setError}
+        setAlert = {this.setAlert}
         //loadCsv = {this.loadCsv}
         generateCsv = {this.generateCsv}
         userProfile = {this.state.userProfile}

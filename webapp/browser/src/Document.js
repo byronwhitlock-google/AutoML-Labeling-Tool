@@ -25,7 +25,6 @@ class Document extends Component {
   constructor(props) {
       super(props);
 
-      this.handleClose = this.handleClose.bind(this)
       this.onLabelUpdate = this.onLabelUpdate.bind(this)
   }
   state = {
@@ -33,11 +32,6 @@ class Document extends Component {
       sentenceData: Array(), // each sentence 
       documentData: {}, // suitable for storing jsonl or sending to automl for training.
       menuItems: Array(),
-      error : {
-        title:null,
-        content:null,
-        isOpen:false
-      }
     };
 
   async componentDidMount() {
@@ -83,20 +77,9 @@ class Document extends Component {
     
   setError(text,title="Error Loading Document")
   {
-      let error = this.state.error
-      error.title = title
-      error.content = text;
-      error.isOpen = true      
-      this.setState({...this.state,error})
+      this.props.setError(text,title)
   }
   
-  handleClose() {
-    let state = this.state;
-    state.error.isOpen = false;
-
-    this.setState({...this.state,state})
-  };
-
   async loadDocument()
   {
     try {
@@ -122,12 +105,6 @@ class Document extends Component {
     var config = new GlobalConfig();
     return (      
       <div  className="Document-body">
-        <ModalPopup           
-          title={this.state.error.title} 
-          content={this.state.error.content} 
-          open={this.state.error.isOpen} 
-          onClose={this.handleClose} />
-
         {this.state.sentenceData.map((item, key) =>
           <RenderSentence
             key ={key}

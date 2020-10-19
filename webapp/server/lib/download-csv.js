@@ -44,11 +44,13 @@ module.exports = class DownloadCsv {
   async persist(name)
   {
     var csvData = await this.download()
+    var numRecords = csvData.split(/\r\n|\r|\n/).length
     
     console.log("About to persist csv data")
     console.log(csvData)
-
     this.gcs.writeDocument(name,csvData)
+        
+    return numRecords
   }
   
 }

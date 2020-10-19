@@ -62,7 +62,10 @@ class NavigationDrawer extends Component {
     var config = new GlobalConfig();
     try {
       var csv = await this.props.generateCsv()
-      this.props.setError("Success",`gs://${csv}`)
+      var gif = process.env.PUBLIC_URL +'/training-animation.gif'
+      this.props.setAlert(
+        ` <img style='float:right' width='50%' src='${gif}'><h3>gs://${csv.path}</h3> <B>${csv.numRecords}</b> Documents Labeled.<p> Please go to <a href='https://console.cloud.google.com/natural-language/datasets'>AutoML Cloud Console</a> to import dataset.`,
+        "CSV Generation Success")
     } catch (e)
     {
       this.props.setError(e.message,"CSV Generation Failed")

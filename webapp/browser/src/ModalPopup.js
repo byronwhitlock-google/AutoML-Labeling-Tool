@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function ModalPopup(props) {
   const classes = useStyles();
-
+  var content = {__html: props.content}
   return (
       <Modal
         aria-labelledby="transition-modal-title"
@@ -53,12 +53,12 @@ export default function ModalPopup(props) {
         }}
       >
         <Fade in={props.open}>
-          <Alert severity="error">
+          <Alert severity={props.severity||"error"}>
             <AlertTitle>
               <span id="transition-modal-title">{props.title}</span>
             </AlertTitle>
             <span id="transition-modal-description"> 
-              {props.content} 
+              <div dangerouslySetInnerHTML={content}/>
             </span>
           </Alert>
         </Fade>

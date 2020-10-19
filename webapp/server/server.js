@@ -102,10 +102,11 @@ app.get('/generate_csv', async (req, res) => {
         });   
         
         // persist downloads and saves to bucket
-        csv.persist("training.csv");        
-        var data = {'data': `${bucketName}/training.csv`}
-        res.send(data)
+        var numRecords = await csv.persist("training.csv");        
+        var data = {'data': {"path": `${bucketName}/training.csv`, "numRecords":numRecords}}
         console.log (data)
+        res.send(data)
+        
     } catch (e) {
         Dumper(e)
         res.send({'error': e.message, 'trace':e.stack });
