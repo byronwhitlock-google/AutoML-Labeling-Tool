@@ -25,7 +25,6 @@ function AutoMLPrediction(props) {
     const handleClick = (evt)=>{};
     console.log("Got Props in AutoMLPrediction")
     console.log(props)
-
     // select for data set list
     // props.autoMLDatasetList
     // props.selectedAutoMLDataset

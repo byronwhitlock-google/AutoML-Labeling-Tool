@@ -134,6 +134,7 @@ class App extends Component {
     this.setState({...this.state,isLoggedIn:true,accessToken:res.accessToken, userProfile:res.profileObj})
     // async update the document list 
     this.refreshDocumentList()
+    this.refreshAutoMLDatasetList()
 
     console.log('Login Success: currentUser:', res.profileObj);
     console.log(res)
@@ -155,14 +156,14 @@ class App extends Component {
   {
     // TODO: fix dataset loading buggy now.
     //return false;//  
-    this.canLoadDocument();
+    return this.canLoadDocument();
   }
 
   async refreshAutoMLDatasetList() {
     console.log("refreshAutoMLDatasetList??!?!?")
     if(!this.canLoadAutoMLDatasetList())
     {
-      console.log("canLoadAutoMLDatasetList failed.")
+      console.error("canLoadAutoMLDatasetList failed.")
       return;
     }
     try {
@@ -214,7 +215,7 @@ class App extends Component {
       console.log("Not logged in, missing bucket, or no selected document. Not loading document list.")
       return;
     }
-    this.refreshAutoMLDatasetList();
+    
 
     try {
       var dlApi = new DocumentListApi(this.state.accessToken);
@@ -222,6 +223,7 @@ class App extends Component {
 
       //console.log(`we got ${documents} from loadDocumentList`)
       this.setState({...this.state, documentList: documents })
+       
     } catch (err){
       if (err.message == "Not Found")
         this.setError("Bucket '"+this.config.bucketName+"' "+err.message,"Bucket Not Found")
@@ -295,8 +297,6 @@ class App extends Component {
         selectedDocument={this.state.selectedDocument}  
         canLoadDocument={this.canLoadDocument()}
         autoMLDatasetList={this.state.autoMLDatasetList}
-        selectedAutoMLDataset={this.state.selectedAutoMLDataset}
-        refreshAutoMLDatasetList ={this.refreshAutoMLDatasetList}
       />
       <hr/>
       <blockquote>

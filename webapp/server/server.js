@@ -126,7 +126,9 @@ app.get('/list_datasets', async (req, res) => {
 
         var automl = new AutoML(options);
         var data = await automl.listDatasets();
-        res.send({'data': data});
+        console.log("Got some data from listDatasets ")
+        Dumper(data)
+        res.send({'data': data.datasets});
     } catch (e) {
         Dumper(e)
         console.error(e.message)
