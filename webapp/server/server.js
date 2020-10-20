@@ -136,6 +136,29 @@ app.get('/list_datasets', async (req, res) => {
     }
 });
 
+app.get('/list_models', async (req, res) => {
+    try {        
+
+        var options ={
+            accessToken: req.header("X-Bearer-Token"),
+            projectId: req.header("X-Project-Id"),
+            locationId:req.header("X-Location-Id"),
+        }
+        console.log("trying to list datasets")
+        console.log(options)
+
+        var automl = new AutoML(options);
+        var data = await automl.listModels();
+        console.log("Got some data from listModels ")
+        Dumper(data)
+        res.send({'data': data.model});
+    } catch (e) {
+        Dumper(e)
+        console.error(e.message)
+        res.send({'error': e.message, 'trace':e.stack });
+    }
+});
+
 // production endpoint served from here
 app.use(express.static(path.join(__dirname, '../browser/build')));
 app.get('/*', function(req, res) {

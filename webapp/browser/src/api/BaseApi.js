@@ -64,7 +64,7 @@ class BaseApi {
     try {
       res = await response.json();
     } catch (err){
-      throw new Error("Invalid JSON response from server. "+response.substr(0,500))
+      throw new Error(`Invalid JSON response from server. <Br>${response.status} ${response.statusText}`)
     }    
 
     if (response.status !== 200) 

@@ -21,8 +21,12 @@ class PredictionApi extends BaseApi {
     super(accessToken)
   }
 
-  async loadAutoMLDatasetList () {
-      return this.fetch("/list_datasets")
+  async loadAutoMLModelList () {
+      return this.fetch("/list_models")
+  }
+
+  async requestAutoMLPrediction(modelId, content) {
+    return this.post("/request_prediction",{data:content, model:modelId})
   }
 }
 export default PredictionApi

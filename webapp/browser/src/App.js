@@ -39,11 +39,13 @@ class App extends Component {
     data: null,
     sentenceData: [],
     selectedDocument: 'test.txt',
+    selectedModel: null,
     isLoggedIn: false,
     userProfile: null,
     accessToken: null,
     documentList: [],
-    autoMLDatasetList: [],
+    autoMLModelList: [],
+    autoMLPredictions: {},
     error : {
       title:null,
       content:null,
@@ -66,11 +68,13 @@ class App extends Component {
     this.handleLoginSuccess = this.handleLoginSuccess.bind(this);
     this.handleLoginFailure = this.handleLoginFailure.bind(this)
     this.handleErrorClose = this.handleErrorClose.bind(this)
+    this.handleModelUpdate = this.handleModelUpdate.bind(this)    
+    
     //this.loadCsv = this.loadCsv.bind(this)
     this.generateCsv = this.generateCsv.bind(this)
     this.setError = this.setError.bind(this)
     this.setAlert = this.setAlert.bind(this)
-    this.refreshAutoMLDatasetList = this.refreshAutoMLDatasetList.bind(this)
+    this.refreshAutoMLModelList = this.refreshAutoMLModelList.bind(this)
     // set selected document from the url string
     this.state.selectedDocument = window.location.pathname.replace(/^\/+/g, '');
     this.config = new GlobalConfig();
@@ -85,6 +89,14 @@ class App extends Component {
   handleDocumentUpdate(newSrc) {
     this.setState({selectedDocument: newSrc}); 
     this.forceUpdateHandler();
+  }
+
+  handleModelUpdate(newModel) {
+    var predictions = {}
+    if (newModel){
+     predictions=this.requestAutoMLPrediction(newModel)
+    }
+    this.setState({selectedModel: newModel,autoMLPredictions:predictions}); 
   }
 
   componentDidMount() {
@@ -134,7 +146,7 @@ class App extends Component {
     this.setState({...this.state,isLoggedIn:true,accessToken:res.accessToken, userProfile:res.profileObj})
     // async update the document list 
     this.refreshDocumentList()
-    this.refreshAutoMLDatasetList()
+    this.refreshAutoMLModelList()
 
     console.log('Login Success: currentUser:', res.profileObj);
     console.log(res)
@@ -152,26 +164,26 @@ class App extends Component {
   };
 
   //====== AUTOML =======
-  canLoadAutoMLDatasetList()
+  canLoadAutoMLModelList()
   {
     // TODO: fix dataset loading buggy now.
     //return false;//  
     return this.canLoadDocument();
   }
 
-  async refreshAutoMLDatasetList() {
-    console.log("refreshAutoMLDatasetList??!?!?")
-    if(!this.canLoadAutoMLDatasetList())
+  async refreshAutoMLModelList() {
+    console.log("refreshAutoMLModelList??!?!?")
+    if(!this.canLoadAutoMLModelList())
     {
-      console.error("canLoadAutoMLDatasetList failed.")
+      console.error("canLoadAutoMLModelList failed.")
       return;
     }
     try {
       var pApi = new PredictionApi(this.state.accessToken);
-      var datasets = await pApi.loadAutoMLDatasetList()
+      var models = await pApi.loadAutoMLModelList()
 
       //console.log(`we got ${documents} from loadDocumentList`)
-      this.setState({...this.state, autoMLDatasetList: datasets })
+      this.setState({...this.state, autoMLModelList: models })
     } catch (err){
       if (err.message == "Not Found")
         this.setError("Bucket '"+this.config.bucketName+"' "+err.message,"Bucket Not Found")
@@ -179,6 +191,23 @@ class App extends Component {
         this.setError(err.message,"Could not List Documents")
     }    
   }
+
+  async requestAutoMLPrediction(modelId) {
+    console.log("requestAutoMLPrediction??!?!?")
+    try {
+      var pApi = new PredictionApi(this.state.accessToken);
+      var models = await pApi.requestAutoMLPrediction(modelId, this.state.selectedDocument)
+
+      //console.log(`we got ${documents} from loadDocumentList`)
+      this.setState({...this.state, autoMLModelList: models })
+    } catch (err){
+      if (err.message == "Not Found")
+        this.setError("Bucket '"+this.config.bucketName+"' "+err.message,"Bucket Not Found")
+      else
+        this.setError(err.message,"Could not List Documents")
+    }    
+  }
+
 
   // ====== Generate CSV =====
   async generateCsv() {
@@ -261,6 +290,7 @@ class App extends Component {
           accessToken={this.state.accessToken}
           setError = {this.setError}
           setAlert = {this.setAlert}
+          autoMLPredictions = {this.state.autoMLPredictions}
           /> )
   }
   render() {
@@ -285,7 +315,7 @@ class App extends Component {
         onLoginFailure = {this.handleLoginFailure}
         onLogoutSuccess =  {this.handleLogoutSuccess}
         selectedDocument={this.state.selectedDocument}  
-        handleDocumentUpdate={this.handleDocumentUpdate} 
+        handleDocumentUpdate={this.handleDocumentUpdate}         
         setError = {this.setError}
         setAlert = {this.setAlert}
         //loadCsv = {this.loadCsv}
@@ -296,7 +326,8 @@ class App extends Component {
       <DocumentHeader  
         selectedDocument={this.state.selectedDocument}  
         canLoadDocument={this.canLoadDocument()}
-        autoMLDatasetList={this.state.autoMLDatasetList}
+        autoMLModelList={this.state.autoMLModelList}
+        handleModelUpdate={this.handleModelUpdate} 
       />
       <hr/>
       <blockquote>

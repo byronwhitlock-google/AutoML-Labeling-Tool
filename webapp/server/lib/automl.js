@@ -59,5 +59,29 @@ module.exports = class AutoML extends GoogleCloud {
 
   }
 
+  async listModels()  {
+
+    //https://cloud.google.com/automl/docs/reference/rest/v1/projects.locations.models/list
+
+    var path = `/v1/projects/${this.projectId}/locations/${this.locationId}/models`
+
+    var res = await this.httpGet(path) ;
+    var json = ""
+    try {
+      json = JSON.parse(res);
+    } 
+    catch (e) //catch the json parse error so we can return somthing meaningfull on non 200s
+    {
+      throw new Error(res)
+    }
+    
+    //console.log(res);
+    if (json.hasOwnProperty('error'))
+      throw new Error(json.error.message)
+    
+    return json;
+
+  }
+
 
 }

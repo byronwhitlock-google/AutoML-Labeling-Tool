@@ -25,8 +25,13 @@ function AutoMLPrediction(props) {
     const handleClick = (evt)=>{};
     console.log("Got Props in AutoMLPrediction")
     console.log(props)
+
+    function onSelectChange(event) {
+      props.handleModelUpdate(event.target.value)
+    }
+
     // select for data set list
-    // props.autoMLDatasetList
+    // props.autoMLModelList
     // props.selectedAutoMLDataset
     const classes = useStyles();
     return (
@@ -35,13 +40,13 @@ function AutoMLPrediction(props) {
         <Select
           labelId="automl-dataset-label"
           id="automl-dataset"
-          value={props.selectedDataset}
-          onChange={props.onChange}
+          selected={props.selectedModel}
+          onChange={onSelectChange}
           autowidth
         >
         <MenuItem selected={true} value="">None</MenuItem>
-        {props.autoMLDatasetList.map((dataset) => 
-          <MenuItem id={ dataset.name} key={dataset.name} onClick={(e)=>handleClick(e,dataset.name)}>             
+        {props.autoMLModelList.map((dataset) => 
+          <MenuItem id={ dataset.name} key={dataset.name} value={dataset.name}  onClick={(e)=>handleClick(e,dataset.name)}>             
             {dataset.displayName}
           </MenuItem>                
         )}
