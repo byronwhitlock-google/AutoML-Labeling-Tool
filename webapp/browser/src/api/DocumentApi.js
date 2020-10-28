@@ -21,12 +21,16 @@ class DocumentApi extends BaseApi {
   constructor(accessToken){
     super(accessToken)
   }
+  //changes from automl format to sentence split format we like for display
+  async parseDocument(doc)
+  {
+    // dumb helper function 
+    function isString (obj) {
+      return (Object.prototype.toString.call(obj) === '[object String]');
+    }
 
-
-  // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
-  async loadDocumentContent (documentPath) {
-
-    const doc = await this.fetch(`/load_document?d=${documentPath}`)
+    if (isString(doc))
+      doc = JSON.parse(doc)
     
     if (doc.hasOwnProperty('text_snippet') && 
         doc.text_snippet.hasOwnProperty('content'))
@@ -41,8 +45,13 @@ class DocumentApi extends BaseApi {
       }
     }
     else
-      throw new Error("Unknown Error : "+ JSON.stringify(doc).substr(0,500)+" ... ");
+      throw new Error("Schema Validation Error: "+ JSON.stringify(doc).substr(0,500)+" ... ");
+  }
 
+  // Fetches our GET route from the Express server. (Note the route we are fetching matches the GET route from server.js
+  async loadDocumentContent (documentPath) {
+    const doc = await this.fetch(`/load_document?d=${documentPath}`)    
+    return this.parseDocument(doc);
   }
   
   async saveDocumentContent(documentPath,doc) {
@@ -56,6 +65,7 @@ class DocumentApi extends BaseApi {
     }
     else
     {
+
       throw new Error("Invalid Document.")
     }
   }

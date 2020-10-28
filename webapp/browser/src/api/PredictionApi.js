@@ -22,11 +22,11 @@ class PredictionApi extends BaseApi {
   }
 
   async loadAutoMLModelList () {
-      return this.fetch("/list_models")
+    return this.fetch("/list_models")
   }
 
-  async requestAutoMLPrediction(modelId, content) {
-    return this.post("/request_prediction",{data:content, model:modelId})
+  async requestAutoMLPrediction(modelId, documentName) {
+    return this.post("/get_prediction",{documentName:documentName, modelId:modelId})
   }
 }
 export default PredictionApi

@@ -55,16 +55,21 @@ module.exports = class AnnotatedDocument {
   {
     // make sure the filename ends in .jsonl
     // we ONLY save jsonl files.
+    /*
     if (filename.indexOf(".jsonl") == -1)
       filename = `${filename}.jsonl`
-
-    console.log(`in annotated-document:save(${filename},${document}) `)
-    console.log(document)
-    // do some basic checks
+    */
+     // do some basic checks
     if (typeof filename == "undefined" || typeof filename != "string" || filename =="")
     {
       throw new Error("Invalid Filename")
     }
+
+    var jsonlFilename = `annotations/${filename}.jsonl`;
+
+    console.log(`in annotated-document:save(${jsonlFilename},${document}) `)
+    console.log(document)   
+
     if (!document.hasOwnProperty('text_snippet') ||
         !document.hasOwnProperty('annotations') ||
         !Array.isArray(document.annotations) ||
@@ -72,13 +77,13 @@ module.exports = class AnnotatedDocument {
         {
           throw new Error("Cannot save, document format invalid.")
         }
-    return this.gcs.writeDocument(filename,JSON.stringify(document))
+    return this.gcs.writeDocument(jsonlFilename,JSON.stringify(document))
   }
 
 // Takes a filename to a text file in the users bucket, returns a json automl annotation object
   async load(filename)
   {
-    var jsonlFilename = filename+".jsonl";
+    var jsonlFilename = `annotations/${filename}.jsonl`;
     // Check if JSONL file exists
     // If it does, read from cloud storage convert from JSON to object and return
     // if it does not, load the .txt file, generate a JSON object and return
@@ -103,7 +108,7 @@ module.exports = class AnnotatedDocument {
       // run through the sentence splitter
       //  reformat to jsonl format
       console.log("About to read document "+ filename)
-      let data = await this.gcs.readDocument(filename);
+      data = await this.gcs.readDocument(filename);
       console.log(`Got document length: ${data.length}`)
       if (data.length > 9999) // we don't support documents > 10k chars
       {

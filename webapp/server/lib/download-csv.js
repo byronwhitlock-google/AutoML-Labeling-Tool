@@ -26,12 +26,12 @@ module.exports = class DownloadCsv {
   async download()
   {
     var csv = []
-    
-    var docs = await this.gcs.listDocuments(".jsonl");
+
+    var docs = await this.gcs.listDocuments(".jsonl","annotations/");
 
     for (var i = 0;i<docs.length;i++)
     {
-      csv.push(`,gs://${this.gcs.bucketName}/${docs[i]}`);
+      csv.push(`,gs://${this.gcs.bucketName}/annotations/${docs[i]}`);
     }
 
     if (!csv.length > 0)

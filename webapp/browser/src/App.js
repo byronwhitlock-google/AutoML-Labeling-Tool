@@ -45,7 +45,7 @@ class App extends Component {
     accessToken: null,
     documentList: [],
     autoMLModelList: [],
-    autoMLPredictions: {},
+    autoMLPrediction: false,
     error : {
       title:null,
       content:null,
@@ -86,17 +86,17 @@ class App extends Component {
   };
 
   // returns current document src when null
-  handleDocumentUpdate(newSrc) {
+  async handleDocumentUpdate(newSrc) {
     this.setState({selectedDocument: newSrc}); 
     this.forceUpdateHandler();
   }
 
-  handleModelUpdate(newModel) {
-    var predictions = {}
+  // we got a new prediction model 
+  async handleModelUpdate(newModel) {
     if (newModel){
-     predictions=this.requestAutoMLPrediction(newModel)
+     this.requestAutoMLPrediction(newModel)
+     this.setState({autoMLPrediction: true })
     }
-    this.setState({selectedModel: newModel,autoMLPredictions:predictions}); 
   }
 
   componentDidMount() {
@@ -105,20 +105,20 @@ class App extends Component {
 
   setError(text,title="Error")
   {
-      let error = this.state.error
-      error.title = title
+      var error = this.state.error;
+      error.title = title;
       error.content = text;
-      error.isOpen = true      
-      this.setState({...this.state,error})
+      error.isOpen = true      ;
+      this.setState({...this.state,error});
   }
 
   setAlert(text,title="Alert")
   {
-      let alert = this.state.alert
-      alert.title = title
+      var alert = this.state.alert;
+      alert.title = title;
       alert.content = text;
-      alert.isOpen = true      
-      this.setState({...this.state,alert})
+      alert.isOpen = true      ;
+      this.setState({...this.state,alert});
   }
   
   // also closes alert box
@@ -188,7 +188,7 @@ class App extends Component {
       if (err.message == "Not Found")
         this.setError("Bucket '"+this.config.bucketName+"' "+err.message,"Bucket Not Found")
       else
-        this.setError(err.message,"Could not List Documents")
+        this.setError(err.message,"Could not Refresh Models List")
     }    
   }
 
@@ -196,15 +196,9 @@ class App extends Component {
     console.log("requestAutoMLPrediction??!?!?")
     try {
       var pApi = new PredictionApi(this.state.accessToken);
-      var models = await pApi.requestAutoMLPrediction(modelId, this.state.selectedDocument)
-
-      //console.log(`we got ${documents} from loadDocumentList`)
-      this.setState({...this.state, autoMLModelList: models })
+      return await pApi.requestAutoMLPrediction(modelId, this.state.selectedDocument)      
     } catch (err){
-      if (err.message == "Not Found")
-        this.setError("Bucket '"+this.config.bucketName+"' "+err.message,"Bucket Not Found")
-      else
-        this.setError(err.message,"Could not List Documents")
+      this.setError(err.message,"Could Request AutoML Prediction")
     }    
   }
 
@@ -290,7 +284,7 @@ class App extends Component {
           accessToken={this.state.accessToken}
           setError = {this.setError}
           setAlert = {this.setAlert}
-          autoMLPredictions = {this.state.autoMLPredictions}
+          autoMLPrediction = {this.state.autoMLPrediction}
           /> )
   }
   render() {

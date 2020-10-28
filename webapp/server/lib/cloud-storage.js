@@ -16,7 +16,7 @@
 //https://cloud.google.com/storage/docs/json_api/v1/objects/get
 "use strict";
 const Dumper = require('dumper').dumper;
-const GoogleCloud = require('./google-cloud.js')
+const GoogleCloud = require('./google-cloud-REST.js')
 
 //https://googleapis.dev/nodejs/storage/latest/index.html
 
@@ -26,6 +26,15 @@ module.exports = class CloudStorage extends GoogleCloud {
     super(options)
     this.projectId = options.projectId
     this.bucketName = options.bucketName
+
+    if (!options['projectId'])
+      throw new Error("Missing projectId in CloudStorage constructor.")
+
+    if (!options['bucketName'])
+      throw new Error("Missing bucketName in CloudStorage constructor.")
+
+
+
   }
 
   async readJsonDocument(documentName,metadataOnly=false) {
@@ -51,19 +60,20 @@ module.exports = class CloudStorage extends GoogleCloud {
     //https://cloud.google.com/storage/docs/json_api/v1/objects/get
 
     // serously cant do ouath flow usign the standard lib? wtf? annoying as heck.
-    var path = `/storage/v1/b/${this.bucketName}/o/${documentName}`
+    var path = `/storage/v1/b/${this.bucketName}/o/${encodeURIComponent(documentName)}`;
 
     if (metadataOnly)
       path += "?alt=json"
     else
       path += "?alt=media"
 
+
     var res = await this.httpGet(path);
     /// since we didn't check the http return code look at the text to see if we got not found
     // AND since we aren't looking at json for errors do this funky monkey
     if (res.startsWith("No such object: ") || res.startsWith("Not Found"))
     {
-      throw new Error(res)
+      throw new Error(`HTTP Error: ${res}`)
       return "";
     }
 
@@ -92,20 +102,21 @@ module.exports = class CloudStorage extends GoogleCloud {
   }
   
   // read from cloud storage syncronously.
-  async listDocuments(suffix=".txt")   {
+  async listDocuments(suffix=".txt",parentDirectory="")   {
 
     //https://cloud.google.com/storage/docs/json_api/v1/objects/get
     //TODO: Fetch next page tokens. rightn now buggy doesn't work. only fetches 1000 items maxs
     // we would ues the standard libaray that handles this but it doesn't support oauth 
-    var path = `/storage/v1/b/${this.bucketName}/o/`
+    var path = `/storage/v1/b/${this.bucketName}/o/?delimiter=/&prefix=${parentDirectory}`
     var documentList = []
     var maxItems = 2000;
     try {
       //do
       {
-        console.log("About to list documents")
+        console.log("About to list documents: "+ path)
         var res = await this.httpGet(path);
         var json = JSON.parse(res);
+        //console.log(json)
         if (json.hasOwnProperty('error'))
           throw new Error(json.error.message)
     

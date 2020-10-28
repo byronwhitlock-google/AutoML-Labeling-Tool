@@ -34,14 +34,17 @@ app.use(BodyParser.json());
 // console.log that your server is up and running
 app.listen(port, () => console.log(`Listening on port ${port}`));
 
+function get_header_options(req) {
+    return {
+        accessToken: req.header("X-Bearer-Token"),
+        projectId: req.header("X-Project-Id"),
+        locationId:req.header("X-Location-Id"),
+        bucketName: req.header("X-Bucket-Name") ,
+    };
+}
 app.get('/list_documents', async (req, res) => {
-    try {        
-
-        var options ={
-            accessToken: req.header("X-Bearer-Token"),
-            projectId: req.header("X-Project-Id"),
-            bucketName: req.header("X-Bucket-Name"),
-        }
+    try {
+        var options = get_header_options(req)
         //console.log("trying to list docs")
         //console.log(options)
 
@@ -58,11 +61,8 @@ app.get('/list_documents', async (req, res) => {
 
 app.get('/load_document', async (req, res) => {    
     try {
-        var doc = new AnnotatedDocument({
-            accessToken: req.header("X-Bearer-Token"),
-            projectId: req.header("X-Project-Id"),
-            bucketName: req.header("X-Bucket-Name"),
-        });    
+        var options = get_header_options(req);
+        var doc = new AnnotatedDocument(options);    
 
         var data = await doc.load(req.query.d);
         console.log("We got some data from load_document len:"+ data.length)
@@ -76,11 +76,8 @@ app.get('/load_document', async (req, res) => {
 app.post('/save_document',async(req,res) =>{
     //Dumper(req.body)
     try {
-        var doc = new AnnotatedDocument({
-            accessToken: req.header("X-Bearer-Token"),
-            projectId: req.header("X-Project-Id"),
-            bucketName: req.header("X-Bucket-Name"),
-        });    
+        var options = get_header_options(req);
+        var doc = new AnnotatedDocument(options);      
         
         // TODO: validate json against schema        
         var data = await doc.save(req.query.d,req.body);
@@ -94,44 +91,17 @@ app.post('/save_document',async(req,res) =>{
 
 app.get('/generate_csv', async (req, res) => {    
     try {
-        const bucketName = req.header("X-Bucket-Name") 
-        var csv = new DownloadCsv({
-            accessToken: req.header("X-Bearer-Token"),
-            projectId: req.header("X-Project-Id"),
-            bucketName: bucketName,
-        });   
-        
+        var options = get_header_options(req);
+        var csv = new DownloadCsv(options);   
+
         // persist downloads and saves to bucket
         var numRecords = await csv.persist("training.csv");        
-        var data = {'data': {"path": `${bucketName}/training.csv`, "numRecords":numRecords}}
-        console.log (data)
-        res.send(data)
+        var data = {'data': {"path": `${options.bucketName}/training.csv`, "numRecords":numRecords}}
+        console.log (data);
+        res.send(data);
         
     } catch (e) {
-        Dumper(e)
-        res.send({'error': e.message, 'trace':e.stack });
-    }
-});
-
-app.get('/list_datasets', async (req, res) => {
-    try {        
-
-        var options ={
-            accessToken: req.header("X-Bearer-Token"),
-            projectId: req.header("X-Project-Id"),
-            locationId:req.header("X-Location-Id"),
-        }
-        console.log("trying to list datasets")
-        console.log(options)
-
-        var automl = new AutoML(options);
-        var data = await automl.listDatasets();
-        console.log("Got some data from listDatasets ")
-        Dumper(data)
-        res.send({'data': data.datasets});
-    } catch (e) {
-        Dumper(e)
-        console.error(e.message)
+        Dumper(e);
         res.send({'error': e.message, 'trace':e.stack });
     }
 });
@@ -139,22 +109,38 @@ app.get('/list_datasets', async (req, res) => {
 app.get('/list_models', async (req, res) => {
     try {        
 
-        var options ={
-            accessToken: req.header("X-Bearer-Token"),
-            projectId: req.header("X-Project-Id"),
-            locationId:req.header("X-Location-Id"),
-        }
-        console.log("trying to list datasets")
-        console.log(options)
+        var options = get_header_options(req);
+        console.log("trying to list models");
+        console.log(options);
 
         var automl = new AutoML(options);
         var data = await automl.listModels();
-        console.log("Got some data from listModels ")
-        Dumper(data)
+        console.log("Got some data from listModels ");
+        Dumper(data);
         res.send({'data': data.model});
     } catch (e) {
-        Dumper(e)
-        console.error(e.message)
+        Dumper(e);
+        console.error(e.message);
+        res.send({'error': e.message, 'trace':e.stack });
+    }
+});
+
+
+app.post('/get_prediction', async (req, res) => {
+    try {        
+   
+        var options = get_header_options(req);
+        console.log("trying to get_prediction");
+        console.log(req.body);
+
+        var automl = new AutoML(options);
+        var data = await automl.getPrediction(req.body);
+        console.log("Got some data from get_prediction ");
+        Dumper(data);
+        res.send({'data': data});
+    } catch (e) {
+        Dumper(e);
+        console.error(e.message);
         res.send({'error': e.message, 'trace':e.stack });
     }
 });
