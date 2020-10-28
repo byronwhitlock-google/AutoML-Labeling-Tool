@@ -134,7 +134,9 @@ class RenderSentence extends Component {
         <SentenceAnnotator 
           sentenceOffset={this.props.sentenceOffset} 
           annotations={this.props.annotations} 
-          menuItems={this.props.MenuItems}>
+          menuItems={this.props.MenuItems}
+          {...this.props}
+          >
           {this.props.text}
         </SentenceAnnotator>
         <Menu

@@ -20,6 +20,14 @@ function DocumentHeader(props) {
                     <span>&nbsp;<span style={{backgroundColor: menuItem.color}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
                 )}&nbsp;
           </fieldset>
+          {props.autoMLPrediction && 
+            <fieldset>
+              <legend>Predictions</legend>
+              {config.menuItems.map((menuItem) =>               
+                      <span>&nbsp;<span style={{outline: `${menuItem.color} double`}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
+                  )}&nbsp;
+            </fieldset>
+          }         
         </td></tr>
       </table>    
     );

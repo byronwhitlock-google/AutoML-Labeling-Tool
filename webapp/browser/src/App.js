@@ -94,8 +94,11 @@ class App extends Component {
   // we got a new prediction model 
   async handleModelUpdate(newModel) {
     if (newModel){
-     this.requestAutoMLPrediction(newModel)
-     this.setState({autoMLPrediction: true })
+     var predictions = await this.requestAutoMLPrediction(newModel)    
+     
+     this.setState({autoMLPrediction: predictions })
+    } else {
+      this.setState({autoMLPrediction: false })
     }
   }
 
@@ -322,6 +325,7 @@ class App extends Component {
         canLoadDocument={this.canLoadDocument()}
         autoMLModelList={this.state.autoMLModelList}
         handleModelUpdate={this.handleModelUpdate} 
+        autoMLPrediction = {this.state.autoMLPrediction}
       />
       <hr/>
       <blockquote>

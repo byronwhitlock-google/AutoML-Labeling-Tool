@@ -96,7 +96,13 @@ class SentenceTokenizer {
   }
 
 
-  // turn a sentence into offsets
+  // turn a sentence into array of words with offsets
+  /* [{
+          text: word,
+          startOffset: startOffset,
+          endOffset: endOffset          
+      },...]
+  */
   tokenize(sentence)
   {
     //console.log("In tokenizer:" +sentence )

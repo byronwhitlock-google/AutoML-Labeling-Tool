@@ -29,15 +29,30 @@ class SentenceAnnotator extends Component {
     }
 
 
-    getAnnotationColorsInRange(sentenceStartOffset, sentenceEndOffset)
+    getAnnotationColorsInRange(annotations, sentenceStartOffset, sentenceEndOffset)
     {
-      // console.log("in render "+ this.props.sentenceOffset)
-      //console.log(this.props.annotations)
+      console.log("in render "+ this.props.sentenceOffset)
+      console.log(annotations)
       var coloredAnnotations = []
-      for (var aIdx in this.props.annotations)
+      for (var aIdx in annotations)
       {
-        var annotation = this.props.annotations[aIdx]
+        var annotation = annotations[aIdx]
         if (annotation==null) continue;
+
+        var start_offset,end_offset,display_name;
+
+        // cleanup camelcase/snake case wtf googs.
+        if (annotation['text_extraction']) {
+          display_name = annotation.display_name
+          start_offset = annotation.text_extraction.text_segment.start_offset
+          end_offset = annotation.text_extraction.text_segment.end_offset
+        } else {
+          display_name = annotation.displayName
+          start_offset = annotation.textExtraction.textSegment.startOffset
+          end_offset = annotation.textExtraction.textSegment.endOffset
+        }
+
+
        // make sure the annotation falls within our current sentence
        // |sentence|
        // [annotation]
@@ -60,12 +75,12 @@ class SentenceAnnotator extends Component {
 
         //annotations offsets are based document, but we want based on sentence   
         // so and eo are based on the sentence              
-        var so =  annotation.text_extraction.text_segment.start_offset //- sentenceStartOffset
+        var so =  start_offset //- sentenceStartOffset
         // since we can have a start offset before the beginning of this sentence, if so is negative, set it to zero.
         if (so < sentenceStartOffset) so = -1;              
         if (so >= sentenceEndOffset) so = -1;
         
-        var eo =  annotation.text_extraction.text_segment.end_offset //- sentenceStartOffset
+        var eo =  end_offset //- sentenceStartOffset
         // since we can have an end offset after the end of this sentence, if eo > sentenceEndOffset, set it to sentenceEndOffset.
         if (eo > sentenceEndOffset) eo = -1;
         if (eo <= sentenceStartOffset) eo = -1;
@@ -76,7 +91,7 @@ class SentenceAnnotator extends Component {
         {
           //  so and eo ažre bounded by the length of the sentence so no out of range errors.
           //console.log(`${sentenceStartOffset} so ${so} eo ${eo} ${sentenceEndOffset}`)
-          var menuItem = this.config.getMenuItemByText(annotation.display_name);
+          var menuItem = this.config.getMenuItemByText(display_name);
         //  words.push(sentence.substr(so- sentenceStartOffset,eo- sentenceStartOffset))
 //console.log(`(${so}- ${sentenceStartOffset},${eo}- ${sentenceStartOffset})`)
 //console.log(so- sentenceStartOffset,eo- sentenceStartOffset)
@@ -89,6 +104,8 @@ class SentenceAnnotator extends Component {
       return coloredAnnotations
 
     }
+
+    
     render()
     {
       // go through the annotations and add labels.
@@ -102,23 +119,36 @@ class SentenceAnnotator extends Component {
       var words = this.tokenizer.tokenize(this.props.children)
       var wordsColored = []
       
-      var annotatedColors = this.getAnnotationColorsInRange(sentenceStartOffset,sentenceEndOffset)
+      var annotatedColors = this.getAnnotationColorsInRange(this.props.annotations, sentenceStartOffset,sentenceEndOffset)
+      var predictedColors = []
+      if (this.props.autoMLPrediction) {
+        predictedColors = this.getAnnotationColorsInRange(this.props.autoMLPrediction, sentenceStartOffset,sentenceEndOffset)
+      }
 
       // compare to the annotations prop
       for (var idx in words)
       {
-        var word = {text: words[idx].text, color:""}
+        var word = {text: words[idx].text, color:"", outline:""}
         //var annotatedColors = this.getAnnotationColorsInRange(words[idx].startOffset,words[idx].endOffset)
         //ugh need to put lookuop or somthing this is bad swe
 
 
-        /// TOODO:: need to look at prediction to determine best color.
+        if (predictedColors.length > 0)
+        {
+          if (predictedColors.hasOwnProperty(idx)) 
+            word.outline = `${predictedColors[idx].color} double`
+         // else
+         //   word.outline = 'gray double';//annotatedColors[0].color
+
+          //word.annotatedColors = annotatedColors
+        }
+
         if (annotatedColors.length > 0)
         {
           if (annotatedColors.hasOwnProperty(idx)) //should normally match the word array because tokenized with same tokenizer
             word.color = annotatedColors[idx].color
           else
-            word.color = annotatedColors[0].color
+            word.color = 'gray';//annotatedColors[0].color
 
           //word.annotatedColors = annotatedColors
         }
@@ -141,6 +171,7 @@ class SentenceAnnotator extends Component {
           {wordsColored.map((item, key) =>
             <React.Fragment key={key}>
               <span style={{
+                outline: item.outline,
                 backgroundColor: item.color, 
                 display: 'inline'
               }}>

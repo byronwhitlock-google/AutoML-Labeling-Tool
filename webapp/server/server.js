@@ -135,8 +135,7 @@ app.post('/get_prediction', async (req, res) => {
 
         var automl = new AutoML(options);
         var data = await automl.getPrediction(req.body);
-        console.log("Got some data from get_prediction ");
-        Dumper(data);
+        console.log(`Got some data (${data.length}) from get_prediction `);
         res.send({'data': data});
     } catch (e) {
         Dumper(e);
