@@ -18,6 +18,7 @@
 import React, { Component } from 'react';
 import SentenceTokenizer from './lib/SentenceTokenizer.js'
 import GlobalConfig from './lib/GlobalConfig.js'
+import {ColoredWordSchema,MenuItemSchema} from './lib/Schema.js'
 import MouseOverPopover from './MouseOverPopover.js'
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -90,7 +91,7 @@ class SentenceAnnotator extends Component {
     handleRightClick(event, parentNode){
       event.preventDefault();    
       this.selectText(parentNode.current)
-      this.setState({...this.state,
+      this.setState({
         mouseX: event.clientX - 2,
         mouseY: event.clientY - 4,
       });
@@ -289,7 +290,7 @@ class SentenceAnnotator extends Component {
       // compare to the annotations prop
       for (var idx in words)
       {
-        var word = {text: words[idx].text, color:"", outline:"", label:"",score:0}
+        var word = new ColoredWordSchema({text: words[idx].text, color:"", outline:"", label:"",score:0})
         //var annotatedColors = this.getAnnotationColorsInRange(words[idx].startOffset,words[idx].endOffset)
         //ugh need to put lookuop or somthing this is bad swe
 
@@ -306,11 +307,12 @@ class SentenceAnnotator extends Component {
 
         if (annotatedColors.length > 0)
         {
-          words.label = annotatedColors[idx].display_name
+          
           if (annotatedColors.hasOwnProperty(idx)) //should normally match the word array because tokenized with same tokenizer
-            word.color = annotatedColors[idx].color        
-          else
-            word.color = 'gray';//annotatedColors[0].color
+          {
+            words.label = annotatedColors[idx].display_name
+            word.color = annotatedColors[idx].color       
+          }   
           //word.annotatedColors = annotatedColors
         }
 
@@ -339,29 +341,21 @@ class SentenceAnnotator extends Component {
       for (var i =0;i<wordsColored.length;i++) {
         // words labeled is a list of all words with thier labels. the labels coorespond to menu items.
         var label = wordsColored[i].label.toLowerCase();
-        
-        // remember wordscolored label is the menuitem text.
-        if (menuItemHash.hasOwnProperty(label))
-        {
-          //dedupe by key
-          menuItemHash[label].key  = label;
-          // to uperrcase
-          menuItemHash[label].text  = label.charAt(0).toUpperCase() + label.slice(1)
-          if ( wordsColored[i].color ) {
-            menuItemHash[label].color  = wordsColored[i].color;
-          }
-        
-          //calculate score for confidence
-          if (! sumScore[label]) {
-            sumScore[label] = 0;
-          }
-
-          if (! wordsColored[i].score) {
-            wordsColored[i].score = 0
-          }
-
-          sumScore[label] += wordsColored[i].score
+        //calculate score for confidence
+        if (! sumScore[label]) {
+          sumScore[label] = 0;
         }
+        if (! wordsColored[i].score) {
+          wordsColored[i].score = 0
+        }
+        sumScore[label] += wordsColored[i].score
+
+        //TODO: Support dynamic menu items colors 
+        if (label && ! menuItemHash.hasOwnProperty(label)) {
+          // menuitem is key,text,score,color
+          menuItemHash[label] = {key:label,text:label,color:'gray'}
+        }
+
       }
 
       for (var k in menuItemHash){    
@@ -407,7 +401,6 @@ class SentenceAnnotator extends Component {
   //  console.log(this.props.annotations)
       return (
         <span
-        ref={this.sentenceRef} 
         ref={this.sentenceRef} 
           style={{ cursor: 'context-menu' }} 
           onMouseOver={(e)=>{this.handleMouseOver(e, this.sentenceRef)}}
