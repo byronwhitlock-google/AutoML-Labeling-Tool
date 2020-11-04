@@ -113,7 +113,6 @@ class Document extends Component {
             sentenceId ={key}
             sentenceOffset={item.range[0]}
             type = {item.type}    
-            menuItems={config.getMenuItems(item.raw)}      
             text = {item.raw}
             {...this.props}
             />          
