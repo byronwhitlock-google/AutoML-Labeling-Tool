@@ -24,6 +24,7 @@ class DocumentListApi extends BaseApi {
   async loadDocumentList () {
     try {
       return this.fetch("/list_documents")
+
     } catch (err) {
       if (err.message == "Not Found")
         throw new Error(`Bucket Not Found: ${this.config.bucketName}. ${err.message}`)

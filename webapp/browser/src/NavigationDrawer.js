@@ -32,6 +32,8 @@ import GlobalConfig from './lib/GlobalConfig.js'
 import FileSaver  from 'file-saver';
 import SettingsIcon from '@material-ui/icons/Settings';
 import Blob from 'blob'
+import ErrorTwoToneIcon from '@material-ui/icons/ErrorTwoTone';
+import CheckCircleTwoToneIcon from '@material-ui/icons/CheckCircleTwoTone';
 
 class NavigationDrawer extends Component {
   constructor(props) {
@@ -127,15 +129,20 @@ class NavigationDrawer extends Component {
         <Divider/>    
         {this.renderGenerateCsv()}
         <Divider/>    
-        {this.props.documentList.map((text, index) => (
-          <ListItem button  
-          onClick={()=>this.handleDocumentClick(text)} 
-          key={text} 
-          selected={text.localeCompare(this.props.selectedDocument)==0? true:false} 
-          primary={text} >
-          <DescriptionTwoToneIcon  color="action"/>
-            <ListItemText primary={text} />
-          </ListItem>
+        {this.props.documentList.map((document) => (
+           <Tooltip title={`${document.name} ${document.labeled?" has been labeled.":" has NOT been labeled."}`}>   
+            <ListItem button  
+            onClick={()=>this.handleDocumentClick(document.name)} 
+            key={document.name} 
+            selected={document.name.localeCompare(this.props.selectedDocument)==0? true:false} 
+            primary={document.name} >
+
+              {document.labeled?
+                <CheckCircleTwoToneIcon style={{ color: 'green'}}/>:
+                <ErrorTwoToneIcon  style={{ color: 'red'}}/> }
+                <ListItemText primary={document.name} />
+            </ListItem>
+          </Tooltip>
         ))}
       </List>
     </div>

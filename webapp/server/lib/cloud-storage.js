@@ -107,6 +107,7 @@ module.exports = class CloudStorage extends GoogleCloud {
     //https://cloud.google.com/storage/docs/json_api/v1/objects/get
     //TODO: Fetch next page tokens. rightn now buggy doesn't work. only fetches 1000 items maxs
     // we would ues the standard libaray that handles this but it doesn't support oauth 
+    // no leading slashes on parent directory, but include trailing ones!
     var path = `/storage/v1/b/${this.bucketName}/o/?delimiter=/&prefix=${parentDirectory}`
     var documentList = []
     var maxItems = 2000;
@@ -119,12 +120,13 @@ module.exports = class CloudStorage extends GoogleCloud {
         //console.log(json)
         if (json.hasOwnProperty('error'))
           throw new Error(json.error.message)
-    
-        for(var i=0;i<json.items.length;i++)
-        {
-          if (json.items[i].name.endsWith(suffix))
+        if (json.items){
+          for(var i=0;i<json.items.length;i++)
           {
-            documentList.push(json.items[i].name)
+            if (json.items[i].name.endsWith(suffix))
+            {
+              documentList.push(json.items[i].name.substr(parentDirectory.length))
+            }
           }
         }
       }
@@ -134,7 +136,7 @@ module.exports = class CloudStorage extends GoogleCloud {
     {
       throw new Error(e.message)
     }
-    Dumper(documentList)
+    //Dumper(documentList)
     return documentList;
   }
 

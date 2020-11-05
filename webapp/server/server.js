@@ -62,7 +62,17 @@ app.get('/list_documents', async (req, res) => {
 
         var gcs = new CloudStorage(options);    
 
-        var data = await gcs.listDocuments();
+        var docs = await gcs.listDocuments();
+        var labels = await gcs.listDocuments(".jsonl","annotations/");
+        var data = []
+        Dumper(labels)
+        
+        // merge labels and text so we know what is labeled
+        for(var i=0 ; i<docs.length ; i++) {
+            var found = labels.indexOf(`${docs[i]}.jsonl`) >=0 ? 1:0;
+            data.push({name:docs[i], labeled:found })
+        }
+        Dumper(data)
         res.send({'data': data});
     } catch (e) {
         Dumper(e)

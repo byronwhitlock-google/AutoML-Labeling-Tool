@@ -64,7 +64,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     // This binding is necessary to make `this` work in the callback
-    this.handleDocumentUpdate = this.handleDocumentUpdate.bind(this);
+    this.refreshDocumentList = this.refreshDocumentList.bind(this);
     this.forceUpdateHandler = this.forceUpdateHandler.bind(this);
     this.handleLoginSuccess = this.handleLoginSuccess.bind(this);
     this.handleLoginFailure = this.handleLoginFailure.bind(this)
@@ -89,7 +89,7 @@ class App extends Component {
   // returns current document src when null
   async handleDocumentUpdate(newSrc) {
     this.setState({selectedDocument: newSrc}); 
-    this.forceUpdateHandler();
+    //this.forceUpdateHandler();
   }
 
   // we got a new prediction model 
@@ -329,8 +329,7 @@ class App extends Component {
         onLoginSuccess = {this.handleLoginSuccess}
         onLoginFailure = {this.handleLoginFailure}
         onLogoutSuccess =  {this.handleLogoutSuccess}
-        selectedDocument={this.state.selectedDocument}  
-        handleDocumentUpdate={this.handleDocumentUpdate}         
+        selectedDocument={this.state.selectedDocument}   
         setError = {this.setError}
         setAlert = {this.setAlert}
         //loadCsv = {this.loadCsv}
@@ -341,6 +340,7 @@ class App extends Component {
       <DocumentHeader  
         selectedDocument={this.state.selectedDocument}  
         canLoadDocument={this.canLoadDocument()}
+        
         autoMLModelList={this.state.autoMLModelList}
         handleModelUpdate={this.handleModelUpdate} 
         autoMLPrediction = {this.state.autoMLPrediction}
