@@ -17,8 +17,7 @@ function Login(props) {
         buttonText="Login"
         onSuccess={props.onSuccess}
         onFailure={props.onFailure}
-        scope="https://www.googleapis.com/auth/devstorage.read_write"
-        scope="https://www.googleapis.com/auth/cloud-platform"
+        scope="https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/devstorage.read_write https://www.googleapis.com/auth/cloud-language"
         cookiePolicy={'single_host_origin'}
         style={{ marginTop: '100px' }}
         isSignedIn={true}

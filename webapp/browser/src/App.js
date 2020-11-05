@@ -30,6 +30,7 @@ import DocumentHeader from './DocumentHeader.js'
 import GenerateCsvApi from './api/GenerateCsvApi.js'
 import DocumentListApi from './api/DocumentListApi.js'
 import PredictionApi from './api/PredictionApi.js'
+import FadeIn from 'react-fade-in';
 
 // refresh token
 import { refreshTokenSetup } from './lib/refreshToken';
@@ -260,23 +261,40 @@ class App extends Component {
   
   renderDocument () {    
 
+        
+    if (!this.state.isLoggedIn)
+      return (         
+        <FadeIn delay="1200"> 
+          <React.Fragment>
+          <Typography variant="h6">Logged out. </Typography>
+          <Typography>
+             Click the "Login" button in the upper right.
+          </Typography>
+            </React.Fragment>
+        </FadeIn>
+        )
+
     if (!this.config.bucketName)
       return (          
-        <React.Fragment>
+        <FadeIn transitionDuration="100"> 
+          <React.Fragment>
           <Typography variant="h6">Bucket name not specified. </Typography>
           <Typography>
              Click your avatar icon in the upper right, then choose a Google Cloud Storage bucket.
           </Typography>
-        </React.Fragment>
+            </React.Fragment>
+        </FadeIn>
         )
     if (!this.state.selectedDocument)
       return (          
-        <React.Fragment>
+         <FadeIn  transitionDuration="100"> 
+           <React.Fragment>
           <Typography variant="h6">No document selected. </Typography>
           <Typography>
             Select a document using the <MenuIcon/> icon to begin.
           </Typography>
-        </React.Fragment>
+          </React.Fragment>
+        </FadeIn>
         )
 
     if (this.state.isLoggedIn && this.config.bucketName && this.state.selectedDocument)

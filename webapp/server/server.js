@@ -28,13 +28,25 @@ const AutoML = require('lib/automl.js');
 const DownloadCsv = require('lib/download-csv');
 const AnnotatedDocument = require('lib/annotated-document.js');
 const BodyParser = require('body-parser');
+const axios = require('axios');
 
 app.use(BodyParser.json());
 
 // console.log that your server is up and running
 app.listen(port, () => console.log(`Listening on port ${port}`));
 
-function get_header_options(req) {
+async function get_header_options(req) {
+    // do a quick check to make sure this bearer token is valid.    
+    // this is required if we enable service account auth to make sure the user is at least logged in
+    var accessToken = req.header("X-Bearer-Token")
+    var res = await axios.get(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`)
+    var json = res.data
+ 
+    if (!json.expires_in > 0) {
+        throw new Error("Invalid Access Token")
+    }
+    console.log(`Sending request on Behalf of: ${json.email}`)
+  // Dumper(json)
     return {
         accessToken: req.header("X-Bearer-Token"),
         projectId: req.header("X-Project-Id"),
@@ -44,7 +56,7 @@ function get_header_options(req) {
 }
 app.get('/list_documents', async (req, res) => {
     try {
-        var options = get_header_options(req)
+        var options = await get_header_options(req)
         //console.log("trying to list docs")
         //console.log(options)
 
@@ -61,7 +73,7 @@ app.get('/list_documents', async (req, res) => {
 
 app.get('/load_document', async (req, res) => {    
     try {
-        var options = get_header_options(req);
+        var options = await  get_header_options(req);
         var doc = new AnnotatedDocument(options);    
 
         var data = await doc.load(req.query.d);
@@ -76,7 +88,7 @@ app.get('/load_document', async (req, res) => {
 app.post('/save_document',async(req,res) =>{
     //Dumper(req.body)
     try {
-        var options = get_header_options(req);
+        var options = await  get_header_options(req);
         var doc = new AnnotatedDocument(options);      
         
         // TODO: validate json against schema        
@@ -91,7 +103,7 @@ app.post('/save_document',async(req,res) =>{
 
 app.get('/generate_csv', async (req, res) => {    
     try {
-        var options = get_header_options(req);
+        var options = await  get_header_options(req);
         var csv = new DownloadCsv(options);   
 
         // persist downloads and saves to bucket
@@ -109,7 +121,7 @@ app.get('/generate_csv', async (req, res) => {
 app.get('/list_models', async (req, res) => {
     try {        
 
-        var options = get_header_options(req);
+        var options = await  get_header_options(req);
         console.log("trying to list models");
         console.log(options);
 
@@ -129,7 +141,7 @@ app.get('/list_models', async (req, res) => {
 app.post('/get_prediction', async (req, res) => {
     try {        
    
-        var options = get_header_options(req);
+        var options = await  get_header_options(req);
         console.log("trying to get_prediction");
         console.log(req.body);
 
