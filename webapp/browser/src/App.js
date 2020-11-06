@@ -336,6 +336,7 @@ class App extends Component {
         generateCsv = {this.generateCsv}
         userProfile = {this.state.userProfile}
         documentList = {this.state.documentList}
+        refreshDocumentList={this.refreshDocumentList}
       />
       <DocumentHeader  
         selectedDocument={this.state.selectedDocument}  

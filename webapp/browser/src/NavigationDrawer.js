@@ -96,8 +96,15 @@ class NavigationDrawer extends Component {
     if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
+
+    // don't await this call
+    // poor mans async
+    //setTimeout(function() {
+     
+    //},0);
     
     this.setState({ ...this.state, isOpen: !this.state.isOpen });
+    this.props.refreshDocumentList()
   };
 
   renderGenerateCsv()
