@@ -85,7 +85,8 @@ class App extends Component {
 
   // this is evil but i don't fully understand react cest la vie
   forceUpdateHandler(){    
-    this.forceUpdate();
+    // I think i understand react now! key property is needed  for re renders to happend based on updated (props) properties :)
+   // this.forceUpdate();
   };
 
   // returns current document src when null
