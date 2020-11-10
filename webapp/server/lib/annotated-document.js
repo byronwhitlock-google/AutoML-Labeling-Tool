@@ -77,7 +77,14 @@ module.exports = class AnnotatedDocument {
         {
           throw new Error("Cannot save, document format invalid.")
         }
-    return this.gcs.writeDocument(jsonlFilename,JSON.stringify(document))
+    // if there are no annotations, delete the document completely, otherwise write it out.
+    if (document.annotations.length == 0) {
+      console.log(`Sending delete for ${jsonlFilename}`)
+      this.gcs.delete(jsonlFilename)
+      return true;
+    }
+    else
+      return this.gcs.writeDocument(jsonlFilename,JSON.stringify(document))
   }
 
 // Takes a filename to a text file in the users bucket, returns a json automl annotation object

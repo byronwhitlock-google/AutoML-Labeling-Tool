@@ -100,7 +100,24 @@ module.exports = class CloudStorage extends GoogleCloud {
     
     return json;
   }
-  
+  async delete(documentName) {
+    var path = `/storage/v1/b/${this.bucketName}/o/${encodeURIComponent(documentName)}`
+    var res = await this.httpPost(path,null,"DELETE");
+    var json = ""
+    try {
+      json = JSON.parse(res);
+    } 
+    catch (e) 
+    {
+      throw new Error(res)
+    }
+    
+    //console.log(res);
+    if (json.hasOwnProperty('error'))
+      throw new Error(json.error.message)
+    
+    return json;
+  }
   // read from cloud storage syncronously.
   async listDocuments(suffix=".txt",parentDirectory="")   {
 

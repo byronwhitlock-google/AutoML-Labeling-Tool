@@ -87,8 +87,8 @@ class NavigationDrawer extends Component {
 
   handleDocumentClick =  (newDocumentSrc) => {
     // do a full refresh for new docuemnt keep things snappy?
-    window.location = '/'+newDocumentSrc
-    // this.props.handleDocumentUpdate(newDocumentSrc)
+    //window.location = '/'+newDocumentSrc
+    this.props.handleDocumentUpdate(newDocumentSrc)
   }
 
   toggleDrawer = (open) => (event) => {
@@ -104,7 +104,9 @@ class NavigationDrawer extends Component {
     //},0);
     
     this.setState({ ...this.state, isOpen: !this.state.isOpen });
-    this.props.refreshDocumentList()
+    //setTimeout(function() {
+    // this.props.refreshDocumentList()
+    //},100);
   };
 
   renderGenerateCsv()
@@ -113,12 +115,13 @@ class NavigationDrawer extends Component {
       return (
         <ListItem onClick={this.handleGenerateCsvClick} button key="generate-csv">
           <SettingsIcon color="primary"/>
-          <ListItemText primary="Generate Training CSV" secondary="AutoML Natural Language format"/>
+          <ListItemText primary="Generate CSV" secondary="AutoML training"/>
         </ListItem>
         )
   }
   list() { 
     var config = new GlobalConfig();
+    
     return (    
     <div
       className={clsx(this.classes.list, {
@@ -137,7 +140,7 @@ class NavigationDrawer extends Component {
         {this.renderGenerateCsv()}
         <Divider/>    
         {this.props.documentList.map((document) => (
-           <Tooltip title={`${document.name} ${document.labeled?" has been labeled.":" has NOT been labeled."}`}>   
+           <Tooltip title={`${document.name.replace(/\.txt$/gi, '')} ${document.labeled?" has been labeled.":" has NOT been labeled."}`}>   
             <ListItem button  
             onClick={()=>this.handleDocumentClick(document.name)} 
             key={document.name} 
@@ -147,7 +150,7 @@ class NavigationDrawer extends Component {
               {document.labeled?
                 <CheckCircleTwoToneIcon style={{ color: 'green'}}/>:
                 <ErrorTwoToneIcon  style={{ color: 'red'}}/> }
-                <ListItemText primary={document.name} />
+                <ListItemText primary={document.name.replace(/\.txt$/gi, '')} />
             </ListItem>
           </Tooltip>
         ))}

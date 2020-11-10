@@ -32,7 +32,7 @@ module.exports = class GoogleCloud {
   }
 
 
-  async httpPost(path,postData) {
+  async httpPost(path,postData,method="POST") {
 
     postData = JSON.stringify(postData);
     
@@ -40,7 +40,7 @@ module.exports = class GoogleCloud {
         hostname: this.hostName,
         port: 443,
         path: path, //path includes query string https://node.readthedocs.io/en/latest/api/https/#httpsgetoptions-callback
-        method: 'POST',
+        method: method,
         headers:{
             Authorization:  "Bearer "+ this.accessToken,
             //'Content-Type': 'application/json',

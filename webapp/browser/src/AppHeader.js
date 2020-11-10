@@ -28,7 +28,6 @@ import SettingsDialog from './SettingsDialog.js'
 import Avatar from '@material-ui/core/Avatar';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import Tooltip from '@material-ui/core/Tooltip';
-
 // refresh token
 import { refreshTokenSetup } from './lib/refreshToken';
 
@@ -48,39 +47,12 @@ export default function AppHeader(props) {
   const classes = useStyles();
   // closures are why we love js. 
   const [settingsOpen, setSettingsOpen] = useState(0);
-
-  const renderSettings = (props)=> { 
-    // scope? we dont need your stinking scope.
-    // settingsOpen and setSettingsOpen() defined in outer closure
-
-    if (props.isLoggedIn)
-      return (
-        <React.Fragment>
-
-          <Tooltip title={`Configure User Settings for ${props.userProfile.email}`}>
-            <Button color="inherit" onClick={()=>{setSettingsOpen(1)}}>
-              <Avatar alt={props.userProfile.name} src={props.userProfile.imageUrl}/>
-            </Button>
-          </Tooltip>
-          <SettingsDialog onClose={()=>{setSettingsOpen(0)}} open={settingsOpen}  onLogoutSuccess={props.onLogoutSuccess}  {...props}/>
-          
-        </React.Fragment>
-          )
-          
-    else
-      return (
-      <Tooltip title="Login With Google Account">
-        <Login onSuccess={props.onLoginSuccess} onFailure={props.onLoginFailure}/>
-      </Tooltip>
-      )
-  }
   
   return (
     <div className={classes.root}>
       <AppBar position="static">
         <Toolbar>
-            <NavigationDrawer {...props} handleDocumentUpdate={props.handleDocumentUpdate} />
-          
+          <NavigationDrawer {...props} handleDocumentUpdate={props.handleDocumentUpdate} />          
           <Typography variant="h6" className={classes.title}>
           AutoML Labeling Tool
           </Typography>
@@ -88,12 +60,21 @@ export default function AppHeader(props) {
             <Button onClick={()=>{window.open("https://github.com/byronwhitlock-google/AutoML-Labeling-Tool")}}>            
               <GitHubIcon  color="inherit"/>            
             </Button>
-          </Tooltip>
-          {renderSettings(props)}          
-
-          
-
-                    
+          </Tooltip>          
+          {props.isLoggedIn ?       
+            <React.Fragment>
+              <Tooltip title={`Configure User Settings for ${props.userProfile.email}`}>
+                <Button color="inherit" onClick={()=>{setSettingsOpen(1)}}>
+                  <Avatar alt={props.userProfile.name} src={props.userProfile.imageUrl}/>
+                </Button>
+              </Tooltip>
+              <SettingsDialog onClose={()=>{setSettingsOpen(0)}} open={settingsOpen}  onLogoutSuccess={props.onLogoutSuccess}  {...props}/>          
+            </React.Fragment>
+            :
+            <Tooltip title="Login With Google Account">
+              <Login onSuccess={props.onLoginSuccess} onFailure={props.onLoginFailure}/>
+            </Tooltip>
+          }
         </Toolbar>
       </AppBar>
     </div>
