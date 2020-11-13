@@ -55,3 +55,8 @@ variable "dns_zone_name" {
   type        = string
   default     = "automl-labeling-tool"
 }
+
+variable "dns_zone" {
+  description = "DNS Zone in which to create the ILB A record"
+  type        = string
+}

@@ -10,13 +10,6 @@ data "google_compute_subnetwork" "subnetwork" {
   region  = var.region
 }
 
-/*
-data "google_service_account" "automl_service_account" {
-  project   = var.project_id
-  account_id = var.service_account
-}
-*/
-
 resource "google_compute_region_instance_group_manager" "rigm" {
   provider = google-beta
   project  = var.project_id
@@ -50,7 +43,6 @@ resource "google_compute_instance_template" "instance_template" {
   }
 
   network_interface {
-    #subnetwork         = var.subnetwork
     subnetwork         = data.google_compute_subnetwork.subnetwork.self_link
     subnetwork_project = var.project_id
   }
@@ -59,7 +51,6 @@ resource "google_compute_instance_template" "instance_template" {
   
   service_account {
     email   = var.service_account
-    #email  = data.google_service_account.automl_service_account.email
     scopes = ["cloud-platform"]
   }
 

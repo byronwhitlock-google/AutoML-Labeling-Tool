@@ -30,6 +30,9 @@ module "dns-record" {
     source = "../modules/terraform-dns-record-ilb"
     project_id          = var.project
     dns_zone_name       = var.dns_zone_name
+    dns_zone            = var.dns_zone
     ilb_name            = module.ilb.ilb_name
+    ilb_ip_address      = module.ilb.ilb_ip_address
     region              = var.region
+
 }

@@ -18,3 +18,4 @@ network_tags  = ["automl-labeling-tool", "load-balanced-backend"]
 # DNS Record Configuration
 
 dns_zone_name = "automl-labeling-tool"
+dns_zone      = "automl."
