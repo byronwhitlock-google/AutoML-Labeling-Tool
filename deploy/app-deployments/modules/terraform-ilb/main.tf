@@ -1,3 +1,4 @@
+/*
 data "google_compute_network" "automl_network" {
   project = var.project_id
   name    = var.network
@@ -20,10 +21,12 @@ data "google_compute_region_instance_group" "automl_instance_group" {
   name     = var.instance_group_name
   region   = var.region
 }
+*/
 
 resource "google_compute_forwarding_rule" "automl_forwarding_rule" {
   provider    = google-beta
-  depends_on  = [data.google_compute_subnetwork.proxy]
+  depends_on = [var.proxy_subnet]
+  #depends_on  = [data.google_compute_subnetwork.proxy]
   
   project     = var.project_id
   name        = var.forwarding_rule_name
@@ -33,8 +36,10 @@ resource "google_compute_forwarding_rule" "automl_forwarding_rule" {
   load_balancing_scheme = "INTERNAL_MANAGED"
   port_range            = 80
   target                = google_compute_region_target_http_proxy.automl_proxy.id
-  network               = data.google_compute_network.automl_network.id
-  subnetwork            = data.google_compute_subnetwork.automl_subnet.id
+  network               = var.network
+  #network               = data.google_compute_network.automl_network.id
+  #subnetwork            = data.google_compute_subnetwork.automl_subnet.id
+  subnetwork            = var.subnet
   network_tier          = "PREMIUM"
 }
 
@@ -60,7 +65,8 @@ resource "google_compute_region_backend_service" "automl_backend" {
   load_balancing_scheme = "INTERNAL_MANAGED"
 
   backend {
-    group = data.google_compute_region_instance_group.automl_instance_group.self_link
+    group = var.instance_group
+    #group = data.google_compute_region_instance_group.automl_instance_group.self_link
     balancing_mode = "UTILIZATION"
     capacity_scaler = 1.0
   }

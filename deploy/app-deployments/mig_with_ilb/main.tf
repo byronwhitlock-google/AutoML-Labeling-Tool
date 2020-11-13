@@ -24,6 +24,7 @@ module "ilb" {
     proxy_subnet        = var.proxy_subnet
     region              = var.region
     instance_group_name = module.mig.instance_group_name
+    instance_group      = module.mig.instance_group
 }
 
 module "dns-record" {

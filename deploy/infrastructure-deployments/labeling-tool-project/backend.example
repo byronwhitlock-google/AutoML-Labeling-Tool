@@ -1,0 +1,6 @@
+terraform {
+    backend "gcs" {
+        bucket = "automl-gcs-bucket"
+        prefix = "application"
+    }
+}

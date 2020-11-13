@@ -57,3 +57,8 @@ variable "forwarding_rule_name"{
   type        = string
   default     = "automl-labeling-tool-ilb"
 }
+
+variable "instance_group" {
+  description = "Full URL of the instance group"
+  type        = string
+}
