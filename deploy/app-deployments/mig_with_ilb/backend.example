@@ -1,6 +1,12 @@
+# This is an example backend for Terraform remote state
+# 1) Fill in an existing GCS bucket and folder path
+#    in the values below
+# 2) Rename file to "backend.tf" 
+
+
 terraform {
     backend "gcs" {
-        bucket = "automl-gcs-bucket"
-        prefix = "application"
+        bucket = "PUT-YOUR-BUCKET-HERE"
+        prefix = "PUT-A GCS-FOLDER-HERE"
     }
 }
