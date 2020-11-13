@@ -6,7 +6,7 @@ network      = "automl-labeling-vpc"
 subnet       = "automl-labeling-subnet"
 proxy_subnet = "automl-labeling-tool-ilb-proxy-subnet"
 
-container_image_path = "gcr.io/auto-ml-project-2aa7/automl-labeling-tool"
+container_image_path = "gcr.io/automl-labeling-tool/automl-labeling-tool"
 
 # MIG and ILB Configuration
 
