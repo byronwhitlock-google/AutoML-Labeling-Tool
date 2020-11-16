@@ -79,6 +79,7 @@ backend.tf
 
 # environment specific configuration
 env-configs
+terraform.tfvars
 
 
 @byronwhitlock-google
