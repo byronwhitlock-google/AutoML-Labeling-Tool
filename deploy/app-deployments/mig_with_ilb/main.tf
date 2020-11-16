@@ -1,7 +1,3 @@
-module "service-account" {
-    source  = "../modules/terraform-service-account"
-    project         = var.project
-}
 
 module "mig" {
     source = "../modules/terraform-mig"
@@ -10,7 +6,7 @@ module "mig" {
     zone                 = var.zone
     mig_size             = var.mig_size
     subnetwork           = var.subnet
-    service_account      = module.service-account.email
+    service_account      = var.service-account_email ## NEED TO ADD SERVICE ACCOUNT EMAIL TO VARIABLES
     container_image_path = var.container_image_path
     network_tags         = var.network_tags
 

@@ -77,5 +77,8 @@ terraform.tfstate.backup
 # terraform remote state configuration
 backend.tf
 
+# environment specific configuration
+env-configs
+
 
 @byronwhitlock-google

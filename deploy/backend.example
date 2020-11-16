@@ -3,6 +3,7 @@
 #    in the values below
 # 2) Rename file to "backend.tf" 
 
+
 terraform {
     backend "gcs" {
         bucket = "PUT-YOUR-BUCKET-HERE"

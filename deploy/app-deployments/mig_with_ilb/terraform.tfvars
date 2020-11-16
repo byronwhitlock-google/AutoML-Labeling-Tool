@@ -8,6 +8,7 @@ proxy_subnet = "automl-labeling-tool-ilb-proxy-subnet"
 
 container_image_path = "gcr.io/automl-labeling-tool/automl-labeling-tool"
 
+/*
 # MIG and ILB Configuration
 
 region        = "us-east1"
@@ -19,3 +20,4 @@ network_tags  = ["automl-labeling-tool", "load-balanced-backend"]
 
 dns_zone_name = "automl-labeling-tool"
 dns_zone      = "automl."
+*/

@@ -1,3 +1,5 @@
+### Project  Stuff ###
+
 module "project" {
   source            = "../modules/terraform-google-project"
   billing_account   = var.billingAccount
@@ -16,6 +18,8 @@ module "project" {
   group_emails                = var.group_emails
   member_attributes           = var.member_attributes
 }
+
+### Networking Stuff ###
 
 module "network" {
   source          = "../modules/terraform-network-base"
@@ -47,4 +51,13 @@ module "dns-zone" {
   vpc_id          = module.network.vpc_id
   dns_zone_name   = var.dns_zone_name
   dns_zone        = var.dns_zone
+}
+
+### Service Account Stuff ###
+
+module "service-account" {
+  source          = "../modules/terraform-service-account"
+  project         = module.project.project_id
+  account_id      = var.account_id
+  display_name    = var.name
 }

@@ -1,0 +1,8 @@
+
+name               = "automl-labeling-tool-vm"
+machine_type       = "n2-standard-2"
+tags               = ["automl-labeling-tool"]
+image              = "projects/cos-cloud/global/images/cos-77-12371-1096-0"
+scopes             = ["cloud-platform"] 
+
+container_image_path = "gcr.io/automl-labeling-tool/automl-labeling-tool"

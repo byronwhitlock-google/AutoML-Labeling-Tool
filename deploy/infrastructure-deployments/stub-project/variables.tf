@@ -19,6 +19,7 @@ variable "folderID" {
   default     = ""
 }
 
+/*
 variable "shared_vpc" {
   description = "The ID of the host project which hosts the shared VPC"
   type        = string
@@ -48,6 +49,7 @@ variable "auto_create_network" {
   type        = bool
   default     = false
 }
+*/
 
 variable "name" {
   description = "The name for the project"
@@ -147,4 +149,16 @@ variable "dns_zone_name" {
 variable "dns_zone" {
   description = "DNS Zone"
   type        = string
+}
+
+variable "account_id" {
+  description = "ID for the AutoML Labeling Tool service account"
+  type        = string
+  default     = "automl-labeling-tool-sa"
+}
+
+variable "display_name" {
+  description = "Display name for the AutoML Labeling Tool service account"
+  type        =  string
+  default     = "automl-labeling-tool-sa"
 }

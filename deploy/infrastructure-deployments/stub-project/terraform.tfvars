@@ -42,11 +42,11 @@ member_attributes = {
 ##########   NETWORK VARIABLES #################
 ################################################
 
-subnet_region     = "us-east1"
-mig_cidr_range    = "10.0.0.0/24"
+subnet_region     = "us-west1"
+mig_cidr_range    = "10.160.0.0/16"
 mig_source_tags   = ["automl-labeling-tool"]
 
-proxy_cidr_range  = "10.129.0.0/26"
+proxy_cidr_range  = "10.161.0.0/26"
 proxy_source_tags = ["load-balanced-backend"]
 
 ################################################
