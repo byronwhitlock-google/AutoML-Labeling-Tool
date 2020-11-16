@@ -8,12 +8,12 @@ The deployment assumes that a number of pre-requisites have been configured prio
 
 1. GCP Project in which to deploy the GCE instance 
 2. Networking Resources for the GCE instance to connect
-2.1 GCP VPC (i.e., Network
-2.2 GCP Subnet
-2.3 GCP firewall rules (as needed to allow client browers to connect to the instance).  Note that the AutoML labeling tool maps to port 80 on the GCE instance.
+    1. GCP VPC (i.e., Network
+    2. GCP Subnet
+    3. GCP firewall rules (as needed to allow client browers to connect to the instance).  Note that the AutoML labeling tool maps to port 80 on the GCE instance.
 3. GCP Service Account for the VM to run under.  This service account, at a minmum, requires the following  permissions: roles/automl.predictor; roles/automl.viewer; roles/storage.objectAdmin
 4. GCP OAuth consent screen.  The AutoML labeling tool uses GCP OAuth to provide authentication for the tool.  You need to configure the OAuth consent screen for the tool.  
-4.1 DNS record pointing to IP address of the GCE instance.  A DNS domain is required for the GCP OAuth conesnt screen.  
+    1. DNS record pointing to IP address of the GCE instance.  A DNS domain is required for the GCP OAuth conesnt screen.  
 
 ### Required Inputs
 The following variables are required to be set for the Terraform deploy script to run
@@ -45,16 +45,16 @@ The following variables are configurable in the Terraform deploy script.  Howeve
 Once the pre-requisites have been setup, the deployment process involves configuring the Terraform installer to make it aware of the environment and running Terraform to deploy the resources.
 
 1. Install Terraform.  Download the appropriate Terraform binary for your system (https://www.terraform.io/downloads.html).  Install Terraform by unzippint it and moving it to a directory included in your system's PATH.  Note that GCP Cloud Shell has Terraform pre-installed. 
-2. Configure Backend (optional).  Terraform generally stores the state of resources it creates locally to your machine.  To prevent potential corruption, it is strongly recommend to setup Google Cloud Storage as a remote state backend for Terraform.  To setup the backend, the following steps are required:
-2.1 Create a GCS bucket to serve as the remote backend and a top-level within the GCS folder to store the actual state
-2.2 Enter the name of the GCS bucket in the file "backend.example"
-2.3 Enter the name of the GCS folder in the file "backend.example"
-2.4 Rename "backend.example" to "backend.tf"
+2. Configure Backend (optional).  Terraform generally stores the state of resources it creates locally to your machine.  To prevent potential corruption, it is strongly recommend to setup Google Cloud Storage as a remote state backend for Terraform.  To setup the backend, the following steps are required: 
+3. Create a GCS bucket to serve as the remote backend and a top-level within the GCS folder to store the actual state
+    1. Enter the name of the GCS bucket in the file "backend.example"
+    2. Enter the name of the GCS folder in the file "backend.example"
+    3.  Rename "backend.example" to "backend.tf"
 3. Set Required Inputs (see SETTING INPUTS) 
 4. Apply Terraform Configuration
-4.1 Run "Terraform init" in this directory to initialize Terraform
-4.2 Run "Terraform plan" in this directory to ensure input has been correctly set
-4.3 Run "Terraform apply" to deploy the tool.  Enter "yes" when prompted for Terraform to deploy. 
+    1 Run "Terraform init" in this directory to initialize Terraform
+    2 Run "Terraform plan" in this directory to ensure input has been correctly set
+    3 Run "Terraform apply" to deploy the tool.  Enter "yes" when prompted for Terraform to deploy. 
 
 More information on running Terraform can be found at https://cloud.google.com/community/tutorials/getting-started-on-gcp-with-terraform
 
