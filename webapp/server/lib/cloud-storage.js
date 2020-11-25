@@ -13,19 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 */
-//https://cloud.google.com/storage/docs/json_api/v1/objects/get
+
+// THis library uses service account auth and does not authenticate the caller!
+// potential security risk.
 "use strict";
 const Dumper = require('dumper').dumper;
-const GoogleCloud = require('./google-cloud-REST.js')
-
+const {Storage} = require('@google-cloud/storage');
 //https://googleapis.dev/nodejs/storage/latest/index.html
+module.exports = class CloudStorage {
+    /**
+   * @param {{ [x: string]: any; accessToken?: any; projectId: any; locationId?: any; bucketName: any; }} options
+   */
+    constructor(options) {
 
-module.exports = class CloudStorage extends GoogleCloud {
-  constructor(options) {
-    options.hostName = 'storage.googleapis.com'
-    super(options)
     this.projectId = options.projectId
     this.bucketName = options.bucketName
+
+    this.storage = new Storage({projectId: this.projectId})
+    this.bucket = this.storage.bucket(this.bucketName);
 
     if (!options['projectId'])
       throw new Error("Missing projectId in CloudStorage constructor.")
@@ -33,18 +38,19 @@ module.exports = class CloudStorage extends GoogleCloud {
     if (!options['bucketName'])
       throw new Error("Missing bucketName in CloudStorage constructor.")
 
-
-
   }
-
-  async readJsonDocument(documentName,metadataOnly=false) {
-    var res = await this.readDocument(documentName,metadataOnly) 
+  /**
+   * @param {string} documentName
+   */
+  async readJsonDocument(documentName) {
+    var res = await this.readDocument(documentName) 
     var json = {}
     try {
       json = JSON.parse(res);
     } 
     catch (e) 
     {
+      console.error(res)
       throw new Error(e)
     }
     
@@ -54,107 +60,77 @@ module.exports = class CloudStorage extends GoogleCloud {
     
     return json;
   }
+
   // read from cloud storage syncronously.
+  /**
+   * @param {string} documentName
+   */
   async readDocument(documentName,metadataOnly=false)  {
-
-    //https://cloud.google.com/storage/docs/json_api/v1/objects/get
-
-    // serously cant do ouath flow usign the standard lib? wtf? annoying as heck.
-    var path = `/storage/v1/b/${this.bucketName}/o/${encodeURIComponent(documentName)}`;
-
-    if (metadataOnly)
-      path += "?alt=json"
-    else
-      path += "?alt=media"
-
-
-    var res = await this.httpGet(path);
-    /// since we didn't check the http return code look at the text to see if we got not found
-    // AND since we aren't looking at json for errors do this funky monkey
-    if (res.startsWith("No such object: ") || res.startsWith("Not Found"))
-    {
-      throw new Error(`HTTP Error: ${res}`)
-      return "";
-    }
-
-    //Dumper(res)
-    return res;
-
+    let buffer = "";
+    try {
+      // Return file contents    
+      let file = await this.bucket.file(documentName)
+      let contents = await file.download();
+      console.log('got file contents')
+      Dumper(contents)
+      return contents.toString();
+    } catch (err) {
+        let errorMessage = "Cannot read cloud storage object: " + err.message
+        console.error(errorMessage)
+        throw new Error(errorMessage)
+      }
   }
-//https://cloud.google.com/storage/docs/json_api/v1/objects/insert
+
+
+  /**
+   * @param {string} documentName
+   * @param {any} contents
+   */
   async writeDocument(documentName, contents) {
-    var path = `/upload/storage/v1/b/${this.bucketName}/o?uploadType=media&name=${documentName}`
-    var res = await this.httpPost(path,contents);
-    var json = ""
-    try {
-      json = JSON.parse(res);
-    } 
-    catch (e) 
-    {
-      throw new Error(res)
-    }
-    
-    //console.log(res);
-    if (json.hasOwnProperty('error'))
-      throw new Error(json.error.message)
-    
-    return json;
+    return this.bucket
+      .file(documentName)
+      .save(contents);
   }
-  async delete(documentName) {
-    var path = `/storage/v1/b/${this.bucketName}/o/${encodeURIComponent(documentName)}`
-    var res = await this.httpPost(path,null,"DELETE");
-    var json = ""
-    try {
-      json = JSON.parse(res);
-    } 
-    catch (e) 
-    {
-      throw new Error(res)
-    }
-    
-    //console.log(res);
-    if (json.hasOwnProperty('error'))
-      throw new Error(json.error.message)
-    
-    return json;
-  }
+  
   // read from cloud storage syncronously.
   async listDocuments(suffix=".txt",parentDirectory="")   {
+    // Lists files in the bucket
+    let [files] = await this.bucket.getFiles({
+        directory:parentDirectory,
+        autoPaginate:true,
+        delimiter: '/'
+    });
+    let documentList = []
+    
+    console.log(`${parentDirectory} Files: ${files.length}`);
+    for (var i=0;i<files.length;i++) {
+      let file = files[i]    
+      let filename = file.metadata.name.substr(parentDirectory.length)
 
-    //https://cloud.google.com/storage/docs/json_api/v1/objects/get
-    //TODO: Fetch next page tokens. rightn now buggy doesn't work. only fetches 1000 items maxs
-    // we would ues the standard libaray that handles this but it doesn't support oauth 
-    // no leading slashes on parent directory, but include trailing ones!
-    var path = `/storage/v1/b/${this.bucketName}/o/?delimiter=/&prefix=${parentDirectory}`
-    var documentList = []
-    var maxItems = 2000;
-    try {
-      //do
-      {
-        console.log("About to list documents: "+ path)
-        var res = await this.httpGet(path);
-        var json = JSON.parse(res);
-        //console.log(json)
-        if (json.hasOwnProperty('error'))
-          throw new Error(json.error.message)
-        if (json.items){
-          for(var i=0;i<json.items.length;i++)
-          {
-            if (json.items[i].name.endsWith(suffix))
-            {
-              documentList.push(json.items[i].name.substr(parentDirectory.length))
-            }
-          }
-        }
+      //console.log(file.metadata.name)  
+      if (filename.endsWith(suffix)) {        
+        documentList.push(filename);
       }
-      //while (json.nextPageToken != "" || documentList.length < maxItems)
-    } 
-    catch (e) 
-    {
-      throw new Error(e.message)
     }
-    //Dumper(documentList)
-    return documentList;
+    return documentList
   }
 
+  /**
+   * @param {string} documentName
+   */
+  async fileExists(documentName)
+  {
+    let file = this.bucket.file(documentName);
+    let res = await file.exists();
+    console.log(res)
+    return res[0];
+  }
+
+  /**
+   * @param {string} documentName
+   */
+  async delete(documentName) { 
+    let file = this.bucket.file(documentName);
+    return await file.delete()
+  }
 }

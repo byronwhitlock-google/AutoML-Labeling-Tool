@@ -36,22 +36,22 @@ function AutoMLPrediction(props) {
     const classes = useStyles();
     return (
      <FormControl className={classes.formControl}>
-        <InputLabel id="automl-dataset-label">Natural Language Model</InputLabel>
+        <InputLabel id="automl-model-label">Natural Language Model</InputLabel>
         <Select
-          labelId="automl-dataset-label"
-          id="automl-dataset"
+          labelId="automl-model-label"
+          id="automl-model"
           selected={props.selectedModel}
           onChange={onSelectChange}
           autowidth
         >
         <MenuItem selected={true} value="">None</MenuItem>
-        {props.autoMLModelList.map((dataset) => 
-          <MenuItem id={ dataset.name} key={dataset.name} value={dataset.name}  onClick={(e)=>handleClick(e,dataset.name)}>             
-            {dataset.displayName}
+        {props.autoMLModelList.map((model) => 
+          <MenuItem id={ model.name} key={model.name} value={model.name}  onClick={(e)=>handleClick(e,model.name)}>             
+            {model.displayName}
           </MenuItem>                
         )}
         </Select>
-        <FormHelperText>AutoML dataset used for predictions</FormHelperText>
+        <FormHelperText>AutoML model used for predictions</FormHelperText>
       </FormControl> 
     )
 }

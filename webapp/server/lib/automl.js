@@ -20,14 +20,16 @@
 
 "use strict";
 const Dumper = require('dumper').dumper;
-const GoogleCloud = require('./google-cloud-REST.js')
+const {AutoMlClient,PredictionServiceClient} = require('@google-cloud/automl').v1;
 const CloudStorage = require('lib/cloud-storage.js');
 
 //required options: accessToken, projectId, locationId
-module.exports = class AutoML extends GoogleCloud {
+module.exports = class AutoML {
+  /**
+   * @param {{ projectId: any; locationId: any; }} options
+   */
   constructor(options) {
-    options.hostName = 'automl.googleapis.com'
-    super(options)
+
     this.projectId = options.projectId
     this.locationId = options.locationId //'us-central1'
 
@@ -35,58 +37,26 @@ module.exports = class AutoML extends GoogleCloud {
       throw new Error("Cannot Construct AutoML. Missing Project or Location")
     
     this.gcs = new CloudStorage(options);   
+    this.client = new AutoMlClient();
+    
+    // Instantiates a client
+    this.predictionClient = new PredictionServiceClient();
   }
 
-
-  // read from cloud storage syncronously.
-  async listDatasets()  {
-
-    //https://cloud.google.com/automl/docs/reference/rest/v1/projects.locations.datasets/list
-
-    var path = `/v1/projects/${this.projectId}/locations/${this.locationId}/datasets`
-
-    var res = await this.httpGet(path) ;
-    var json = ""
-    try {
-      json = JSON.parse(res);
-    } 
-    catch (e) //catch the json parse error so we can return somthing meaningfull on non 200s
-    {
-      throw new Error(res)
-    }
-    
-    //console.log(res);
-    if (json.hasOwnProperty('error'))
-      throw new Error(json.error.message)
-    
-    return json;
-
-  }
 
   async listModels()  {
 
-    //https://cloud.google.com/automl/docs/reference/rest/v1/projects.locations.models/list
-
-    var path = `/v1/projects/${this.projectId}/locations/${this.locationId}/models`
-
-    var res = await this.httpGet(path) ;
-    var json = ""
-    try {
-      json = JSON.parse(res);
-    } 
-    catch (e) //catch the json parse error so we can return somthing meaningfull on non 200s
-    {
-      throw new Error(res)
+    //https://cloud.google.com/automl/docs/reference/rest/v1/projects.locations.models/list\
+    const request = {
+      parent: this.client.locationPath(this.projectId, this.locationId),
     }
-    
-    //console.log(res);
-    if (json.hasOwnProperty('error'))
-      throw new Error(json.error.message)
-    
-    return json;
-
+    let [models] = await this.client.listModels(request);
+    return models
   }
 
+  /**
+   * @param {{ documentName: any; modelId: any; }} params
+   */
   async getPrediction(params)  {
     var documentName = params.documentName;
     var modelId = params.modelId ;
@@ -98,20 +68,23 @@ module.exports = class AutoML extends GoogleCloud {
        throw new Error('Missing Document Name');
     }
     var predictionFileName = `predictions/${modelId}/${documentName}.json`;
-
-    let jsonFileExists=false;
-    let predictionData = {}
-    try {
-      console.log("About to read document "+ predictionFileName)
+    let jsonFileExists= await this.gcs.fileExists(predictionFileName);
+    let predictionData = []
+    console.log("About to read document "+ predictionFileName)
+    if (jsonFileExists){
+      console.log("FIle exists, trying to read.")
       predictionData = await this.gcs.readJsonDocument(predictionFileName)   
-      
-    } catch (e) {
+    } else {
       predictionData = await this.downloadPrediction(params)
     }
+    
     return predictionData
   }
 
 
+  /**
+   * @param {{ documentName: any; modelId: any; }} params
+   */
   async downloadPrediction(params)  {
 
     var documentName = params.documentName;
@@ -127,42 +100,29 @@ module.exports = class AutoML extends GoogleCloud {
     
     // first download the content
     var documentContent = await this.gcs.readDocument(documentName);
-    
-    // POST https://automl.googleapis.com/v1/{name}:predict
-    var path = `https://automl.googleapis.com/v1/${modelId}:predict`
-    var postData = {
-      payload: {
-       textSnippet: {
-          content: documentContent,
-          mimeType: 'text/plain'
-        }
-      },
-      params: {}
-    };
-    console.log(`about to HTTP Post ${path}`)
-    Dumper(postData)
-    
-    var res = await this.httpPost(path,postData) ;
-    var json = ""
-    try {
-      json = JSON.parse(res);
-      
-    
-      // now save in the predictions folder
-      this.gcs.writeDocument(predictionFileName,json.payload);
-      return json.payload;
+    var path  = modelId//this.client.modelPath(this.projectId, this.locationId, modelId)
 
-    } 
-    catch (e) //catch the json parse error so we can return somthing meaningfull on non 200s
-    {
-      throw new Error(res);
-    }
-    
-    //console.log(res);
-    if (json.hasOwnProperty('error'))
-      throw new Error(json.error.message)
+    const request = {
+      name: modelId,
+      payload: {
+        textSnippet: {
+          content: documentContent,
+          mimeType: 'text/plain', // Types: 'test/plain', 'text/html'
+        },
+      },
+    };
+
+    console.log(`about to Predict Post ${path}`)
+    Dumper(request)
+    const [response] = await this.predictionClient.predict(request);
+
+    console.log("Got prediction response")
+    let payload = JSON.stringify(response.payload)
+    Dumper(payload)
+
+    // now save in the predictions folder
+    this.gcs.writeDocument(predictionFileName,payload);
+    return response.payload
 
   }
-
-
 }

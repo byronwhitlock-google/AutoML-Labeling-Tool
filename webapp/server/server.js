@@ -139,7 +139,7 @@ app.get('/list_models', async (req, res) => {
         var data = await automl.listModels();
         console.log("Got some data from listModels ");
         Dumper(data);
-        res.send({'data': data.model});
+        res.send({'data': data});
     } catch (e) {
         Dumper(e);
         console.error(e.message);

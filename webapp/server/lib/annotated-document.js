@@ -93,23 +93,16 @@ module.exports = class AnnotatedDocument {
     var jsonlFilename = `annotations/${filename}.jsonl`;
     // Check if JSONL file exists
     // If it does, read from cloud storage convert from JSON to object and return
-    // if it does not, load the .txt file, generate a JSON object and return
-    
+    // if it does not, load the .txt file, generate a JSON object and return    
     let data =  ""
-    let jsonFileExists=false;
-    try {
-      console.log("About to read document "+ jsonlFilename)
-      data = await this.gcs.readJsonDocument(jsonlFilename)   
-      jsonFileExists=true; 
-    } catch (e)
-    {
-      console.log(`${jsonlFilename} does not exist >>${e.message}<<`)
-      //jsonFileExists=false; // not found comes as an exception. excuse the sloppy handling    
+    let jsonFileExists= await this.gcs.fileExists(jsonlFilename)
+    if (!jsonFileExists){
+      console.log(`${jsonlFilename} does not exist`)      
     }
     
-    if (jsonFileExists){      
-      //return JSON.parse(data);
-      return data;      
+    if (jsonFileExists) {
+      console.log(`jsonlFilename:${jsonlFilename}`)
+      return this.gcs.readJsonDocument(jsonlFilename)
     } else {
       // read the data
       // run through the sentence splitter
