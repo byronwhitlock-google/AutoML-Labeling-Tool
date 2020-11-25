@@ -12,8 +12,7 @@ The deployment assumes that a number of pre-requisites have been configured prio
     2. GCP Subnet
     3. GCP firewall rules (as needed to allow client browers to connect to the instance).  Note that the AutoML labeling tool maps to port 80 on the GCE instance.
 3. GCP Service Account for the VM to run under.  This service account, at a minmum, requires the following  permissions: roles/automl.predictor; roles/automl.viewer; roles/storage.objectAdmin
-4. GCP OAuth consent screen.  The AutoML labeling tool uses GCP OAuth to provide authentication for the tool.  You need to configure the OAuth consent screen for the tool.  
-    1. DNS record pointing to IP address of the GCE instance.  A DNS domain is required for the GCP OAuth conesnt screen.  
+4. DNS record pointing to IP address of the GCE instance. 
 
 ### Required Inputs
 The following variables are required to be set for the Terraform deploy script to run
