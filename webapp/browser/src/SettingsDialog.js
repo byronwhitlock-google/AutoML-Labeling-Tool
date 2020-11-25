@@ -20,6 +20,7 @@ import Divider from '@material-ui/core/Divider';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import TextField from '@material-ui/core/TextField';
 import GlobalConfig from './lib/GlobalConfig.js'
+import SettingsIcon from '@material-ui/icons/Settings';
 
 const useStyles = makeStyles((theme) =>({
   root: {
@@ -67,21 +68,11 @@ export default function  SettingsDialog(props) {
   return (
     <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
     
-     <table><tr><td>
-      <DialogTitle id="simple-dialog-title">User Settings</DialogTitle>
-      </td><td><Logout color="inherit" onLogoutSuccess={()=>{handleClose();props.onLogoutSuccess()}}/>
-      </td></tr></table>
+    <DialogTitle id="simple-dialog-title">My Configuration</DialogTitle>
+      
     <List>
      <Divider />
-        <ListItem> 
-          <Avatar alt={props.userProfile.name} src={props.userProfile.imageUrl}/>
-          &nbsp;{props.userProfile.email}
-        </ListItem> 
-
-         <Divider />
-
-
-         <ListItem>
+        <ListItem>
           <form className={classes.root} noValidate autoComplete="off">
             <TextField id="bucketName" label="Bucket Name" onChange={handleUpdateBucketName} defaultValue={config.bucketName}/>
           </form>

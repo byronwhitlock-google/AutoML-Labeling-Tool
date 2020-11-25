@@ -113,12 +113,12 @@ module.exports = class AutoML {
     };
 
     console.log(`about to Predict Post ${path}`)
-    Dumper(request)
+    //Dumper(request)
     const [response] = await this.predictionClient.predict(request);
 
     console.log("Got prediction response")
     let payload = JSON.stringify(response.payload)
-    Dumper(payload)
+    //Dumper(payload)
 
     // now save in the predictions folder
     this.gcs.writeDocument(predictionFileName,payload);

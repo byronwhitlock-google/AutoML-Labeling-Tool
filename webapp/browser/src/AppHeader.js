@@ -25,7 +25,7 @@ import NavigationDrawer from './NavigationDrawer.js'
 import Logout from './Logout.js';
 import Login from './Login.js';
 import SettingsDialog from './SettingsDialog.js'
-import Avatar from '@material-ui/core/Avatar';
+import SettingsIcon from '@material-ui/icons/Settings';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import Tooltip from '@material-ui/core/Tooltip';
 // refresh token
@@ -58,23 +58,17 @@ export default function AppHeader(props) {
           </Typography>
           <Tooltip title="View documentation and source code on Github">
             <Button onClick={()=>{window.open("https://github.com/byronwhitlock-google/AutoML-Labeling-Tool")}}>            
-              <GitHubIcon  color="inherit"/>            
+              <GitHubIcon color="inherit"/>            
             </Button>
-          </Tooltip>          
-          {props.isLoggedIn ?       
+          </Tooltip>              
             <React.Fragment>
-              <Tooltip title={`Configure User Settings for ${props.userProfile.email}`}>
+              <Tooltip title={`Configure Your Settings`}>
                 <Button color="inherit" onClick={()=>{setSettingsOpen(1)}}>
-                  <Avatar alt={props.userProfile.name} src={props.userProfile.imageUrl}/>
+                  <SettingsIcon/>
                 </Button>
               </Tooltip>
               <SettingsDialog onClose={()=>{setSettingsOpen(0)}} open={settingsOpen}  onLogoutSuccess={props.onLogoutSuccess}  {...props}/>          
             </React.Fragment>
-            :
-            <Tooltip title="Login With Google Account">
-              <Login onSuccess={props.onLoginSuccess} onFailure={props.onLoginFailure}/>
-            </Tooltip>
-          }
         </Toolbar>
       </AppBar>
     </div>
