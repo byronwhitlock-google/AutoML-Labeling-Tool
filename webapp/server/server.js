@@ -36,23 +36,16 @@ app.use(BodyParser.json());
 app.listen(port, () => console.log(`Listening on port ${port}`));
 
 async function get_header_options(req) {
-    // do a quick check to make sure this bearer token is valid.    
-    // this is required if we enable service account auth to make sure the user is at least logged in
-    var accessToken = req.header("X-Bearer-Token")
-    var res = await axios.get(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`)
-    var json = res.data
- 
-    if (!json.expires_in > 0) {
-        throw new Error("Invalid Access Token")
-    }
-    console.log(`Sending request on Behalf of: ${json.email}`)
+    
   // Dumper(json)
-    return {
-        accessToken: req.header("X-Bearer-Token"),
+    let options =  {
+        //accessToken: req.header("X-Bearer-Token"),
         projectId: req.header("X-Project-Id"),
         locationId:req.header("X-Location-Id"),
         bucketName: req.header("X-Bucket-Name") ,
     };
+    Dumper(options)
+    return options
 }
 app.get('/list_documents', async (req, res) => {
     try {
@@ -75,8 +68,8 @@ app.get('/list_documents', async (req, res) => {
         Dumper(data)
         res.send({'data': data});
     } catch (e) {
-        Dumper(e)
-        console.error(e.message)
+     //   Dumper(e)
+        console.error(`${e.message} ${e.stack}`)
         res.send({'error': e.message, 'trace':e.stack });
     }
 });
@@ -90,7 +83,8 @@ app.get('/load_document', async (req, res) => {
         console.log("We got some data from load_document len:"+ data.length)
         res.send({'data': data});
     } catch (e) {
-          Dumper(e)
+        //  Dumper(e)
+        console.error(`${e.message} ${e.stack}`)
           res.send({'error': e.message, 'trace':e.stack });
     }
 });
@@ -106,7 +100,8 @@ app.post('/save_document',async(req,res) =>{
         //console.log(Dumper(data))
         res.send({'data': data});
     } catch (e) {
-          Dumper(e)
+       //   Dumper(e)
+       console.error(`${e.message} ${e.stack}`)
           res.send({'error': e.message, 'trace':e.stack });
     }
 });
@@ -123,7 +118,8 @@ app.get('/generate_csv', async (req, res) => {
         res.send(data);
         
     } catch (e) {
-        Dumper(e);
+     //   Dumper(e);
+     console.error(`${e.message} ${e.stack}`)
         res.send({'error': e.message, 'trace':e.stack });
     }
 });
@@ -141,8 +137,8 @@ app.get('/list_models', async (req, res) => {
         Dumper(data);
         res.send({'data': data});
     } catch (e) {
-        Dumper(e);
-        console.error(e.message);
+    //    Dumper(e);
+    console.error(`${e.message} ${e.stack}`)
         res.send({'error': e.message, 'trace':e.stack });
     }
 });
@@ -160,8 +156,8 @@ app.post('/get_prediction', async (req, res) => {
         console.log(`Got some data (${data.length}) from get_prediction `);
         res.send({'data': data});
     } catch (e) {
-        Dumper(e);
-        console.error(e.message);
+      //  Dumper(e);
+      console.error(`${e.message} ${e.stack}`)
         res.send({'error': e.message, 'trace':e.stack });
     }
 });

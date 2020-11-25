@@ -28,7 +28,7 @@ module.exports = class CloudStorage {
 
     this.projectId = options.projectId
     this.bucketName = options.bucketName
-
+    console.log(this.projectId)
     this.storage = new Storage({projectId: this.projectId})
     this.bucket = this.storage.bucket(this.bucketName);
 
@@ -72,7 +72,7 @@ module.exports = class CloudStorage {
       let file = await this.bucket.file(documentName)
       let contents = await file.download();
       console.log('got file contents')
-      Dumper(contents)
+      //Dumper(contents)
       return contents.toString();
     } catch (err) {
         let errorMessage = "Cannot read cloud storage object: " + err.message
@@ -94,6 +94,7 @@ module.exports = class CloudStorage {
   
   // read from cloud storage syncronously.
   async listDocuments(suffix=".txt",parentDirectory="")   {
+    console.log(`About to list documents: ${suffix} ${parentDirectory}`)
     // Lists files in the bucket
     let [files] = await this.bucket.getFiles({
         directory:parentDirectory,

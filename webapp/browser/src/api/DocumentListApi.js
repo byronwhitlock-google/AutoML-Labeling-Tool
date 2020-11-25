@@ -23,7 +23,9 @@ class DocumentListApi extends BaseApi {
  
   async loadDocumentList () {
     try {
-      return this.fetch("/list_documents")
+      let result = this.fetch("/list_documents")
+      console.log("Got Document"+result)
+      return result
 
     } catch (err) {
       if (err.message == "Not Found")

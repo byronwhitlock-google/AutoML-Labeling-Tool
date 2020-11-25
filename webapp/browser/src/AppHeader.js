@@ -22,8 +22,6 @@ import Button from '@material-ui/core/Button';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import SettingsOutlineIcon from '@material-ui/icons/Settings';
 import NavigationDrawer from './NavigationDrawer.js'
-import Logout from './Logout.js';
-import Login from './Login.js';
 import SettingsDialog from './SettingsDialog.js'
 import SettingsIcon from '@material-ui/icons/Settings';
 import GitHubIcon from '@material-ui/icons/GitHub';
@@ -67,7 +65,7 @@ export default function AppHeader(props) {
                   <SettingsIcon/>
                 </Button>
               </Tooltip>
-              <SettingsDialog onClose={()=>{setSettingsOpen(0)}} open={settingsOpen}  onLogoutSuccess={props.onLogoutSuccess}  {...props}/>          
+              <SettingsDialog onClose={()=>{setSettingsOpen(0)}} open={settingsOpen}  {...props}/>          
             </React.Fragment>
         </Toolbar>
       </AppBar>

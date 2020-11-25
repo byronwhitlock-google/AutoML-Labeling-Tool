@@ -18,8 +18,6 @@ import './App.css';
 import AppHeader from './AppHeader.js';
 import Document from './Document.js';
 import UserInput from './UserInput.js';
-import Login from './Login.js';
-import Logout from './Logout.js';
 import GlobalConfig from './lib/GlobalConfig.js'
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
@@ -31,6 +29,8 @@ import GenerateCsvApi from './api/GenerateCsvApi.js'
 import DocumentListApi from './api/DocumentListApi.js'
 import PredictionApi from './api/PredictionApi.js'
 import FadeIn from 'react-fade-in';
+
+import SettingsIcon from '@material-ui/icons/Settings'
 import { BrowserRouter, withRouter } from 'react-router-dom';
 
 // refresh token
@@ -42,9 +42,6 @@ class App extends Component {
     sentenceData: [],
     selectedDocument: 'test.txt',
     selectedModel: null,
-    isLoggedIn: false,
-    userProfile: null,
-    accessToken: null,
     documentList: [],
     autoMLModelList: [],
     autoMLPrediction: false,
@@ -68,8 +65,6 @@ class App extends Component {
     this.refreshDocumentList = this.refreshDocumentList.bind(this);
     this.handleDocumentUpdate = this.handleDocumentUpdate.bind(this);
     this.forceUpdateHandler = this.forceUpdateHandler.bind(this);
-    this.handleLoginSuccess = this.handleLoginSuccess.bind(this);
-    this.handleLoginFailure = this.handleLoginFailure.bind(this)
     this.handleErrorClose = this.handleErrorClose.bind(this)
     this.handleModelUpdate = this.handleModelUpdate.bind(this)    
     
@@ -81,6 +76,9 @@ class App extends Component {
     // set selected document from the url string
     this.state.selectedDocument = window.location.pathname.replace(/^\/+/g, '');
     this.config = new GlobalConfig();
+
+    this.refreshDocumentList()
+    this.refreshAutoMLModelList()
   }
 
   // this is evil but i don't fully understand react cest la vie
@@ -141,36 +139,6 @@ class App extends Component {
   };
 
 
-  handleLogoutSuccess (res) {
-    
-    //var result = window.confirm('Logout Success')
-    //if (result)        
-    setTimeout(()=>this.setState({...this.state,isLoggedIn:false,accessToken:null,userProfile:null}),0)
-    setTimeout(()=>window.location.reload(true),1);
-  }
-
-  handleLoginSuccess (res) {
-    
-    this.setState({...this.state,isLoggedIn:true,accessToken:res.accessToken, userProfile:res.profileObj})
-    // async update the document list 
-    this.refreshDocumentList()
-    this.refreshAutoMLModelList()
-
-    console.log('Login Success: currentUser:', res.profileObj);
-    console.log(res)
-    /*alert(
-      `Logged in successfully welcome ${res.profileObj.name} 😍. \n See console for full profile object.`
-    );*/
-    refreshTokenSetup(res,(newToken)=>{console.log("TOken REFERESHSED"+newToken);this.setState({accessToken:newToken});})
-  };
-
-  handleLoginFailure (res) {
-    console.error('Login failed.');
-    console.log(res)
-    this.setState({...this.state,isLoggedIn:false,accessToken:null,userProfile:null})
-    this.setError(`Failed to login. `);
-  };
-
   //====== AUTOML =======
   canLoadAutoMLModelList()
   {
@@ -217,7 +185,7 @@ class App extends Component {
     var csvApi = new GenerateCsvApi(this.state.accessToken)
     if(!this.canLoadDocumentList())
     {
-      console.log("Not logged in, missing bucket, or no selected document. Not calling generateCsv .")
+      console.log("Missing bucket, or no selected document. Not calling generateCsv .")
       return;
     }
     try {
@@ -231,19 +199,19 @@ class App extends Component {
   // does the current state of the app mean we can try to load the document?
   canLoadDocument()
   {
-    return (this.state.isLoggedIn && this.config.bucketName  && this.state.selectedDocument);
+    return (this.config.bucketName  && this.state.selectedDocument);
   }
 
   canLoadDocumentList()
   {
-    return (this.state.isLoggedIn && this.config.bucketName);
+    return (this.config.bucketName);
   }
 
   async refreshDocumentList() {
     console.log("refreshDocumentList??!?!?")
     if(!this.canLoadDocumentList())
     {
-      console.log("Not logged in, missing bucket, or no selected document. Not loading document list.")
+      console.log("Missing bucket, or no selected document. Not loading document list.")
       return;
     }
     
@@ -266,25 +234,13 @@ class App extends Component {
   renderDocument () {    
 
         
-    if (!this.state.isLoggedIn)
-      return (         
-        <FadeIn delay="1200"> 
-          <React.Fragment>
-          <Typography variant="h6">Logged out. </Typography>
-          <Typography>
-             Click the "Login" button in the upper right.
-          </Typography>
-            </React.Fragment>
-        </FadeIn>
-        )
-
     if (!this.config.bucketName)
       return (          
         <FadeIn transitionDuration="100"> 
           <React.Fragment>
           <Typography variant="h6">Bucket name not specified. </Typography>
           <Typography>
-             Click your avatar icon in the upper right, then choose a Google Cloud Storage bucket.
+             Click the <SettingsIcon/> icon in the upper right, then choose a Google Cloud Storage bucket.
           </Typography>
             </React.Fragment>
         </FadeIn>
@@ -301,7 +257,7 @@ class App extends Component {
         </FadeIn>
         )
 
-    if (this.state.isLoggedIn && this.config.bucketName && this.state.selectedDocument)
+    if (this.canLoadDocument())
       return (
         <Document 
           src={this.state.selectedDocument} 
@@ -329,10 +285,6 @@ class App extends Component {
           onClose={this.handleErrorClose} />        
       <AppHeader 
       // TODO: use context this is getting messy
-        isLoggedIn = {this.state.isLoggedIn}
-        onLoginSuccess = {this.handleLoginSuccess}
-        onLoginFailure = {this.handleLoginFailure}
-        onLogoutSuccess =  {this.handleLogoutSuccess}
         selectedDocument={this.state.selectedDocument}   
         setError = {this.setError}
         setAlert = {this.setAlert}
