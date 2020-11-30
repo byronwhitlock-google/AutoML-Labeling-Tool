@@ -40,7 +40,8 @@ import Loader from "react-loader-spinner";
 import Button from '@material-ui/core/Button';
 import AutorenewIcon from '@material-ui/icons/Autorenew';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
-
+import GTranslateIcon from '@material-ui/icons/GTranslate';
+import AutoMLIcon from './svg/AutoMLIcon.js';
 
 class NavigationDrawer extends Component {
   constructor(props) {
@@ -98,7 +99,7 @@ class NavigationDrawer extends Component {
     this.props.handleDocumentUpdate(newDocumentSrc)
   }
   componentDidMount =()=>{
-    this.setState({windowHeight: window.innerHeight -225}) ;
+    this.setState({windowHeight: window.innerHeight -325}) ;
   }
 
   toggleDrawer = (open) => (event) => {
@@ -135,49 +136,63 @@ class NavigationDrawer extends Component {
       onKeyDown={this.toggleDrawer(false)}
     >
     <List color="primary">    
+    <Tooltip title="View configuration for this bucket.">     
       <ListItem  key="">
-        <ListIcon/>
-        <ListItemText primary={config.bucketName} />
+        <SettingsIcon/>&nbsp;&nbsp;&nbsp;
+        <ListItemText primary={config.bucketName} secondary={`Manage bucket settings`}/>
       </ListItem>
+      </Tooltip>
       <Divider/>    
         {this.props.documentList.length> 0 && 
         <Tooltip title="Generate a CSV file for training a new new model in the AutoML API.">     
           <ListItem onClick={this.handleGenerateCsvClick} button key="generate-csv">            
-            <ListItemText primary="Generate CSV" secondary="AutoML training"/>
-            <SettingsIcon color="primary"/>
+          <AutoMLIcon/>&nbsp;&nbsp;&nbsp;
+          <ListItemText primary="Generate CSV" secondary="AutoML training"/>
+            
           </ListItem>
         </Tooltip>
         }
         <Divider/>    
         { this.props.documentList.length>0 &&
-          <Tooltip title="Clicking this button will load the a random unlabeled document from the bucket.">     
+          <Tooltip title="Clicking this button will load a random unlabeled document from the bucket.">     
             <ListItem button onClick={this.props.handleNextRandom} key="nextRandom">        
-                <ListItemText primary="Load Unlabeled Document" secondary="I'm feeling lucky"/>
-                <AutorenewIcon />           
+            <AutorenewIcon />&nbsp;&nbsp;&nbsp;
+            <ListItemText primary="Shuffle Next" secondary="I'm feeling lucky"/>
+                
             </ListItem>
            </Tooltip>   
         }
 
         {this.props.documentList.length == 0  && 
-
-         <ListItem  key="">
-           <Divider/>   
-            <center>
-            <Loader
-              type="ThreeDots"
-              color="#3f51b5"
-              height={75}
-              width={200}
-              timeout={20000} //3 secs
-            />      
-            </center> 
-        </ListItem>
+          <React.Fragment>
+            <Divider/>   
+              <ListItem  key="">
+              
+                <center>
+                <Loader
+                  type="ThreeDots"
+                  color="#3f51b5"
+                  height={75}
+                  width={200}
+                  timeout={20000} //3 secs
+                />      
+                </center> 
+            </ListItem>
+          </React.Fragment>
         }   
+        {this.props.documentList.length != 0  &&
+          <React.Fragment>
+            <Divider/>   
+            <ListItem  key="">
+              <ListItemText primary="Documents"/>
+            </ListItem>
+          </React.Fragment> 
+         }
     </List>
 
     <VariableSizeList 
       height={this.state.windowHeight} 
-      width={275} 
+      width={225} 
       items={this.props.documentList} 
       color="primary"
       itemSize={getItemSize}
