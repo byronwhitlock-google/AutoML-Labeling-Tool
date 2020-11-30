@@ -162,6 +162,7 @@ app.post('/get_prediction', async (req, res) => {
     }
 });
 
+
 // production endpoint served from here
 app.use(express.static(path.join(__dirname, '../browser/build')));
 app.get('/*', function(req, res) {

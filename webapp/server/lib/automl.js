@@ -36,11 +36,16 @@ module.exports = class AutoML {
     if (!options.projectId || !options.locationId)
       throw new Error("Cannot Construct AutoML. Missing Project or Location")
     
+      console.log("trying to contsruct storage from options:")
+      Dumper(options)
     this.gcs = new CloudStorage(options);   
-    this.client = new AutoMlClient();
+    this.client = new AutoMlClient(options);
+    this.client.getProjectId = async function(){return "byron-internal"};
+    
     
     // Instantiates a client
-    this.predictionClient = new PredictionServiceClient();
+    this.predictionClient = new PredictionServiceClient(options);
+    this.predictionClient.getProjectId = async function(){return "byron-internal"};
   }
 
 

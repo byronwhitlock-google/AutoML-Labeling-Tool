@@ -8,3 +8,5 @@ gcloud config set project lucky-era-233023
 #docker push gcr.io/lucky-era-233023/automl-labeling-tool
 gcloud builds submit -t gcr.io/lucky-era-233023/automl-labeling-tool .
 gcloud run deploy automl-labeling-tool --image gcr.io/lucky-era-233023/automl-labeling-tool --allow-unauthenticated --platform managed --region us-central1
+
+#container_image_path   = "gcr.io/lucky-era-233023/automl-labeling-tool"

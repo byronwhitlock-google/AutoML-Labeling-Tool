@@ -19,6 +19,7 @@ import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import List from '@material-ui/core/List';
+import { FixedSizeList ,VariableSizeList} from 'react-window';
 import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
 import ListIcon from '@material-ui/icons/List';
@@ -34,6 +35,12 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import Blob from 'blob'
 import ErrorTwoToneIcon from '@material-ui/icons/ErrorTwoTone';
 import CheckCircleTwoToneIcon from '@material-ui/icons/CheckCircleTwoTone';
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+import Loader from "react-loader-spinner";
+import Button from '@material-ui/core/Button';
+import AutorenewIcon from '@material-ui/icons/Autorenew';
+import SkipNextIcon from '@material-ui/icons/SkipNext';
+
 
 class NavigationDrawer extends Component {
   constructor(props) {
@@ -109,19 +116,12 @@ class NavigationDrawer extends Component {
     //},100);
   };
 
-  renderGenerateCsv()
-  {
-    if (this.props.documentList.length > 0)
-      return (
-        <ListItem onClick={this.handleGenerateCsvClick} button key="generate-csv">
-          <SettingsIcon color="primary"/>
-          <ListItemText primary="Generate CSV" secondary="AutoML training"/>
-        </ListItem>
-        )
-  }
   list() { 
     var config = new GlobalConfig();
-    
+    const getItemSize = index => {
+      // return a size for items[index]
+      return 45
+    }
     return (    
     <div
       className={clsx(this.classes.list, {
@@ -132,29 +132,72 @@ class NavigationDrawer extends Component {
       onKeyDown={this.toggleDrawer(false)}
     >
     <List color="primary">    
-        <ListItem  key="">
-          <ListIcon/>
-          <ListItemText primary={config.bucketName} />
-        </ListItem>
+      <ListItem  key="">
+        <ListIcon/>
+        <ListItemText primary={config.bucketName} />
+      </ListItem>
+      <Divider/>    
+        {this.props.documentList.length> 0 && 
+        <Tooltip title="Generate a CSV file for training a new new model in the AutoML API.">     
+          <ListItem onClick={this.handleGenerateCsvClick} button key="generate-csv">            
+            <ListItemText primary="Generate CSV" secondary="AutoML training"/>
+            <SettingsIcon color="primary"/>
+          </ListItem>
+        </Tooltip>
+        }
         <Divider/>    
-        {this.renderGenerateCsv()}
-        <Divider/>    
-        {this.props.documentList.map((document) => (
-           <Tooltip title={`${document.name.replace(/\.txt$/gi, '')} ${document.labeled?" has been labeled.":" has NOT been labeled."}`}>   
-            <ListItem button  
-            onClick={()=>this.handleDocumentClick(document.name)} 
-            key={document.name} 
-            selected={document.name.localeCompare(this.props.selectedDocument)==0? true:false} 
-            primary={document.name} >
+        { this.props.documentList.length>0 &&
+          <Tooltip title="Clicking this button will load the a random unlabeled document from the bucket.">     
+            <ListItem button onClick={this.props.handleNextRandom} key="nextRandom">        
+                <ListItemText primary="Load Unlabeled Document" secondary="I'm feeling lucky"/>
+                <AutorenewIcon />           
+            </ListItem>
+           </Tooltip>   
+        }
 
-              {document.labeled?
+        {this.props.documentList.length == 0  && 
+
+         <ListItem  key="">
+           <Divider/>   
+            <center>
+            <Loader
+              type="ThreeDots"
+              color="#3f51b5"
+              height={75}
+              width={200}
+              timeout={20000} //3 secs
+            />      
+            </center> 
+        </ListItem>
+        }   
+    </List>
+
+    <VariableSizeList 
+      height={600} 
+      width={275} 
+      items={this.props.documentList} 
+      color="primary"
+      itemSize={getItemSize}
+      itemCount={this.props.documentList.length}
+      >    
+          {({ index, style }) => ((
+           <Tooltip title={`${this.props.documentList[index].name.replace(/\.txt$/gi, '')} ${this.props.documentList[index].labeled?" has been labeled.":" has NOT been labeled."}`}>   
+            <ListItem button  
+            onClick={()=>this.handleDocumentClick(this.props.documentList[index].name)} 
+            key={this.props.documentList[index].name} 
+            selected={this.props.documentList[index].name.localeCompare(this.props.selectedDocument)==0? true:false} 
+            primary={this.props.documentList[index].name} 
+            style={style}
+            >
+
+              {this.props.documentList[index].labeled?
                 <CheckCircleTwoToneIcon style={{ color: 'green'}}/>:
                 <ErrorTwoToneIcon  style={{ color: 'red'}}/> }
-                <ListItemText primary={document.name.replace(/\.txt$/gi, '')} />
+                <ListItemText primary={this.props.documentList[index].name.replace(/\.txt$/gi, '')} />
             </ListItem>
           </Tooltip>
         ))}
-      </List>
+      </VariableSizeList>
     </div>
     );
   }

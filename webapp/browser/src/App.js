@@ -67,6 +67,7 @@ class App extends Component {
     this.forceUpdateHandler = this.forceUpdateHandler.bind(this);
     this.handleErrorClose = this.handleErrorClose.bind(this)
     this.handleModelUpdate = this.handleModelUpdate.bind(this)    
+    this.handleNextRandom = this.handleNextRandom.bind(this)
     
     //this.loadCsv = this.loadCsv.bind(this)
     this.generateCsv = this.generateCsv.bind(this)
@@ -77,15 +78,36 @@ class App extends Component {
     this.state.selectedDocument = window.location.pathname.replace(/^\/+/g, '');
     this.config = new GlobalConfig();
 
-    this.refreshDocumentList()
-    this.refreshAutoMLModelList()
   }
+
+
 
   // this is evil but i don't fully understand react cest la vie
   forceUpdateHandler(){    
     // I think i understand react now! key property is needed  for re renders to happend based on updated (props) properties :)
    // this.forceUpdate();
   };
+
+  // returns current document src when null
+  async handleNextRandom() {
+
+    var labeledDocs = []
+    // grab a labeled document at random from the document list
+    for(let i=0;i<this.state.documentList.length;i++)    {
+      let doc = this.state.documentList[i]      
+      if (!doc.labeled) {
+        labeledDocs.push(doc)
+      }
+    }
+
+    var newSrc = labeledDocs[Math.floor(Math.random() * labeledDocs.length)].name;
+    if (newSrc) {
+      this.handleDocumentUpdate(newSrc)
+    } else {
+      this.setError("Document update failed. Please try again")
+    }
+  }
+
 
   // returns current document src when null
   async handleDocumentUpdate(newSrc) {
@@ -107,6 +129,8 @@ class App extends Component {
 
   componentDidMount() {
       // Call our fetch function below once the component mounts   
+      this.refreshDocumentList()
+      this.refreshAutoMLModelList()
   }
 
   setError(text,title="Error")
@@ -159,7 +183,7 @@ class App extends Component {
       var models = await pApi.loadAutoMLModelList()
 
       //console.log(`we got ${documents} from loadDocumentList`)
-      this.setState({...this.state, autoMLModelList: models })
+      this.setState({autoMLModelList: models })
     } catch (err){
       if (err.message == "Not Found")
         this.setError("Bucket '"+this.config.bucketName+"' "+err.message,"Bucket Not Found")
@@ -251,7 +275,7 @@ class App extends Component {
            <React.Fragment>
           <Typography variant="h6">No document selected. </Typography>
           <Typography>
-            Select a document using the <MenuIcon/> icon to begin.
+            Select a document using the <MenuIcon/> icon, or click the "I'm feeling lucky" button to begin.
           </Typography>
           </React.Fragment>
         </FadeIn>
@@ -294,6 +318,7 @@ class App extends Component {
         documentList = {this.state.documentList}
         refreshDocumentList={this.refreshDocumentList}
         handleDocumentUpdate={this.handleDocumentUpdate}
+        handleNextRandom={this.handleNextRandom}
       />
       <DocumentHeader  
         selectedDocument={this.state.selectedDocument}  
