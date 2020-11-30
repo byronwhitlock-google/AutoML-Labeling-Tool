@@ -1,6 +1,6 @@
 
 #!/bin/sh
-#gcloud auth login
+gcloud auth login
 gcloud config set project lucky-era-233023
 
 #docker build . -t automl-labeling-tool

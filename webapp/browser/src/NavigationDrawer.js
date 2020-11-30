@@ -97,6 +97,9 @@ class NavigationDrawer extends Component {
     //window.location = '/'+newDocumentSrc
     this.props.handleDocumentUpdate(newDocumentSrc)
   }
+  componentDidMount =()=>{
+    this.setState({windowHeight: window.innerHeight -225}) ;
+  }
 
   toggleDrawer = (open) => (event) => {
     
@@ -173,7 +176,7 @@ class NavigationDrawer extends Component {
     </List>
 
     <VariableSizeList 
-      height={600} 
+      height={this.state.windowHeight} 
       width={275} 
       items={this.props.documentList} 
       color="primary"
