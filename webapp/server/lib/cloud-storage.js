@@ -32,8 +32,8 @@ module.exports = class CloudStorage {
     this.storage = new Storage({projectId: this.projectId})
     this.bucket = this.storage.bucket(this.bucketName);
 
-    if (!options['projectId'])
-      throw new Error("Missing projectId in CloudStorage constructor.")
+//    if (!options['projectId'])
+//      throw new Error("Missing projectId in CloudStorage constructor.")
 
     if (!options['bucketName'])
       throw new Error("Missing bucketName in CloudStorage constructor.")

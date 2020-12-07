@@ -54,7 +54,10 @@ class App extends Component {
       title:null,
       content:null,
       isOpen:false
-    }      
+    },
+    bucketSettings: {
+      isOpen:false
+    }   
   };
   
   // TODO: Refactor all API calls to another library 
@@ -68,7 +71,8 @@ class App extends Component {
     this.handleErrorClose = this.handleErrorClose.bind(this)
     this.handleModelUpdate = this.handleModelUpdate.bind(this)    
     this.handleNextRandom = this.handleNextRandom.bind(this)
-    
+    this.handleShowBucketSettings = this.handleShowBucketSettings.bind(this)
+
     //this.loadCsv = this.loadCsv.bind(this)
     this.generateCsv = this.generateCsv.bind(this)
     this.setError = this.setError.bind(this)
@@ -87,6 +91,10 @@ class App extends Component {
     // I think i understand react now! key property is needed  for re renders to happend based on updated (props) properties :)
    // this.forceUpdate();
   };
+
+  async handleShowBucketSettings() {
+    this.setState({bucketSettings: {isOpen:true}}); 
+  }
 
   // returns current document src when null
   async handleNextRandom() {
@@ -275,7 +283,7 @@ class App extends Component {
            <React.Fragment>
           <Typography variant="h6">No document selected. </Typography>
           <Typography>
-            Select a document using the <MenuIcon/> icon, or click the "I'm feeling lucky" button to begin.
+            Select a document using the <MenuIcon/> icon.
           </Typography>
           </React.Fragment>
         </FadeIn>
@@ -319,6 +327,7 @@ class App extends Component {
         refreshDocumentList={this.refreshDocumentList}
         handleDocumentUpdate={this.handleDocumentUpdate}
         handleNextRandom={this.handleNextRandom}
+        handleShowBucketSettings={this.handleShowBucketSettings}
       />
       <DocumentHeader  
         selectedDocument={this.state.selectedDocument}  

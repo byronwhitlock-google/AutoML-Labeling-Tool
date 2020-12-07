@@ -47,11 +47,27 @@ class RenderSentence extends Component {
   {    
 
 
+    var breaks;
+    if(this.props.type === "WhiteSpace" || this.props.type === "Punctuation") {      
+      var numHardBreaks = (this.props.text.match(/\n/g) || []).length
+      //console.log(numHardBreaks)
+      //console.log(this.props.text)
+      // this is so terrible, but quick and dirty and ungly
+      // TODO: programatilly create react elements based on number of breaks.
+      switch (numHardBreaks){
+        
+        case 0: return "" // we already put punctuation in the text of the previous element in DocumentApi
+        case 1: return <React.Fragment>{this.props.text}<br/></React.Fragment>
 
-    if(this.props.type === "WhiteSpace" && this.props.text !== " ") 
-      return <p/> 
-    if(this.props.type === "WhiteSpace" && this.props.text === " ") 
-      return " "
+        default:
+        case 2: return <React.Fragment>{this.props.text}<p/></React.Fragment>
+        
+        case 3: return <React.Fragment>{this.props.text}<br/><p/></React.Fragment>
+        case 4: return <React.Fragment>{this.props.text}<p/><p/></React.Fragment>
+        
+      }      
+    }
+    
 
     return (      
       

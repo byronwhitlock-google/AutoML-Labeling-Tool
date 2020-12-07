@@ -50,7 +50,7 @@ export default function AppHeader(props) {
     <div className={classes.root}>
       <AppBar position="static">
         <Toolbar>
-          <NavigationDrawer {...props} handleDocumentUpdate={props.handleDocumentUpdate} />          
+          <NavigationDrawer {...props} />          
           <Typography variant="h6" className={classes.title}>
           AutoML Labeling Tool
           </Typography>

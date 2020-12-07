@@ -114,8 +114,8 @@ class SentenceAnnotator extends Component {
     {
       var annotations = this.props.annotations
       if(!annotations || ! annotations.length)return[];
-      console.log("in render "+ this.props.sentenceOffset)
-      console.log(annotations)
+      //console.log("in render "+ this.props.sentenceOffset)
+      //console.log(annotations)
       var coloredAnnotations = []
       for (var aIdx in annotations)
       {
@@ -198,8 +198,8 @@ class SentenceAnnotator extends Component {
       var annotations = this.props.autoMLPrediction
       if(!annotations || ! annotations.length)return[];
       
-      console.log("in render "+ this.props.sentenceOffset)
-      console.log(annotations)
+      //console.log("in render "+ this.props.sentenceOffset)
+      //console.log(annotations)
       
       var coloredAnnotations = []
       for (var aIdx in annotations)

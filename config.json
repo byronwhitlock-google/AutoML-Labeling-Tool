@@ -1,0 +1,19 @@
+{
+    "Labels": [
+        {
+          "key": "problem",
+          "text":"Problem",
+          "color": "#F2D7D5"
+        },
+        {
+          "key": "cause",
+          "text":"Cause",
+          "color": "#EBDEF0"
+        },
+        {
+          "key": "remediation",
+          "text":"Remediation",          
+          "color": "#D4E6F1"
+        }  
+      ]
+}

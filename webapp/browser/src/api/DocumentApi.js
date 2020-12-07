@@ -35,13 +35,69 @@ class DocumentApi extends BaseApi {
     if (doc.hasOwnProperty('text_snippet') && 
         doc.text_snippet.hasOwnProperty('content'))
     {
+         var splitOptions = {
+        SeparatorParser: {
+         // separatorCharacters: ['\n','.','?','!']
+        }
+      }
+    
       console.log("*****Reparsing data from file****")
-      let sentencesSplit = split(doc.text_snippet.content)
-      console.log(sentencesSplit)
+      
+      let sentencesSplit = split(doc.text_snippet.content, splitOptions)
+      let actualSplit = []
+      // when you use split options, things come out in sentencesSplit[i].children
+      for(var i =0;i<sentencesSplit.length;i++) {
+        if (sentencesSplit[i].children) {
+          actualSplit.push(...sentencesSplit[i].children)
+        } else {
+          actualSplit.push(sentencesSplit[i])
+        }
+      }
+      console.log(actualSplit)
+      
+      for(var i =0 ; i<actualSplit.length ; i++) {
+        var sentence = actualSplit[i];
 
+        if (sentence.type == "Punctuation" && i>0) {
+          actualSplit[i-1].range[1]=sentence.range[1]
+          actualSplit[i-1].value+= sentence.value
+          actualSplit[i-1].raw+= sentence.raw
+        }
+      }
+     /*
+      console.log("*****Reparsing data from file****")
+      
+      let sentencesSplit = split(doc.text_snippet.content)
+      
+      let actualSplit = []
+      // when you use split options, things come out in sentencesSplit[i].children
+      for(var i =0 ; i<sentencesSplit.length ; i++) {
+        
+        if (sentencesSplit[i].children) {
+          // append punctuation to the previous node
+          for(var j =0;j<sentencesSplit[i].children.length;j++) {
+            var childrenOut = []            
+            var child = sentencesSplit[i].children[j];
+            
+            if (child.type == "Punctuation" && childrenOut[j-1]) {
+              childrenOut[j-1].range[1]=child.range[1]
+              childrenOut[j-1].value+= child.value
+            }  else {
+              childrenOut.push(child)
+            }
+          }
+
+          actualSplit[i]=childrenOut
+        } else {
+          actualSplit[i]=sentencesSplit[i]
+        }
+      }
+      console.log(sentencesSplit)
+      console.log(actualSplit)
+*/
      return {
         documentData: doc,
-        sentenceData: sentencesSplit 
+        sentenceData: actualSplit 
       }
     }
     else

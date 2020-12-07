@@ -42,6 +42,7 @@ import AutorenewIcon from '@material-ui/icons/Autorenew';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
 import GTranslateIcon from '@material-ui/icons/GTranslate';
 import AutoMLIcon from './svg/AutoMLIcon.js';
+import CloudStorageIcon from './svg/CloudStorageIcon.js';
 
 class NavigationDrawer extends Component {
   constructor(props) {
@@ -136,10 +137,10 @@ class NavigationDrawer extends Component {
       onKeyDown={this.toggleDrawer(false)}
     >
     <List color="primary">    
-    <Tooltip title="View configuration for this bucket.">     
-      <ListItem  key="">
-        <SettingsIcon/>&nbsp;&nbsp;&nbsp;
-        <ListItemText primary={config.bucketName} secondary={`Manage bucket settings`}/>
+    <Tooltip title="Manage configuration for this project.">     
+      <ListItem onClick={this.props.handleShowBucketSettings}  button key="show-bucket-settings">
+        <CloudStorageIcon/>&nbsp;&nbsp;&nbsp;
+        <ListItemText secondary={`gs://${config.bucketName}/`} primary={`Cloud Storage Bucket`}/>
       </ListItem>
       </Tooltip>
       <Divider/>    
@@ -224,7 +225,7 @@ class NavigationDrawer extends Component {
 
     return (
       <React.Fragment>
-        <Tooltip title="Select another file from cloud storage to label">          
+        <Tooltip title="Document Selection">          
           <IconButton edge="start" className={this.classes.menuButton} color="inherit" aria-label="menu">
             <MenuIcon  onClick={this.toggleDrawer('left', true)} />
           </IconButton>      
