@@ -92,7 +92,14 @@ class App extends Component {
     for(var i=0;i<globalConfigData.menuItems.length;i++)// actually faster than using a hash or find 
     {
       var currItem = globalConfigData.menuItems[i]
-      if (currItem.key.toLowerCase()==menuItem.key.toLowerCase()) {
+      //if (currItem.key===menuItem.key) {
+        // already exists exit 
+        //return;
+     // }
+
+      // when we get labels they don't have the key
+      // we need ot get rid of the "key" 
+     if (currItem.text===menuItem.text) {
         // already exists exit 
         return;
       }

@@ -66,7 +66,6 @@ module.exports = class AppConfig {
             if (config.menuItems.length > 2)
             {
                 if (config.menuItems[0].color &&
-                    config.menuItems[0].key &&
                     config.menuItems[0].text)
                 {
                     return this.gcs.writeDocument(this.CONFIG_FILENAME,JSON.stringify(config))    
@@ -80,20 +79,17 @@ module.exports = class AppConfig {
     }    
 
     defaultConfig = {
-        selectedModel: "test_model_1",
+        defaultModelName: "test_model_1",
         menuItems : [
             {
-              key: "problem",
               text:"Problem",
               color: "#F2D7D5"
               },
             {
-              key: "cause",
               text:"Cause",
               color: "#EBDEF0"
             },
             {
-              key: "remediation",
               text:"Remediation",
               color: "#D4E6F1"
             }      

@@ -29,20 +29,21 @@ function AutoMLPrediction(props) {
       props.handleModelUpdate(event.target.value)
     }
 
-    function getSelectedModel()
-    {
-      if (props.selectedModel) { return props.selectedModel }
+    var selectedModel = props.selectedModel 
+
+    if (!selectedModel) {
       var config = new GlobalConfig(props.globalConfigData)
       var defaultModel = config.getDefaultModelName()
       if (defaultModel) {
         for (var i=0;i<props.autoMLModelList.length;i++)
         {
           var model = props.autoMLModelList[i]
-          if (defaultModel == model.displayName ) // model.displayname is what we show in the dropdown. 
-            return model.name // this is actually the ID 
+          if (defaultModel == model.displayName ) { // model.displayname is what we show in the dropdown. 
+            selectedModel = model.name // this is actually the ID 
+            break;//out! https://www.youtube.com/watch?v=IIOJdMdS56k
+          }
         }
       }
-      return ""
     }
     
 
@@ -56,8 +57,7 @@ function AutoMLPrediction(props) {
         <Select
           labelId="automl-model-label"
           id="automl-model"
-          selected={props.selectedModel}
-        //  defaultValue={getSelectedModel()}
+          defaultValue={selectedModel}
           onChange={onSelectChange}
           autowidth
         >

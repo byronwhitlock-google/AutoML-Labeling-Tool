@@ -336,13 +336,13 @@ class SentenceAnnotator extends Component {
       
       //prepopulate the hash with default menu items
       for (var i =0;i<menuItemList.length;i++){
-        var label = menuItemList[i].key
+        var label = menuItemList[i].text
         menuItemHash[label] = menuItemList[i]
       }
       // go through all the colored(labeled) words and create a menuItem list of labels and calulcate hte scores for each item
       for (var i =0;i<wordsColored.length;i++) {
         // words labeled is a list of all words with thier labels. the labels coorespond to menu items.
-        var label = wordsColored[i].label.toLowerCase();
+        var label = wordsColored[i].label;
         if (!label) {
           continue
         }
@@ -359,7 +359,7 @@ class SentenceAnnotator extends Component {
         //TODO: Support dynamic menu items colors 
         if (label && ! menuItemHash.hasOwnProperty(label)) {
           // menuitem is key,text,score,color
-          menuItemHash[label] = {key:label.toLowerCase(),text:label,color:'gray'}
+          menuItemHash[label] = {/*key:label,*/text:label,color:'gray'}
           // update menuitem global with unknown label
           this.props.handleAddMenuItem(menuItemHash[label])
         }
@@ -430,7 +430,7 @@ class SentenceAnnotator extends Component {
           }
         >
             {menuItems.map((menuItem) => 
-              <MenuItem key={menuItem.key} onClick={(e)=>this.handleMenuClick(e,menuItem,this.props.sentenceId)}>             
+              <MenuItem key={menuItem.text} onClick={(e)=>this.handleMenuClick(e,menuItem,this.props.sentenceId)}>             
                 <span style={{backgroundColor: menuItem.color}}>              
                 &nbsp;{menuItem.text}&nbsp;
                 </span>({menuItem.score}%)

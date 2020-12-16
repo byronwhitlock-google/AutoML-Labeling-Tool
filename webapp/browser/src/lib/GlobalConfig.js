@@ -21,7 +21,7 @@ class GlobalConfig {
   constructor(configData){
 
     this.data = this.defaultData
-    console.log("We contrsuctiong from config data")
+    console.log("We constructing from config data")
     console.log(configData)
     
     if (configData && configData.hasOwnProperty("menuItems"))
@@ -34,6 +34,8 @@ class GlobalConfig {
 
     if (!this.locationId)  
       this.locationId = 'us-central1' // default location
+
+    
   }
   
   persist() {
@@ -70,17 +72,14 @@ class GlobalConfig {
       defaultModelName: "",
       menuItems : [ // these will be dynamically replaced by values fetched in App::refreshConfig()
       /*{
-        key: "problem",
         text:"Problem",
         color: "#F2D7D5"
         },
       {
-        key: "cause",
         text:"Cause",        
         color: "#EBDEF0"
       },
       {
-        key: "remediation",
         text:"Remediation",        
         color: "#D4E6F1"
       }*/

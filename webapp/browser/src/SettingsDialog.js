@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -39,11 +40,15 @@ const useStyles = makeStyles((theme) =>({
 export default function  SettingsDialog(props) {
   const classes = useStyles();
   const { onClose, selectedValue, open } = props;
+  
   var config = new GlobalConfig();
+  const [reloadOnClose, setReloadOnClose] = useState(false);
 
   const handleClose = () => {
-    onClose(selectedValue);
-    setTimeout(()=>window.location.reload(true),1);
+    onClose(selectedValue);   
+    if (reloadOnClose){
+      setTimeout(()=>window.location.reload(true),1);
+    }
   };
 
   const handleListItemClick = (value) => {
@@ -51,18 +56,27 @@ export default function  SettingsDialog(props) {
   };
 
   const handleUpdateProjectId = (evt)=> {
-    config.projectId = evt.target.value;
-    config.persist();
+    if (config.projectId != evt.target.value) {
+      config.projectId = evt.target.value;
+      config.persist()
+      setReloadOnClose(true)
+    }
   };
 
   const handleUpdateLocationId = (evt)=> {
-    config.locationId = evt.target.value;
-    config.persist();
+    if (config.locationId != evt.target.value) {
+      config.locationId = evt.target.value;
+      config.persist()
+      setReloadOnClose(true)
+    }
   };
 
   const handleUpdateBucketName = (evt)=> {
-    config.bucketName = evt.target.value;
-    config.persist();
+   if (config.bucketName != evt.target.value) {
+      config.bucketName = evt.target.value;
+      config.persist()
+      setReloadOnClose(true)
+    }
   };
 
   // always turns into table layout for what you want. ;) <font size=+2><blink>old tricks are best</bink></font>
