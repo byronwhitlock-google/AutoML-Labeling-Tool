@@ -19,6 +19,7 @@ import AppHeader from './AppHeader.js';
 import Document from './Document.js';
 import UserInput from './UserInput.js';
 import GlobalConfig from './lib/GlobalConfig.js'
+import ConfigApi from './api/ConfigApi.js'
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Typography from '@material-ui/core/Typography';
@@ -55,9 +56,8 @@ class App extends Component {
       content:null,
       isOpen:false
     },
-    bucketSettings: {
-      isOpen:false
-    }   
+    globalConfigData: {}
+
   };
   
   // TODO: Refactor all API calls to another library 
@@ -71,7 +71,8 @@ class App extends Component {
     this.handleErrorClose = this.handleErrorClose.bind(this)
     this.handleModelUpdate = this.handleModelUpdate.bind(this)    
     this.handleNextRandom = this.handleNextRandom.bind(this)
-    this.handleShowBucketSettings = this.handleShowBucketSettings.bind(this)
+    this.handleAddMenuItem = this.handleAddMenuItem.bind(this)
+    this.handleSaveConfig = this.handleSaveConfig.bind(this)
 
     //this.loadCsv = this.loadCsv.bind(this)
     this.generateCsv = this.generateCsv.bind(this)
@@ -80,10 +81,25 @@ class App extends Component {
     this.refreshAutoMLModelList = this.refreshAutoMLModelList.bind(this)
     // set selected document from the url string
     this.state.selectedDocument = window.location.pathname.replace(/^\/+/g, '');
-    this.config = new GlobalConfig();
+    this.config = new GlobalConfig()
+
 
   }
 
+  async handleAddMenuItem(menuItem){
+    var globalConfigData = this.state.globalConfigData
+    if (!globalConfigData.menuItems) return
+    for(var i=0;i<globalConfigData.menuItems.length;i++)// actually faster than using a hash or find 
+    {
+      var currItem = globalConfigData.menuItems[i]
+      if (currItem.key.toLowerCase()==menuItem.key.toLowerCase()) {
+        // already exists exit 
+        return;
+      }
+    }
+    globalConfigData.menuItems.push(menuItem)
+    this.setState({globalConfigData:globalConfigData})
+  }
 
 
   // this is evil but i don't fully understand react cest la vie
@@ -92,8 +108,36 @@ class App extends Component {
    // this.forceUpdate();
   };
 
-  async handleShowBucketSettings() {
-    this.setState({bucketSettings: {isOpen:true}}); 
+
+  async refreshConfig() {
+    console.log("refreshConfig??!?!?")
+    try {
+      var configApi = new ConfigApi(this.state.accessToken)    
+      var data =  await configApi.loadConfig()
+      console.log("got data")
+      console.log(data)
+      this.setState({globalConfigData: data}); 
+    } catch (err){
+      this.setError(err.stack,"Could Refresh Config ")
+    }    
+  }
+
+  async handleSaveConfig(config) {
+    //window.alert("We in save config"+JSON.stringify(config))
+    console.log("saving Config")
+    if (JSON.stringify(config) !== JSON.stringify({})) { // just return if we don't have anything to save.
+      try {
+        var configApi = new ConfigApi(this.state.accessToken)    
+        var data = await configApi.saveConfig(config)
+        console.log("got data")
+        console.log(data)
+        this.setState({globalConfigData: data}); 
+      } catch (err){
+        this.setError(err.stack,"Could Not Refresh Config ")
+        return false
+      }    
+    } 
+    return true
   }
 
   // returns current document src when null
@@ -116,7 +160,6 @@ class App extends Component {
     }
   }
 
-
   // returns current document src when null
   async handleDocumentUpdate(newSrc) {
     this.setState({selectedDocument: newSrc}); 
@@ -135,8 +178,9 @@ class App extends Component {
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
       // Call our fetch function below once the component mounts   
+      await this.refreshConfig()
       this.refreshDocumentList()
       this.refreshAutoMLModelList()
   }
@@ -263,9 +307,56 @@ class App extends Component {
     }    
   }
   
-  renderDocument () {    
-
+  
+  render() {
+    
+    return (
+    <div className="App">
+      <ModalPopup           
+        title={this.state.error.title} 
+        content={this.state.error.content} 
+        open={this.state.error.isOpen} 
+        onClose={this.handleErrorClose} />
+      <ModalPopup           
+          title={this.state.alert.title} 
+          content={this.state.alert.content} 
+          open={this.state.alert.isOpen} 
+          severity="info"
+          onClose={this.handleErrorClose} />        
+      <AppHeader 
+      // TODO: use context this is getting messy
+        selectedDocument={this.state.selectedDocument}   
+        setError = {this.setError}
+        setAlert = {this.setAlert}
+        //loadCsv = {this.loadCsv}
+        generateCsv = {this.generateCsv}
+        userProfile = {this.state.userProfile}
+        documentList = {this.state.documentList}
+        refreshDocumentList={this.refreshDocumentList}
+        handleDocumentUpdate={this.handleDocumentUpdate}
+        handleNextRandom={this.handleNextRandom}
+        globalConfigData = {this.state.globalConfigData}
+      />
+      <DocumentHeader  
+        selectedDocument={this.state.selectedDocument}  
+        canLoadDocument={this.canLoadDocument()}
         
+        autoMLModelList={this.state.autoMLModelList}
+        handleModelUpdate={this.handleModelUpdate} 
+        handleDocumentUpdate={this.handleDocumentUpdate}
+        autoMLPrediction = {this.state.autoMLPrediction}
+        documentList = {this.state.documentList}
+        globalConfigData = {this.state.globalConfigData}
+        handleSaveConfig = {this.handleSaveConfig}
+      />
+      <hr/>
+      <blockquote>
+        {this.renderDocument()}
+      </blockquote>    
+    </div>
+    );
+  }
+  renderDocument () {   
     if (!this.config.bucketName)
       return (          
         <FadeIn transitionDuration="100"> 
@@ -298,53 +389,9 @@ class App extends Component {
           setError = {this.setError}
           setAlert = {this.setAlert}
           autoMLPrediction = {this.state.autoMLPrediction}
+          globalConfigData = {this.state.globalConfigData}
+          handleAddMenuItem={this.handleAddMenuItem}
           /> )
-  }
-  render() {
-    this.config = new GlobalConfig();
-    return (
-    <div className="App">
-      <ModalPopup           
-        title={this.state.error.title} 
-        content={this.state.error.content} 
-        open={this.state.error.isOpen} 
-        onClose={this.handleErrorClose} />
-      <ModalPopup           
-          title={this.state.alert.title} 
-          content={this.state.alert.content} 
-          open={this.state.alert.isOpen} 
-          severity="info"
-          onClose={this.handleErrorClose} />        
-      <AppHeader 
-      // TODO: use context this is getting messy
-        selectedDocument={this.state.selectedDocument}   
-        setError = {this.setError}
-        setAlert = {this.setAlert}
-        //loadCsv = {this.loadCsv}
-        generateCsv = {this.generateCsv}
-        userProfile = {this.state.userProfile}
-        documentList = {this.state.documentList}
-        refreshDocumentList={this.refreshDocumentList}
-        handleDocumentUpdate={this.handleDocumentUpdate}
-        handleNextRandom={this.handleNextRandom}
-        handleShowBucketSettings={this.handleShowBucketSettings}
-      />
-      <DocumentHeader  
-        selectedDocument={this.state.selectedDocument}  
-        canLoadDocument={this.canLoadDocument()}
-        
-        autoMLModelList={this.state.autoMLModelList}
-        handleModelUpdate={this.handleModelUpdate} 
-        handleDocumentUpdate={this.handleDocumentUpdate}
-        autoMLPrediction = {this.state.autoMLPrediction}
-        documentList = {this.state.documentList}
-      />
-      <hr/>
-      <blockquote>
-        {this.renderDocument()}
-      </blockquote>    
-    </div>
-    );
   }
 }
 

@@ -18,7 +18,15 @@ class GlobalConfig {
     // This only changes per server installation!
   clientId =  '976239279537-uo7h85trcol8nl5shb0k9ai7iufbs2ta.apps.googleusercontent.com';
 
-  constructor(){
+  constructor(configData){
+
+    this.data = this.defaultData
+    console.log("We contrsuctiong from config data")
+    console.log(configData)
+    
+    if (configData && configData.hasOwnProperty("menuItems"))
+      this.data = configData;
+
     this.bucketName = localStorage.getItem("bucketName")|| ""
     this.projectId = localStorage.getItem("projectId") || ""
     this.locationId = localStorage.getItem("locationId")|| ""
@@ -34,41 +42,50 @@ class GlobalConfig {
     localStorage.setItem("locationId",this.locationId)
   }
 
-  menuItems = [
+  getMenuItemByText(text)
+  {
+      for(var idx in this.data.menuItems)
       {
+          if (this.data.menuItems[idx].text == text)
+              return this.data.menuItems[idx];
+      }
+      return {text:text,color:'#A9A9A9'} // unkown labels are dark gray 
+  }
+  getMenuItems() {
+      // TODO: Add automl API call for prediction here.
+      return  this.data.menuItems;
+  }
+
+  getDefaultModelName()
+  {
+    if (this.data.hasOwnProperty('defaultModelName')) {
+     //console.log("got defgault model "+this.data.defaultModelName)
+      return this.data.defaultModelName
+    }
+    else 
+      return "";
+  }
+
+  defaultData = {
+      defaultModelName: "",
+      menuItems : [ // these will be dynamically replaced by values fetched in App::refreshConfig()
+      /*{
         key: "problem",
         text:"Problem",
-        score: 0, //Math.floor(Math.random()*1000)/10
         color: "#F2D7D5"
         },
       {
         key: "cause",
-        text:"Cause",
-        score: 0,//Math.floor(Math.random()*1000)/10
+        text:"Cause",        
         color: "#EBDEF0"
       },
       {
         key: "remediation",
-        text:"Remediation",
-        score: 0,//Math.floor(Math.random()*1000)/10
+        text:"Remediation",        
         color: "#D4E6F1"
-      }
-
-    ]   
-    
-    getMenuItemByText(text)
-    {
-      for(var idx in this.menuItems)
-      {
-        if (this.menuItems[idx].text == text)
-        return this.menuItems[idx];
-      }
-      return {text:'',color:''}
-    }
-    getMenuItems() {
-      // TODO: Add automl API call for prediction here.
-      return  this.menuItems;
-    }
+      }*/
+    ] 
+  }
 }
 export default GlobalConfig
 

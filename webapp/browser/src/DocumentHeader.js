@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 */
-import React from 'react';
+import React, { useState } from 'react';
 import GlobalConfig from './lib/GlobalConfig.js'
 import AutoMLPrediction from './AutoMLPrediction.js'
 import TextField from '@material-ui/core/TextField';
@@ -24,12 +24,36 @@ import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import AutorenewIcon from '@material-ui/icons/Autorenew';
+import { makeStyles } from '@material-ui/core/styles';
+import DocumentSettingsDialog from './DocumentSettingsDialog.js'
+import SettingsIcon from '@material-ui/icons/Settings';
+import CloseIcon from '@material-ui/icons/Close';
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  title: {
+    flexGrow: 1,
+  },
+}));
 
 function DocumentHeader(props) {
-  const config = new GlobalConfig();
-
+  const config = new GlobalConfig(props.globalConfigData);
+  console.log("In DocumentHeader")
+  console.log(config)
+  console.log(props)
   var selectedDocument = props.selectedDocument.replace(/\.txt$/gi, '');
-  
+  const classes = useStyles();
+  // closures are why we love js. 
+  const [settingsOpen, setSettingsOpen] = useState(0);
+
+  var hash = require('object-hash');
+  var globalConfigHash = hash(props.globalConfigData)
+
   // don't hate on the table layout.
     return (
       <table width='100%'>
@@ -54,13 +78,13 @@ function DocumentHeader(props) {
         }
         </td><td>
         { props.canLoadDocument && props.selectedDocument &&
-          <AutoMLPrediction {...props}/>
+          <AutoMLPrediction key={globalConfigHash} {...props}/>
         }
         </td><td>
           { props.canLoadDocument && props.selectedDocument &&
           <fieldset>
             <legend>Labels</legend>
-            {config.menuItems.map((menuItem) =>               
+            {config.getMenuItems().map((menuItem) =>               
                     <span>&nbsp;<span style={{backgroundColor: menuItem.color}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
                 )}&nbsp;
           </fieldset>
@@ -68,15 +92,26 @@ function DocumentHeader(props) {
           {props.autoMLPrediction &&
             <fieldset>
               <legend>Predictions</legend>
-              {config.menuItems.map((menuItem) =>               
+              {config.getMenuItems().map((menuItem) =>               
                       <span>&nbsp;<span style={{outline: `${menuItem.color} double`}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
                   )}&nbsp;
             </fieldset>
           }         
-          
+        </td><td>    
+            <React.Fragment>
+              <Tooltip title={`Configure Labels & Default Model`}>
+                <Button color="inherit" onClick={()=>{setSettingsOpen(1)}}>
+                  <small>
+                  Configure<br/> labels
+                  </small>
+                </Button>
+              </Tooltip>
+              <DocumentSettingsDialog onClose={()=>{setSettingsOpen(0)}} open={settingsOpen}  {...props}/>          
+            </React.Fragment> 
         </td></tr>
       </table>    
     );
 }
 
 export default DocumentHeader;
+

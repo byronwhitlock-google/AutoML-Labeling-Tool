@@ -27,6 +27,7 @@ const port = process.env.PORT || 5000;
 const AutoML = require('lib/automl.js');
 const DownloadCsv = require('lib/download-csv');
 const AnnotatedDocument = require('lib/annotated-document.js');
+const AppConfig = require('lib/app-config.js');
 const BodyParser = require('body-parser');
 const axios = require('axios');
 
@@ -162,6 +163,44 @@ app.post('/get_prediction', async (req, res) => {
     }
 });
 
+app.get('/get_config', async (req, res) => {
+    try {
+        var options = await get_header_options(req)
+        //console.log("trying to list docs")
+        //console.log(options)
+        await sleep(500)
+        var appConfig = new AppConfig(options)
+        var data = await appConfig.getConfig()
+        res.send({'data': data});
+    } catch (e) {
+     //   Dumper(e)
+        console.error(`${e.message} ${e.stack}`)
+        res.send({'error': e.message, 'trace':e.stack });
+    }   
+});
+
+app.post('/save_config', async (req, res) => {
+    try {        
+   
+        var options = await  get_header_options(req);
+        console.log("trying to save_config");
+        console.log(req.body);
+
+        var appConfig = new AppConfig(options);
+        await appConfig.saveConfig(req.body);
+        res.send({'data': req.body}); // no errors? then we return the configuration we just saved.
+    } catch (e) {
+      //  Dumper(e);
+      console.error(`${e.message} ${e.stack}`)
+        res.send({'error': e.message, 'trace':e.stack });
+    }
+});
+/**
+ * @param {number} ms
+ */
+function sleep(ms) {
+    return //new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // production endpoint served from here
 app.use(express.static(path.join(__dirname, '../browser/build')));

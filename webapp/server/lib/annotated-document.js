@@ -102,8 +102,20 @@ module.exports = class AnnotatedDocument {
     
     if (jsonFileExists) {
       console.log(`jsonlFilename:${jsonlFilename}`)
-      return this.gcs.readJsonDocument(jsonlFilename)
-    } else {
+      try 
+      {
+        return await this.gcs.readJsonDocument(jsonlFilename)
+      } catch (err) {
+        // if we have a SyntaxError reading the json, we reload from the text file.
+        if (err.message.includes("SyntaxError")){
+          jsonFileExists = false
+        } else {
+          throw(err)
+        }
+      }
+    } 
+    
+    if (!jsonFileExists) {
       // read the data
       // run through the sentence splitter
       //  reformat to jsonl format

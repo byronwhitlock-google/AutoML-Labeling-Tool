@@ -6,6 +6,7 @@ import { GoogleLogin } from 'react-google-login';
 import GlobalConfig from './lib/GlobalConfig.js'
 
 function Login(props) {
+  // TODO we need to store the clientid somewhere else as a environment variable and pass in during deployment
   var gc = new GlobalConfig();
   const clientId = gc.clientId;
   

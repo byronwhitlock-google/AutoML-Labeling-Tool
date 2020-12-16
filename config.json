@@ -1,19 +1,37 @@
 {
-    "Labels": [
-        {
-          "key": "problem",
-          "text":"Problem",
-          "color": "#F2D7D5"
-        },
-        {
-          "key": "cause",
-          "text":"Cause",
-          "color": "#EBDEF0"
-        },
-        {
-          "key": "remediation",
-          "text":"Remediation",          
-          "color": "#D4E6F1"
-        }  
-      ]
-}
+  "menuItems": [
+      {
+        "key": "problem11112",
+        "text":"Problem11112",
+        "color": "#F2D7D5"
+      },
+      {
+        "key": "cause22221",
+        "text":"Cause2221",
+        "color": "#EBDEF0"
+      },
+      {
+        "key": "remediation",
+        "text":"Remediation",          
+        "color": "#D4E6F1"
+      }  ,
+
+      {
+        "key": "foo bar",
+        "text":"Foo Bar",          
+        "color": "#A4E6F1"
+      }  ,
+
+      {
+        "key": "foo",
+        "text":"Foo",          
+        "color": "#F4E6F1"
+      }  ,
+
+      {
+        "key": "bar",
+        "text":"Bar",          
+        "color": "#34E6F1"
+      }  
+    ]
+  }

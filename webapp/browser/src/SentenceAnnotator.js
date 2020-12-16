@@ -23,13 +23,14 @@ import MouseOverPopover from './MouseOverPopover.js'
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
+
 class SentenceAnnotator extends Component {
     constructor(props) {
       super(props);
 
      this.tokenizer = new SentenceTokenizer();
-     this.config = new GlobalConfig();
-      
+     this.config = new GlobalConfig(this.props.globalConfigData);
+     
      // apply confidence numbers to the right click menu for this sentence
      // wordsColored:[{text: "Problem", color:"#ABCDEF", outline:"", label:"",score:0}]
 
@@ -40,7 +41,8 @@ class SentenceAnnotator extends Component {
     this.handleRightClick = this.handleRightClick.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleMenuClick = this.handleMenuClick.bind(this)
-    //this.state.menuItems = props.menuItems
+    
+
     }
 
     
@@ -301,7 +303,7 @@ class SentenceAnnotator extends Component {
           {
             word.outline = `${predictedColors[idx].color} double`
             word.score=predictedColors[idx].score
-            word.label = predictedColors[idx].label
+            word.label = predictedColors[idx].label 
           }
         }
 
@@ -310,7 +312,7 @@ class SentenceAnnotator extends Component {
           
           if (annotatedColors.hasOwnProperty(idx)) //should normally match the word array because tokenized with same tokenizer
           {
-            words.label = annotatedColors[idx].display_name
+            word.label = annotatedColors[idx].label
             word.color = annotatedColors[idx].color       
           }   
           //word.annotatedColors = annotatedColors
@@ -341,6 +343,10 @@ class SentenceAnnotator extends Component {
       for (var i =0;i<wordsColored.length;i++) {
         // words labeled is a list of all words with thier labels. the labels coorespond to menu items.
         var label = wordsColored[i].label.toLowerCase();
+        if (!label) {
+          continue
+        }
+
         //calculate score for confidence
         if (! sumScore[label]) {
           sumScore[label] = 0;
@@ -353,7 +359,9 @@ class SentenceAnnotator extends Component {
         //TODO: Support dynamic menu items colors 
         if (label && ! menuItemHash.hasOwnProperty(label)) {
           // menuitem is key,text,score,color
-          menuItemHash[label] = {key:label,text:label,color:'gray'}
+          menuItemHash[label] = {key:label.toLowerCase(),text:label,color:'gray'}
+          // update menuitem global with unknown label
+          this.props.handleAddMenuItem(menuItemHash[label])
         }
 
       }
@@ -373,21 +381,11 @@ class SentenceAnnotator extends Component {
         menuItems.push(menuItemHash[i])
       }      
      return menuItems;
-
-      //this.setState({...this.state,menuItems: menuItems.values});
-      
-
-      /*menuItems:[{
-        key: "problem",
-        text:"Problem",
-        score: 0, //Math.floor(Math.random()*1000)/10
-        color: "#F2D7D5"
-      }],*/
   }
 
     render()
     {
-     
+      var hash = require('object-hash');
       var wordsColored = this.getWordsColored();
       var menuItems = this.calculateMenuItems(wordsColored)
 
@@ -420,6 +418,7 @@ class SentenceAnnotator extends Component {
             </React.Fragment>
            )}
         <Menu
+          key={hash(menuItems)}
           keepMounted
           open={this.state.mouseY !== null}
           onClose={this.handleClose}

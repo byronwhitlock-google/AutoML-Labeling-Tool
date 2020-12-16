@@ -49,7 +49,6 @@ class NavigationDrawer extends Component {
       super(props);
 
     this.handleGenerateCsvClick = this.handleGenerateCsvClick.bind(this)
-     // this.config = props.config
     console.log("NavigationDrawer props")
     console.log(props)
     
@@ -70,7 +69,6 @@ class NavigationDrawer extends Component {
 
 
   async handleGenerateCsvClick() {
-    var config = new GlobalConfig();
     try {
       var csv = await this.props.generateCsv()
       var gif = process.env.PUBLIC_URL +'/training-animation.gif'

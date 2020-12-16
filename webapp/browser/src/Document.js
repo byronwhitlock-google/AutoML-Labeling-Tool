@@ -18,8 +18,9 @@ import './App.css';
 import RenderSentence from './RenderSentence.js'
 import ModalPopup from './ModalPopup.js'
 import SentenceTokenizer from './lib/SentenceTokenizer.js'
-import GlobalConfig from './lib/GlobalConfig.js'
 import DocumentApi from './api/DocumentApi.js'
+
+
 
 class Document extends Component {
   constructor(props) {
@@ -31,7 +32,6 @@ class Document extends Component {
       data: null,
       sentenceData: Array(), // each sentence 
       documentData: {}, // suitable for storing jsonl or sending to automl for training.
-      menuItems: Array(),
     };
 
   async componentDidMount() {
@@ -102,9 +102,13 @@ class Document extends Component {
   }
 
   render() {
-    var config = new GlobalConfig();
+    // we need to make a key for the document so it updates when we change some unrelated props.
+    var hash = require('object-hash');
+    var documentHash = hash(this.props.globalConfigData) +
+                       hash(this.state.documentData) +
+                       hash(this.state.sentenceData)
     return (      
-      <div  className="Document-body">
+      <div  className="Document-body" key={documentHash}>
         {this.state.sentenceData.map((item, key) =>
           <RenderSentence
             key ={key}

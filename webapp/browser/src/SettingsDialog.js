@@ -20,6 +20,8 @@ import GitHubIcon from '@material-ui/icons/GitHub';
 import TextField from '@material-ui/core/TextField';
 import GlobalConfig from './lib/GlobalConfig.js'
 import SettingsIcon from '@material-ui/icons/Settings';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
 
 const useStyles = makeStyles((theme) =>({
   root: {
@@ -67,8 +69,13 @@ export default function  SettingsDialog(props) {
   return (
     <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
     
-    <DialogTitle id="simple-dialog-title">My Configuration</DialogTitle>
-      
+    <table><tr>
+        <td width="100%"><center><Typography variant="h6">My Configuration</Typography>  </center>   </td>
+      <td> <IconButton aria-label="close" onClick={props.onClose}>
+          <CloseIcon />
+        </IconButton>   </td>
+      </tr></table>
+
     <List>
      <Divider />
         <ListItem>

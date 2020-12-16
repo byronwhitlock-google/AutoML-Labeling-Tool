@@ -19,7 +19,7 @@ class BaseApi {
   constructor(accessToken){
     this.accessToken = accessToken 
     
-    var config = new GlobalConfig();
+    var config = new GlobalConfig(); 
     this.bucketName = config.bucketName 
     this.projectId = config.projectId 
     this.locationId = config.locationId     

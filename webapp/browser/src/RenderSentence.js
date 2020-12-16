@@ -44,10 +44,7 @@ class RenderSentence extends Component {
 
 
   render()
-  {    
-
-
-    var breaks;
+  {   
     if(this.props.type === "WhiteSpace" || this.props.type === "Punctuation") {      
       var numHardBreaks = (this.props.text.match(/\n/g) || []).length
       //console.log(numHardBreaks)
@@ -55,34 +52,28 @@ class RenderSentence extends Component {
       // this is so terrible, but quick and dirty and ungly
       // TODO: programatilly create react elements based on number of breaks.
       switch (numHardBreaks){
-        
-        case 0: return "" // we already put punctuation in the text of the previous element in DocumentApi
-        case 1: return <React.Fragment>{this.props.text}<br/></React.Fragment>
+
+        // remember that whitespace collapses in html so mutiple spaces become one
+        case 0: return " " // we already put punctuation in the text of the previous element in DocumentApi::parseDocument(). so we don't show the text if whitespace or punctuation
+        case 1: return <br/>
 
         default:
-        case 2: return <React.Fragment>{this.props.text}<p/></React.Fragment>
-        
-        case 3: return <React.Fragment>{this.props.text}<br/><p/></React.Fragment>
-        case 4: return <React.Fragment>{this.props.text}<p/><p/></React.Fragment>
-        
+        case 2: return <p/>
+        case 3: return <p><br/></p>
+        case 4: return <p><br/><br/></p>
       }      
     }
     
 
-    return (      
-      
-      <span 
-      >
+    return (            
         <SentenceAnnotator 
-          sentenceOffset={this.props.sentenceOffset} 
-          annotations={this.props.annotations} 
-          menuItems={this.props.MenuItems}
-          {...this.props}
-          >
+        sentenceOffset={this.props.sentenceOffset} 
+        annotations={this.props.annotations} 
+        menuItems={this.props.MenuItems}
+        {...this.props}>
           {this.props.text}
-        </SentenceAnnotator>
-        
-      </span>
+        </SentenceAnnotator>        
+      
   );
 }
 }

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 */
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -33,11 +33,14 @@ import { blue } from '@material-ui/core/colors';
 import Divider from '@material-ui/core/Divider';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import TextField from '@material-ui/core/TextField';
-import GlobalConfig from './lib/GlobalConfig.js'
 import SettingsIcon from '@material-ui/icons/Settings';
 import JSONInput from 'react-json-editor-ajrm';
 import locale    from 'react-json-editor-ajrm/locale/en';
-
+import SaveIcon from '@material-ui/icons/Save';
+import CancelIcon from '@material-ui/icons/Cancel';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
+import GlobalConfig from './lib/GlobalConfig';
 
 const useStyles = makeStyles((theme) =>({
   root: {
@@ -52,31 +55,62 @@ const useStyles = makeStyles((theme) =>({
   }
 }));
 
-export default function  BucketSettingsDialog(props) {
+export default function  DocumentSettingsDialog(props) {
   const classes = useStyles();
   const { onClose, selectedValue, open } = props;
-  var config = new GlobalConfig();
+
 
   const handleClose = () => {
     onClose(selectedValue);
   };
-
-
+  const handleOnChange = (evt)=> {
+    if(evt.jsObject) {
+      setContent(evt.jsObject)
+    }
+  }
+  const handleSave = (evt)=> {
+      if (props.handleSaveConfig(content)) {
+        handleClose()
+      }
+  }
+  const [content, setContent] = useState( props.globalConfigData);
+  var config = new GlobalConfig(props.globalConfigData)
   // always turns into table layout for what you want. ;) <font size=+2><blink>old tricks are best</bink></font>
   return (
     <React.Fragment>
-    <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
-    
-     <DialogTitle id="simple-dialog-title">Bucket Configuration</DialogTitle>
+    <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>    
+      <DialogTitle id="simple-dialog-title">
+        <table><tr>
+          <td width="100%">  <Typography variant="h6">Document Settings</Typography>   </td>
+        <td> <IconButton aria-label="close" onClick={props.onClose}>
+            <CloseIcon />
+          </IconButton>     </td>
+        </tr></table>
         
-      <JSONInput
-          id          = 'a_unique_id'
-          placeholder = { sampleObject }
-          colors      = { darktheme }
-          locale      = { locale }
-          height      = '550px'
-      />
+          
+      </DialogTitle>
+      
+      <table>
+        
+        <tr><td>  
+          <JSONInput
+              id          = 'document_settings_configzs'
+              placeholder = { props.globalConfigData }
+              //colors      = { darktheme }
+              locale      = { locale }
+              height      = '550px'
+              onChange    = {handleOnChange}
+          />
+          
+        </td></tr>
+        <tr><td><br></br></td></tr>
+        <tr><td>
+          <Button color="inherit" onClick={handleSave}>
+            <SaveIcon color="primary"/>Apply CONFIG to ALL DOCUMENTS in gs://{config.bucketName}
+          </Button>
+        </td></tr>
+      </table>
     </Dialog>
-    </React.Fragment>
+  </React.Fragment>
   );
 }

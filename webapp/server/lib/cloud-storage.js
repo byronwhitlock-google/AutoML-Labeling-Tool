@@ -121,7 +121,7 @@ module.exports = class CloudStorage {
    */
   async fileExists(documentName)
   {
-    let file = this.bucket.file(documentName);
+    let file = await this.bucket.file(documentName);
     let res = await file.exists();
     console.log(res)
     return res[0];
@@ -131,7 +131,7 @@ module.exports = class CloudStorage {
    * @param {string} documentName
    */
   async delete(documentName) { 
-    let file = this.bucket.file(documentName);
+    let file = await this.bucket.file(documentName);
     return await file.delete()
   }
 }

@@ -42,9 +42,11 @@ class DocumentApi extends BaseApi {
       }
     
       console.log("*****Reparsing data from file****")
-      
+      // first split the sentence
       let sentencesSplit = split(doc.text_snippet.content, splitOptions)
       let actualSplit = []
+
+      // next we need to get the child nodes if any and flatten. basically we are cleaning up  a funky artifact of sentence-splitter library
       // when you use split options, things come out in sentencesSplit[i].children
       for(var i =0;i<sentencesSplit.length;i++) {
         if (sentencesSplit[i].children) {
@@ -55,6 +57,11 @@ class DocumentApi extends BaseApi {
       }
       console.log(actualSplit)
       
+      // Now we have these wierd punctuation nodes seperate from our sentance.
+      // if punctuation is not the first token in the document, 
+      // then append the punctuation to the previous token, and update the offsets.
+      // this has the effect of creating a overlapping token so we will need to ignore 
+      // the punctionation token later on in RenderSentence::render()
       for(var i =0 ; i<actualSplit.length ; i++) {
         var sentence = actualSplit[i];
 
@@ -64,37 +71,7 @@ class DocumentApi extends BaseApi {
           actualSplit[i-1].raw+= sentence.raw
         }
       }
-     /*
-      console.log("*****Reparsing data from file****")
-      
-      let sentencesSplit = split(doc.text_snippet.content)
-      
-      let actualSplit = []
-      // when you use split options, things come out in sentencesSplit[i].children
-      for(var i =0 ; i<sentencesSplit.length ; i++) {
-        
-        if (sentencesSplit[i].children) {
-          // append punctuation to the previous node
-          for(var j =0;j<sentencesSplit[i].children.length;j++) {
-            var childrenOut = []            
-            var child = sentencesSplit[i].children[j];
-            
-            if (child.type == "Punctuation" && childrenOut[j-1]) {
-              childrenOut[j-1].range[1]=child.range[1]
-              childrenOut[j-1].value+= child.value
-            }  else {
-              childrenOut.push(child)
-            }
-          }
-
-          actualSplit[i]=childrenOut
-        } else {
-          actualSplit[i]=sentencesSplit[i]
-        }
-      }
-      console.log(sentencesSplit)
-      console.log(actualSplit)
-*/
+    
      return {
         documentData: doc,
         sentenceData: actualSplit 
