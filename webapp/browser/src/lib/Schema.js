@@ -1,6 +1,5 @@
 export  function MenuItemSchema(menuItem) 
 {
-  this.key=menuItem.key||"";
   this.text =menuItem.text||"";
   this.score=menuItem.score||0;
   this.color=menuItem.color||"";

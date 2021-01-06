@@ -42,7 +42,7 @@ class App extends Component {
     data: null,
     sentenceData: [],
     selectedDocument: 'test.txt',
-    selectedModel: null,
+    selectedModelHash: null,
     documentList: [],
     autoMLModelList: [],
     autoMLPrediction: false,
@@ -177,9 +177,12 @@ class App extends Component {
   // we got a new prediction model 
   async handleModelUpdate(newModel) {
     if (newModel){
-     var predictions = await this.requestAutoMLPrediction(newModel)    
-     
-     this.setState({autoMLPrediction: predictions })
+      var selectedModelHash = newModel + this.state.selectedDocument
+
+     if (selectedModelHash != this.state.selectedModelHash) { // this prevents infinite loops requesting stuff forever. very important
+      var predictions = await this.requestAutoMLPrediction(newModel)         
+      this.setState({autoMLPrediction: predictions, selectedModelHash: selectedModelHash })
+     }
     } else {
       this.setState({autoMLPrediction: false })
     }
@@ -316,7 +319,6 @@ class App extends Component {
   
   
   render() {
-    
     return (
     <div className="App">
       <ModalPopup           
@@ -346,6 +348,7 @@ class App extends Component {
       />
       <DocumentHeader  
         selectedDocument={this.state.selectedDocument}  
+        selectedModel={this.state.selectedModel}  
         canLoadDocument={this.canLoadDocument()}
         
         autoMLModelList={this.state.autoMLModelList}

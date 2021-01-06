@@ -433,7 +433,7 @@ class SentenceAnnotator extends Component {
               <MenuItem key={menuItem.text} onClick={(e)=>this.handleMenuClick(e,menuItem,this.props.sentenceId)}>             
                 <span style={{backgroundColor: menuItem.color}}>              
                 &nbsp;{menuItem.text}&nbsp;
-                </span>({menuItem.score}%)
+                </span>{menuItem.score? <React.Fragment>({menuItem.score}%)</React.Fragment> : <React.Fragment/>}
               </MenuItem>
                 
             )}

@@ -40,6 +40,7 @@ function AutoMLPrediction(props) {
           var model = props.autoMLModelList[i]
           if (defaultModel == model.displayName ) { // model.displayname is what we show in the dropdown. 
             selectedModel = model.name // this is actually the ID 
+           props.handleModelUpdate(selectedModel)
             break;//out! https://www.youtube.com/watch?v=IIOJdMdS56k
           }
         }
@@ -52,7 +53,7 @@ function AutoMLPrediction(props) {
     // props.selectedAutoMLDataset
     const classes = useStyles();
     return (
-     <FormControl className={classes.formControl}>
+     <FormControl className={classes.formControl} key={props.autoMLModelList}>
         <InputLabel id="automl-model-label">Natural Language Model</InputLabel>
         <Select
           labelId="automl-model-label"
@@ -65,8 +66,14 @@ function AutoMLPrediction(props) {
         {//<MenuItem selected={getSelectedModel() ?  false: true} value="">None</MenuItem>
         }
         {props.autoMLModelList.map((model) => 
-          <MenuItem id={ model.name} key={model.name} value={model.name}  onClick={(e)=>handleClick(e,model.name)}>             
-            {model.displayName}
+          <MenuItem 
+            id={ model.name} 
+            key={model.name} 
+            value={model.name}  
+            selected={selectedModel == model.name ?  true: false}
+            onClick={(e)=>handleClick(e,model.name)}>             
+
+              {model.displayName}
           </MenuItem>                
         )}
         </Select>

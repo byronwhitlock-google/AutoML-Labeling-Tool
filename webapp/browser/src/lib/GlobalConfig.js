@@ -60,13 +60,14 @@ class GlobalConfig {
 
   getDefaultModelName()
   {
-    if (this.data.hasOwnProperty('defaultModelName')) {
+    //if (this.data.hasOwnProperty('defaultModelName')) {
      //console.log("got defgault model "+this.data.defaultModelName)
       return this.data.defaultModelName
-    }
-    else 
-      return "";
+    //}
+    //else 
+    //  return "";
   }
+
 
   defaultData = {
       defaultModelName: "",

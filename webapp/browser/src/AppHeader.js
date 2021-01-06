@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function AppHeader(props) {
   const classes = useStyles();
-  // closures are why we love js. 
+  
   const [settingsOpen, setSettingsOpen] = useState(0);
   
   return (
