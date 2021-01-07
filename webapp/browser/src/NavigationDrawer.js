@@ -135,12 +135,10 @@ class NavigationDrawer extends Component {
       onKeyDown={this.toggleDrawer(false)}
     >
     <List color="primary">    
-    <Tooltip title="Manage configuration for this project.">     
-      <ListItem onClick={this.props.handleShowBucketSettings}  button key="show-bucket-settings">
+      <ListItem key="show-bucket-settings">
         <CloudStorageIcon/>&nbsp;&nbsp;&nbsp;
         <ListItemText secondary={`gs://${config.bucketName}/`} primary={`Cloud Storage Bucket`}/>
       </ListItem>
-      </Tooltip>
       <Divider/>    
         {this.props.documentList.length> 0 && 
         <Tooltip title="Generate a CSV file for training a new new model in the AutoML API.">     

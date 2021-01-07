@@ -29,6 +29,11 @@ import DocumentSettingsDialog from './DocumentSettingsDialog.js'
 import SettingsIcon from '@material-ui/icons/Settings';
 import CloseIcon from '@material-ui/icons/Close';
 
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import Switch from '@material-ui/core/Switch';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
@@ -73,7 +78,13 @@ function DocumentHeader(props) {
           InputProps={{
             startAdornment: <InputAdornment position="start"><EditTwoToneIcon/></InputAdornment>,
           }}
-          />
+          />{/*<br/>
+           <Tooltip title="Switch to 'word label mode'. This mode allows addtional labeling of individual words withing a sentence. Word labels are grouped by the label of the containing sentence. Click `config file for details.">
+           <FormControlLabel
+            control={<Switch color="primary" selected={true} onChange={()=>{}} />}
+            label="Word Label Mode"
+          /></Tooltip>
+          */}
           </blockquote>
         }
         </td><td>

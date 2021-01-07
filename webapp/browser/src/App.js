@@ -176,7 +176,7 @@ class App extends Component {
 
   // we got a new prediction model 
   async handleModelUpdate(newModel) {
-    if (newModel){
+    if (newModel && this.state.selectedDocument){
       var selectedModelHash = newModel + this.state.selectedDocument
 
      if (selectedModelHash != this.state.selectedModelHash) { // this prevents infinite loops requesting stuff forever. very important
