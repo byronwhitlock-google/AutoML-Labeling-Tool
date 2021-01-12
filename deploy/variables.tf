@@ -73,7 +73,7 @@ variable "scopes" {
 variable "container_image_path" {
   description = "The path to the container image in GCR"
   type        = string
-  default     =  "gcr.io/automl-labeling-tool/automl-labeling-tool"
+  default     =  "gcr.io/automl-labeling-tool/automl-labeling-tool:master"
 }
 
 
