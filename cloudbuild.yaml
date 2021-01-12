@@ -1,9 +1,9 @@
 steps:
 # Build the container
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/automl-labeling-tool', '.']
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/automl-labeling-tool:$BRANCH_NAME', '.']
 # Push the container to GCR
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/$PROJECT_ID/automl-labeling-tool']
+  args: ['push', 'gcr.io/$PROJECT_ID/automl-labeling-tool:$BRANCH_NAME']
 images:
-- gcr.io/$PROJECT_ID/automl-labeling-tool
+- gcr.io/$PROJECT_ID/automl-labeling-tool:$BRANCH_NAME
