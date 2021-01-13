@@ -20,7 +20,7 @@ class GlobalConfig {
 
   constructor(configData){
 
-    this.data = this.defaultData
+    this.data = this.defaultConfig
     console.log("We constructing from config data")
     console.log(configData)
     
@@ -68,24 +68,47 @@ class GlobalConfig {
     //  return "";
   }
 
-
-  defaultData = {
-      defaultModelName: "",
-      menuItems : [ // these will be dynamically replaced by values fetched in App::refreshConfig()
-      /*{
-        text:"Problem",
-        color: "#F2D7D5"
-        },
-      {
-        text:"Cause",        
-        color: "#EBDEF0"
-      },
-      {
-        text:"Remediation",        
-        color: "#D4E6F1"
-      }*/
-    ] 
+  hasWordLabels()
+  {
+    for(var idx in this.data.menuItems)
+    {      
+      if (this.data.menuItems[idx].hasOwnProperty('wordLabels')) {
+        if (this.data.menuItems[idx].wordLabels.length > 0){
+            return true;
+          }
+      }
+    }
+    return false
   }
+
+
+    defaultConfig = {
+      defaultModelName: "",
+      menuItems : [
+         /* {
+            text:"Problem",
+            color: "#F2D7D5",
+            wordLabels: [
+              {
+                  text:"Problem Generic",
+                  color: "orange"
+              },
+              {
+                  text:"Problem Specific",
+                  color: "green"
+              }   
+              ]
+            },
+          {
+            text:"Cause",
+            color: "#EBDEF0"
+          },
+          {
+            text:"Remediation",
+            color: "#D4E6F1"
+          }    */  
+      ]  
+    }
 }
 export default GlobalConfig
 

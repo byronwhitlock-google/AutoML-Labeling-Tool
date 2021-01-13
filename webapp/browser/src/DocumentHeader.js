@@ -15,7 +15,9 @@
 */
 import React, { useState } from 'react';
 import GlobalConfig from './lib/GlobalConfig.js'
-import AutoMLPrediction from './AutoMLPrediction.js'
+import PredictionHeader from './PredictionHeader.js'
+import WordLabelPredictionHeader from './WordLabelPredictionHeader.js'
+
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import EditTwoToneIcon from '@material-ui/icons/EditTwoTone';
@@ -33,6 +35,7 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Switch from '@material-ui/core/Switch';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -55,17 +58,25 @@ function DocumentHeader(props) {
   const classes = useStyles();
   // closures are why we love js. 
   const [settingsOpen, setSettingsOpen] = useState(0);
+  const [wordLabelMode, setwordLabelMode] = useState(false);
+  const toggleWordLabelMode = () => {
+      setwordLabelMode((curr) => {      
+        props.setWordLabelMode(!curr)
+        return !curr
+      }
+    );
+  };
 
   var hash = require('object-hash');
   var globalConfigHash = hash(props.globalConfigData)
 
   // don't hate on the table layout.
     return (
-      <table width='100%'>
-        <tr><td>
-        { props.canLoadDocument && props.selectedDocument &&
+      <Grid container>
+        <Grid item xs={2}>
+        {
           <blockquote>
-          <TextField required label="Current Document" defaultValue={selectedDocument} key={selectedDocument}          
+          <TextField required label="Document Name" defaultValue={selectedDocument} key={selectedDocument}          
           onBlur = {(evt)=>{
             props.handleDocumentUpdate(evt.target.value+".txt")                       
           }}
@@ -78,37 +89,33 @@ function DocumentHeader(props) {
           InputProps={{
             startAdornment: <InputAdornment position="start"><EditTwoToneIcon/></InputAdornment>,
           }}
-          />{/*<br/>
-           <Tooltip title="Switch to 'word label mode'. This mode allows addtional labeling of individual words withing a sentence. Word labels are grouped by the label of the containing sentence. Click `config file for details.">
-           <FormControlLabel
-            control={<Switch color="primary" selected={true} onChange={()=>{}} />}
-            label="Word Label Mode"
-          /></Tooltip>
-          */}
+          />
+          {props.canLoadDocument && config.hasWordLabels() &&
+          <React.Fragment>
+            <br/>
+            <Tooltip title="Switch to 'word label mode'. This mode allows labeling of words withing a sentence. Word labels are grouped by the label of the containing sentence. Word labels use the containing sentence as the document text in training CSV download. Click `configure labels` to configure entity labels.">
+            <FormControlLabel
+              control={<Switch color="primary" checked={wordLabelMode} onChange={toggleWordLabelMode} />}
+              label="Word Labeling"/>
+            </Tooltip>
+          </React.Fragment>
+          }
           </blockquote>
         }
-        </td><td>
-        { props.canLoadDocument && props.selectedDocument &&
-          <AutoMLPrediction key={globalConfigHash} {...props}/>
-        }
-        </td><td>
-          { props.canLoadDocument && props.selectedDocument &&
-          <fieldset>
-            <legend>Labels</legend>
-            {config.getMenuItems().map((menuItem) =>               
-                    <span>&nbsp;<span style={{backgroundColor: menuItem.color}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
-                )}&nbsp;
-          </fieldset>
+        </Grid>
+        <Grid item xs={9}>
+          {
+            !wordLabelMode && // don't show the standard prediction/label header in word label mode
+              <PredictionHeader key={globalConfigHash} {...props}/>
           }
-          {props.autoMLPrediction &&
-            <fieldset>
-              <legend>Predictions</legend>
-              {config.getMenuItems().map((menuItem) =>               
-                      <span>&nbsp;<span style={{outline: `${menuItem.color} double`}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
-                  )}&nbsp;
-            </fieldset>
-          }         
-        </td><td>    
+          {
+           wordLabelMode && // show the word label header here
+              <WordLabelPredictionHeader key={globalConfigHash} {...props}/>
+              
+          }
+          </Grid>
+          <Grid item xs={1}>
+
             <React.Fragment>
               <Tooltip title={`Configure Labels & Default Model`}>
                 <Button color="inherit" onClick={()=>{setSettingsOpen(1)}}>
@@ -119,8 +126,8 @@ function DocumentHeader(props) {
               </Tooltip>
               <DocumentSettingsDialog onClose={()=>{setSettingsOpen(0)}} open={settingsOpen}  {...props}/>          
             </React.Fragment> 
-        </td></tr>
-      </table>    
+          </Grid>
+        </Grid>
     );
 }
 

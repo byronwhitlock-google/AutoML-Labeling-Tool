@@ -397,12 +397,24 @@ class SentenceAnnotator extends Component {
     //console.log(wordsColored)
 //    console.log("Annotations SA")
   //  console.log(this.props.annotations)
+
+      // if this is wordLabel mode, we don't allow highlighiting (mouseover) of uncolored words
+      // since in wordlabel mode, check for the existance of a colored word within the array (that will only be 1 element since in word label mode we label each word)
+      var attachMouseEvents = true
+      if (this.props.wordLabelMode){
+        for(var i=0;i<wordsColored.length;i++){
+          if(!wordsColored[i].color) {
+            attachMouseEvents=false;
+            break;
+          }
+        }
+      }
       return (
         <span
         ref={this.sentenceRef} 
           style={{ cursor: 'context-menu' }} 
-          onMouseOver={(e)=>{this.handleMouseOver(e, this.sentenceRef)}}
-          onContextMenu={(e)=>{this.handleRightClick(e, this.sentenceRef)}}
+          onMouseOver={(e)=>{if (attachMouseEvents) this.handleMouseOver(e, this.sentenceRef)}}
+          onContextMenu={(e)=>{if (attachMouseEvents) this.handleRightClick(e, this.sentenceRef)}}
         >
           {wordsColored.map((item, key) =>
             <React.Fragment key={key}>

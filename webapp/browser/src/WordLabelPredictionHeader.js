@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-function AutoMLPrediction(props) {
+function WordLabelPredictionHeader(props) {
     const handleClick = (evt)=>{};
     console.log("Got Props in AutoMLPrediction")
     console.log(props)
@@ -52,34 +52,34 @@ function AutoMLPrediction(props) {
     // props.autoMLModelList
     // props.selectedAutoMLDataset
     const classes = useStyles();
+    var menuItems = config.getMenuItems()
     return (
-     <FormControl className={classes.formControl} key={props.autoMLModelList}>
-        <InputLabel id="automl-model-label">Natural Language Model</InputLabel>
-        <Select
-          labelId="automl-model-label"
-          id="automl-model"
-          defaultValue={selectedModel}
-          onChange={onSelectChange}
-          autowidth
-        >
-        <MenuItem selected={true} value="">None</MenuItem>
-        {//<MenuItem selected={getSelectedModel() ?  false: true} value="">None</MenuItem>
+      <React.Fragment>
+        Word Labels
+      { props.canLoadDocument && props.selectedDocument && menuItems.map((menuItem) =>   
+        <React.Fragment>       
+            {menuItem.wordLabels && 
+              <fieldset>
+                <legend style={{backgroundColor: menuItem.color}}>&nbsp;{menuItem.text}</legend>
+                {menuItem.wordLabels.map((wordLabelMenuItem) =>
+                  <span>&nbsp;<span style={{backgroundColor: wordLabelMenuItem.color}}>&nbsp;{wordLabelMenuItem.text}&nbsp;</span>&nbsp;</span>
+                )}
+              </fieldset>
+            }
+          </React.Fragment>
+          )
         }
-        {props.autoMLModelList.map((model) => 
-          <MenuItem 
-            id={ model.name} 
-            key={model.name} 
-            value={model.name}  
-            selected={selectedModel == model.name ?  true: false}
-            onClick={(e)=>handleClick(e,model.name)}>             
-
-              {model.displayName}
-          </MenuItem>                
-        )}
-        </Select>
-        <FormHelperText>AutoML model used for predictions</FormHelperText>
-      </FormControl> 
+      
+        {/*props.autoMLPrediction &&
+            <fieldset>
+              <legend>Predictions</legend>
+              {config.getMenuItems().map((menuItem) =>               
+                      <span>&nbsp;<span style={{outline: `${menuItem.color} double`}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
+                  )}&nbsp;
+            </fieldset>
+          */}   
+       </React.Fragment>
     )
 }
 
-export default AutoMLPrediction;
+export default WordLabelPredictionHeader;

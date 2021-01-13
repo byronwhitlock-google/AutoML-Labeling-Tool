@@ -84,7 +84,16 @@ class Document extends Component {
   {
     try {
       var dApi = new DocumentApi(this.props.accessToken);
-      var doc = await dApi.loadDocumentContent(this.props.src)
+      
+      var doc = null;
+      
+      if (this.props.wordLabelMode) {
+        doc = await dApi.loadDocumentContentAsWords(this.props.src)
+      } else {
+        doc = await dApi.loadDocumentContent(this.props.src)
+      }
+      
+      
       this.setState({...this.state,...doc})      
     } catch (err) {
       this.setError(err.message)

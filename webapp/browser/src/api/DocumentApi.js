@@ -22,7 +22,7 @@ class DocumentApi extends BaseApi {
     super(accessToken)
   }
   //changes from automl format to sentence split format we like for display
-  async parseDocument(doc)
+  async parseDocument(doc,splitWords=false)
   {
     // dumb helper function 
     function isString (obj) {
@@ -40,7 +40,9 @@ class DocumentApi extends BaseApi {
          // separatorCharacters: ['\n','.','?','!']
         }
       }
-    
+      if (splitWords){
+        splitOptions.SeparatorParser.separatorCharacters=[' ' ,'\t','\n']
+      }
       console.log("*****Reparsing data from file****")
       // first split the sentence
       let sentencesSplit = split(doc.text_snippet.content, splitOptions)
@@ -85,6 +87,11 @@ class DocumentApi extends BaseApi {
   async loadDocumentContent (documentPath) {
     const doc = await this.fetch(`/load_document?d=${documentPath}`)    
     return this.parseDocument(doc);
+  }
+
+  async loadDocumentContentAsWords (documentPath) {
+    const doc = await this.fetch(`/load_document?d=${documentPath}`)    
+    return this.parseDocument(doc,true);
   }
   
   async saveDocumentContent(documentPath,doc) {
