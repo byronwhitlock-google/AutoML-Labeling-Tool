@@ -22,7 +22,7 @@ import {ColoredWordSchema,MenuItemSchema} from './lib/Schema.js'
 import MouseOverPopover from './MouseOverPopover.js'
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-
+import WordAnnotator from './WordAnnotator.js'
 
 class SentenceAnnotator extends Component {
     constructor(props) {
@@ -41,7 +41,7 @@ class SentenceAnnotator extends Component {
     this.handleRightClick = this.handleRightClick.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleMenuClick = this.handleMenuClick.bind(this)
-    
+    this.calculateWordLabelMenuItems=this.calculateWordLabelMenuItems.bind(this)
 
     }
 
@@ -176,7 +176,8 @@ class SentenceAnnotator extends Component {
 
           coloredAnnotations.push({
             color: menuItem.color  ,
-            label: display_name             
+            label: display_name   ,
+            wordLabels: menuItem.wordLabels // this is a hack for now....          
           })
         }
       }
@@ -308,16 +309,26 @@ class SentenceAnnotator extends Component {
         }
 
         if (annotatedColors.length > 0)
-        {
-          
+        {          
           if (annotatedColors.hasOwnProperty(idx)) //should normally match the word array because tokenized with same tokenizer
           {
             word.label = annotatedColors[idx].label
-            word.color = annotatedColors[idx].color       
+            word.color = annotatedColors[idx].color
+            if (this.props.wordLabelMode){
+              word.wordLabels = annotatedColors[idx].wordLabels // this is a hack for now.... will need to get actual value, but this will help build the menu 
+              // we dont highlight words that don't have configured labels
+              if(! word.wordLabels ) {
+                word.color = ''
+                word.label = ''
+                word.outline=''
+                word.score=0
+              }
+            }
           }   
           //word.annotatedColors = annotatedColors
         }
 
+        
         //console.log(`idx: ${idx} checkoffset ${checkOffset}`)
         //console.log(this.props.annotations)        
         
@@ -346,7 +357,7 @@ class SentenceAnnotator extends Component {
         if (!label) {
           continue
         }
-
+        
         //calculate score for confidence
         if (! sumScore[label]) {
           sumScore[label] = 0;
@@ -383,11 +394,70 @@ class SentenceAnnotator extends Component {
      return menuItems;
   }
 
+  // wordsColored:[{text: "Problem", color:"#ABCDEF", outline:"", label:"",score:0}]
+  calculateWordLabelMenuItems(wordsColored){
+
+    var menuItemList = this.config.getMenuItems()
+    var menuItemHash = [];
+    var sumScore = [];
+    
+    //prepopulate the hash with default menu items
+    /*for (var i =0;i<menuItemList.length;i++){
+      var label = menuItemList[i].text
+      menuItemHash[label] = menuItemList[i]
+    }*/
+    // go through all the colored(labeled) words and create a menuItem list of labels and calulcate hte scores for each item
+    for (var i =0;i<wordsColored.length;i++) {
+      
+      // in word label mode this should only be a single element.      
+      var label = wordsColored[i].label;
+      if (!label) { // parent label
+        continue
+      }
+
+      var wordLabels = wordsColored[i].wordLabels
+      if (! wordLabels) {
+        continue
+      }
+      //window.alert(JSON.stringify(wordLabels))      
+      // add the submenu items to the menu
+      for(var j=0;j<wordLabels.length;j++){ // word label
+      
+        
+        var wordLabelText = wordLabels[j].text  
+        wordLabels[j].parentLabel = label    
+        if (! menuItemHash[label] )  menuItemHash[label] = []
+        menuItemHash[label].push(wordLabels[j])
+
+        //calculate score for confidence
+        // TODO: calculate score prediction this needs to be grouped by senetence. wordscolored is currently the whole document.
+        //TODO: Support dynamic menu items colors 
+        if (label && ! menuItemHash.hasOwnProperty(label)) {
+          // menuitem is key,text,score,color
+          menuItemHash[label] = {/*key:label,*/text:label,color:'gray'}
+          // update menuitem global with unknown label
+          this.props.handleAddMenuItem(menuItemHash[label])
+        }
+      }
+    }
+
+    //return deduped array
+    var menuItems = []
+    for(var i in menuItemHash){
+      menuItems.push(...menuItemHash[i])
+    }      
+   return menuItems;
+}
+
     render()
     {
       var hash = require('object-hash');
-      var wordsColored = this.getWordsColored();
-      var menuItems = this.calculateMenuItems(wordsColored)
+      var wordsColored =  this.getWordsColored();
+      var menuItems = null
+
+      menuItems = this.calculateMenuItems(wordsColored)
+
+      
 
       //console.log(menuItems)
      //console.log("words SA")
@@ -409,50 +479,52 @@ class SentenceAnnotator extends Component {
           }
         }
       }
+
       return (
         <span
         ref={this.sentenceRef} 
           style={{ cursor: 'context-menu' }} 
-          onMouseOver={(e)=>{if (attachMouseEvents) this.handleMouseOver(e, this.sentenceRef)}}
-          onContextMenu={(e)=>{if (attachMouseEvents) this.handleRightClick(e, this.sentenceRef)}}
+          onMouseOver={(e)=>{if (!this.props.wordLabelMode) this.handleMouseOver(e, this.sentenceRef)}}
+          onContextMenu={(e)=>{if (!this.props.wordLabelMode) this.handleRightClick(e, this.sentenceRef)}}
         >
           {wordsColored.map((item, key) =>
-            <React.Fragment key={key}>
-              
-              <span style={{
-                outline: item.outline,
-                backgroundColor: item.color, 
-                display: 'inline'
-              }}>
-                {item.text}                 
-              </span>
-              &nbsp;
-            </React.Fragment>
+            <WordAnnotator
+              wordId ={key}
+              handleMouseOver = {this.handleMouseOver}
+              handleRightClick = {this.handleRightClick}
+              calculateWordLabelMenuItems = {this.calculateWordLabelMenuItems}
+              attachMouseEvents= {attachMouseEvents}
+              coloredWord={item}
+              {...this.props}
+              />               
            )}
-        <Menu
-          key={hash(menuItems)}
-          keepMounted
-          open={this.state.mouseY !== null}
-          onClose={this.handleClose}
-          anchorReference="anchorPosition"
-          anchorPosition={
-            this.state.mouseY !== null && this.state.mouseX !== null
-              ? { top: this.state.mouseY, left: this.state.mouseX }
-              : undefined
+           {!this.props.wordLabelMode && 
+              <Menu
+                key={hash(menuItems)}
+                keepMounted
+                open={this.state.mouseY !== null}
+                onClose={this.handleClose}
+                anchorReference="anchorPosition"
+                anchorPosition={
+                  this.state.mouseY !== null && this.state.mouseX !== null
+                    ? { top: this.state.mouseY, left: this.state.mouseX }
+                    : undefined
+                }
+              >
+                  {menuItems.map((menuItem) => 
+                    <MenuItem 
+                    key={hash(menuItem,menuItem.text)} 
+                    onClick={(e)=>this.handleMenuClick(e,menuItem,this.props.sentenceId)}>             
+                      <span style={{backgroundColor: menuItem.color}}>              
+                      &nbsp;{menuItem.text}&nbsp;
+                      </span>{menuItem.score? <React.Fragment>({menuItem.score}%)</React.Fragment> : <React.Fragment/>}
+                    </MenuItem>                
+                  )}            
+                  <MenuItem key="none" onClick={(e)=>this.handleMenuClick(e,{text:'None'},this.props.sentenceId)}>             
+                    None (uno)
+                  </MenuItem>
+              </Menu>
           }
-        >
-            {menuItems.map((menuItem) => 
-              <MenuItem key={menuItem.text} onClick={(e)=>this.handleMenuClick(e,menuItem,this.props.sentenceId)}>             
-                <span style={{backgroundColor: menuItem.color}}>              
-                &nbsp;{menuItem.text}&nbsp;
-                </span>{menuItem.score? <React.Fragment>({menuItem.score}%)</React.Fragment> : <React.Fragment/>}
-              </MenuItem>
-                
-            )}
-            <MenuItem key="none" onClick={(e)=>this.handleMenuClick(e,{text:'None'},this.props.sentenceId)}>             
-              None
-            </MenuItem>
-        </Menu>           
         </span>
         )
 /*

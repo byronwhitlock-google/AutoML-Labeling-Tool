@@ -88,7 +88,7 @@ class App extends Component {
 
 
   }
-loadDocumentContentAsWords
+
   async handleAddMenuItem(menuItem){
     var globalConfigData = this.state.globalConfigData
     if (!globalConfigData.menuItems) return
@@ -110,7 +110,28 @@ loadDocumentContentAsWords
     globalConfigData.menuItems.push(menuItem)
     this.setState({globalConfigData:globalConfigData})
   }
-
+  async handleAddWordLabelMenuItem(menuItem){
+    var globalConfigData = this.state.globalConfigData
+    if (!globalConfigData.menuItems) return
+    for(var i=0;i<globalConfigData.menuItems.length;i++)// actually faster than using a hash or find 
+    {
+      // we in parent
+      if (menuItem.parentLabel == globalConfigData.menuItems[i].text) {
+        for (var j=0;j<globalConfigData.menuItems[i].wordLabels;j++)
+        {
+          var currItem = globalConfigData.menuItems[i].wordLabels[j]
+          if (currItem.text===menuItem.text) {
+            // already exists exit 
+            return;
+          }
+          
+        }
+        globalConfigData.menuItems[i].wordLabels.push(menuItem)
+        this.setState({globalConfigData:globalConfigData})
+        return; // once we find the correct parent menu item bail out
+      }
+    }
+  }
 
   // this is evil but i don't fully understand react cest la vie
   forceUpdateHandler(){    
