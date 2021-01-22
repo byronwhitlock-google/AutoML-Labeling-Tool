@@ -18,8 +18,7 @@
 import React, { Component } from 'react';
 import SentenceTokenizer from './lib/SentenceTokenizer.js'
 import GlobalConfig from './lib/GlobalConfig.js'
-import {ColoredWordSchema,MenuItemSchema} from './lib/Schema.js'
-import MouseOverPopover from './MouseOverPopover.js'
+import {ColoredWordSchema} from './lib/Schema.js'
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import WordAnnotator from './WordAnnotator.js'
@@ -112,7 +111,68 @@ class SentenceAnnotator extends Component {
       })
     }
 
-    getAnnotationColorsInRange(sentenceStartOffset, sentenceEndOffset)
+    /*
+       
+      words: Array(38)
+        0: {text: "The", startOffset: 0, endOffset: 3}
+        1: {text: "patient", startOffset: 4, endOffset: 11}
+        2: {text: "states", startOffset: 12, endOffset: 18}
+        3: {text: "she", startOffset: 19, endOffset: 22}
+        4: {text: "is", startOffset: 23, endOffset: 25}
+    */
+    getWordLabelAnnotationColors(words)
+    {
+      var annotations = this.props.wordLabelDoc.annotations
+      if(!annotations || ! annotations.length)return[];
+      //console.log("in render "+ this.props.sentenceOffset)
+      //console.log(annotations)
+      var coloredAnnotations = []
+      for (var i = 0; i<words.length ; i++ ) 
+      {
+        var coloredAnnotation={}
+        for (var aIdx in annotations)
+        {          
+          var annotation = annotations[aIdx]
+          if (annotation==null) continue;
+
+          // cleanup camelcase/snake case wtf googs.
+          const display_name = annotation.display_name
+          const start_offset = annotation.text_extraction.text_segment.start_offset
+          const end_offset = annotation.text_extraction.text_segment.end_offset
+          var wordStartOffset = words[i].startOffset
+          var wordEndOffset = words[i].endOffset
+
+          // so and eo are based on the sentence              
+          var so =  start_offset 
+          // since we can have a start offset before the beginning of this sentence, if so is negative, set it to zero.
+          if (so < wordStartOffset) so = -1;              
+          if (so >= wordEndOffset) so = -1;
+          
+          var eo =  end_offset 
+          // since we can have an end offset after the end of this sentence, if eo > sentenceEndOffset, set it to sentenceEndOffset.
+          if (eo > wordEndOffset) eo = -1;
+          if (eo <= wordStartOffset) eo = -1;
+
+          if (so>0 && eo > 0)
+          {            
+            //  so and eo ažre bounded by the length of the sentence so no out of range errors.
+            //console.log(`${sentenceStartOffset} so ${so} eo ${eo} ${sentenceEndOffset}`)
+            var menuItem = this.config.getWordLabelMenuItemByText(display_name);
+
+            coloredAnnotation = {
+              color: menuItem.color  ,
+              label: display_name           
+            }
+            break;
+          }
+        }
+        coloredAnnotations.push(coloredAnnotation)
+      }
+    
+      return coloredAnnotations
+
+    }
+    getAnnotationColorsInRange( sentenceStartOffset, sentenceEndOffset)
     {
       var annotations = this.props.annotations
       if(!annotations || ! annotations.length)return[];
@@ -185,7 +245,7 @@ class SentenceAnnotator extends Component {
 
     }
 
-
+/// same as getannotationinrange, but automl returns camelCase or snake_case depending on the API. 
     getPredictionInRange(sentenceStartOffset, sentenceEndOffset)
     {
       /*
@@ -265,8 +325,9 @@ class SentenceAnnotator extends Component {
             score: score,
             label: display_name
           })
-        }
+        }        
       }
+
 
       return coloredAnnotations
 
@@ -282,12 +343,25 @@ class SentenceAnnotator extends Component {
 
       // get offsets for each word 
       var words = this.tokenizer.tokenize(this.props.children)
+      /*
+      words: Array(38)
+        0: {text: "The", startOffset: 0, endOffset: 3}
+        1: {text: "patient", startOffset: 4, endOffset: 11}
+        2: {text: "states", startOffset: 12, endOffset: 18}
+        3: {text: "she", startOffset: 19, endOffset: 22}
+        4: {text: "is", startOffset: 23, endOffset: 25}
+        */
       var wordsColored = []
       
       var annotatedColors = this.getAnnotationColorsInRange(sentenceStartOffset,sentenceEndOffset)
       var predictedColors = []
       if (this.props.autoMLPrediction) {
         predictedColors = this.getPredictionInRange(sentenceStartOffset,sentenceEndOffset)
+      }
+
+      var annotatedWordLabelColors = []
+      if (this.props.wordLabelMode) {        
+        annotatedWordLabelColors = this.getWordLabelAnnotationColors(words)
       }
 
       // compare to the annotations prop
@@ -328,7 +402,15 @@ class SentenceAnnotator extends Component {
           //word.annotatedColors = annotatedColors
         }
 
-        
+        if (annotatedWordLabelColors.length > 0)
+        {          
+          if (annotatedWordLabelColors[idx].color) //should normally match the word array because tokenized with same tokenizer
+          {
+            word.label = annotatedWordLabelColors[idx].label
+            word.color = annotatedWordLabelColors[idx].color
+          }
+        }
+  
         //console.log(`idx: ${idx} checkoffset ${checkOffset}`)
         //console.log(this.props.annotations)        
         
@@ -482,7 +564,7 @@ class SentenceAnnotator extends Component {
 
       return (
         <span
-        ref={this.sentenceRef} 
+          ref={this.sentenceRef} 
           style={{ cursor: 'context-menu' }} 
           onMouseOver={(e)=>{if (!this.props.wordLabelMode) this.handleMouseOver(e, this.sentenceRef)}}
           onContextMenu={(e)=>{if (!this.props.wordLabelMode) this.handleRightClick(e, this.sentenceRef)}}
@@ -490,6 +572,7 @@ class SentenceAnnotator extends Component {
           {wordsColored.map((item, key) =>
             <WordAnnotator
               wordId ={key}
+              key = {key}
               handleMouseOver = {this.handleMouseOver}
               handleRightClick = {this.handleRightClick}
               calculateWordLabelMenuItems = {this.calculateWordLabelMenuItems}

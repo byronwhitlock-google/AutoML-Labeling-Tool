@@ -5,10 +5,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import Button from '@material-ui/core/Button';
-import IconGCP from './IconGCP.js'
 import GlobalConfig from './lib/GlobalConfig.js'
-import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -55,6 +52,7 @@ function PredictionHeader(props) {
     const classes = useStyles();
     return (
       <table width='100%'>
+        <tbody>
         <tr>
           <td>
             { props.canLoadDocument && props.selectedDocument && props.autoMLModelList.length>0 &&                          
@@ -65,7 +63,7 @@ function PredictionHeader(props) {
                       id="automl-model"
                       defaultValue={selectedModel}
                       onChange={onSelectChange}
-                      autowidth
+                      autowidth="true"
                     >
                     <MenuItem selected={true} value="">None</MenuItem>
                     {//<MenuItem selected={getSelectedModel() ?  false: true} value="">None</MenuItem>
@@ -90,8 +88,8 @@ function PredictionHeader(props) {
       { props.canLoadDocument && props.selectedDocument && config.getMenuItems().length>0 &&   
         <fieldset>
           <legend>Labels</legend>
-          {config.getMenuItems().map((menuItem) =>               
-                  <span>&nbsp;<span style={{backgroundColor: menuItem.color}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
+          {config.getMenuItems().map((menuItem,key) =>               
+                  <span key={key}>&nbsp;<span style={{backgroundColor: menuItem.color}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
               )}&nbsp;
         </fieldset>          
         }
@@ -99,13 +97,14 @@ function PredictionHeader(props) {
         {props.autoMLPrediction &&
             <fieldset>
               <legend>Predictions</legend>
-              {config.getMenuItems().map((menuItem) =>               
-                      <span>&nbsp;<span style={{outline: `${menuItem.color} double`}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
+              {config.getMenuItems().map((menuItem,key) =>               
+                      <span key={key}>&nbsp;<span style={{outline: `${menuItem.color} double`}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
                   )}&nbsp;
             </fieldset>
           }   
           </td>
         </tr>
+        </tbody>
       </table>
     )
 }

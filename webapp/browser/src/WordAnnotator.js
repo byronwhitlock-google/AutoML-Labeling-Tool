@@ -16,7 +16,6 @@
 */
 
 import React, { Component } from 'react';
-import MouseOverPopover from './MouseOverPopover.js'
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
@@ -66,6 +65,7 @@ class WordAnnotator extends Component {
       mouseY: null,
     })
   }
+  
   render()
   {
     var hash = require('object-hash');
@@ -111,7 +111,7 @@ class WordAnnotator extends Component {
                 </span>{menuItem.score? <React.Fragment>({menuItem.score}%)</React.Fragment> : <React.Fragment/>}
               </MenuItem>                
             )}            
-            <MenuItem key="none" onClick={(e)=>this.handleMenuClick(e,{text:'None'},this.props.sentenceId,this.wordId)}>             
+            <MenuItem key="none" onClick={(e)=>this.handleMenuClick(e,{text:'None'},this.props.sentenceId,this.props.wordId)}>             
               None (dos)
             </MenuItem>
         </Menu>

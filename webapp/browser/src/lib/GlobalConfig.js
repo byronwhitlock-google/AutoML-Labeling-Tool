@@ -21,8 +21,8 @@ class GlobalConfig {
   constructor(configData){
 
     this.data = this.defaultConfig
-    console.log("We constructing from config data")
-    console.log(configData)
+    //console.log("We constructing from config data")
+    //console.log(configData)
     
     if (configData && configData.hasOwnProperty("menuItems"))
       this.data = configData;
@@ -42,6 +42,21 @@ class GlobalConfig {
     localStorage.setItem("bucketName",this.bucketName)
     localStorage.setItem("projectId",this.projectId)
     localStorage.setItem("locationId",this.locationId)
+  }
+  // this means all submenu items must be uniuqe.. 
+  // 
+  getWordLabelMenuItemByText(text)
+  {
+    for(var jdx in this.data.menuItems)
+    {
+      for(var idx in this.data.menuItems[jdx].wordLabels)
+      {
+          var menuItem = this.data.menuItems[jdx].wordLabels[idx]
+          if (menuItem.text == text)
+              return menuItem;
+      }
+    }
+    return {text:text,color:''} // unkown word labels are light gray
   }
 
   getMenuItemByText(text)

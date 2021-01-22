@@ -16,7 +16,6 @@
 import React, { Component } from 'react';
 import './App.css';
 import RenderSentence from './RenderSentence.js'
-import ModalPopup from './ModalPopup.js'
 import SentenceTokenizer from './lib/SentenceTokenizer.js'
 import DocumentApi from './api/DocumentApi.js'
 
@@ -190,19 +189,22 @@ class Document extends Component {
                        hash(this.state.sentenceData)
     return (      
       <div  className="Document-body" key={documentHash}>
+      
         {this.state.sentenceData.map((item, key) =>
           <RenderSentence
             key ={key}
             onLabelUpdate={this.onLabelUpdate}
             onWordLabelUpdate={this.onWordLabelUpdate}
             annotations={this.state.documentData.annotations}
+            wordLabelDoc={this.state.wordLabelDocumentData[key]}
+            wordData={item.wordData}
             sentenceId ={key}
             sentenceOffset={item.range[0]}
             type = {item.type}    
             text = {item.raw}
             {...this.props}
             />          
-          )}
+          )} 
         </div>
      );
   }
