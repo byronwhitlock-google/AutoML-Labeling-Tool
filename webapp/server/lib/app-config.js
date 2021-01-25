@@ -16,6 +16,8 @@
 "use strict";
 const Dumper = require('dumper').dumper;
 const CloudStorage = require('lib/cloud-storage.js');
+const logger = require('lib/winston.js');
+//const { LOGGING_TRACE_KEY } = require('@google-cloud/logging-winston/build/src/common');
 
 module.exports = class AppConfig {
     CONFIG_FILENAME="config.json"
@@ -25,12 +27,14 @@ module.exports = class AppConfig {
    */
     constructor(options) {
         this.gcs = new CloudStorage(options);   
-        console.log(options)
+        //console.log(options)
+        logger.info(options)
     }
 
     async getConfig()
     {
-        console.log(`Getting ${this.CONFIG_FILENAME}`)
+        //console.log(`Getting ${this.CONFIG_FILENAME}`)
+        logger.info(`Getting ${this.CONFIG_FILENAME}`)
         if (await this.gcs.fileExists(this.CONFIG_FILENAME)) {
             console.log("Found config")
             var data = await this.gcs.readDocument(this.CONFIG_FILENAME);
@@ -45,7 +49,8 @@ module.exports = class AppConfig {
             
             return jsonData
         } else {
-            console.log("Not found, returning default config")
+            //console.log("Not found, returning default config")
+            logger.info("Not found, returning default config")
             return this.defaultConfig
         }
     }
@@ -73,7 +78,8 @@ module.exports = class AppConfig {
             }
         }
 
-        console.error("Invalid Config. ")
+        //console.error("Invalid Config. ")
+        logger.error("Invalid Config.")
         Dumper(config)
         throw new Error("Cannot Save. Invalid Config")        
     }    

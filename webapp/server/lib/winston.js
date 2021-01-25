@@ -1,4 +1,14 @@
 const winston = require('winston');
+const gcpMetadata = require('gcp-metadata');
+const isAvailable = gcpMetadata.isAvailable(); 
+
+const data = gcpMetadata.instance(); 
+console.log(data); 
+
+const project = gcpMetadata.project('project-id'); 
+console.log(project)
+
+console.log("Setup Winston logger")
 
 // Imports the Google Cloud client library for Winston
 const {LoggingWinston} = require('@google-cloud/logging-winston');
@@ -28,4 +38,4 @@ const logger =  winston.createLogger({
   exitOnError: false
 });
 
-module.exports.logger = logger;
+module.exports = logger;
