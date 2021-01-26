@@ -3,8 +3,8 @@ const {LoggingWinston} = require('@google-cloud/logging-winston');
 const gcpMetadata = require('gcp-metadata');
 
 const loggingWinston = new LoggingWinston({
-  projectId: 'auto-ml-admin',
-  keyFilename: '../../../terraform.json'
+  //projectId: 'automl-labeling-project-8d0a',
+  //keyFilename: '../../../terraform.json'
 });
 
 const logger = winston.createLogger({
