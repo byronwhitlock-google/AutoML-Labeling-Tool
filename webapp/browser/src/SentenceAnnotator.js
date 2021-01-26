@@ -122,6 +122,8 @@ class SentenceAnnotator extends Component {
     */
     getWordLabelAnnotationColors(words)
     {
+      if(!this.props.wordLabelDoc)return[]
+      
       var annotations = this.props.wordLabelDoc.annotations
       if(!annotations || ! annotations.length)return[];
       //console.log("in render "+ this.props.sentenceOffset)

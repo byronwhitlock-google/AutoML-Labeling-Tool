@@ -73,7 +73,7 @@ function DocumentHeader(props) {
   // don't hate on the table layout.
     return (
       <Grid container>
-        <Grid item xs={2}>
+        <Grid item xs={3}>
         {
           <blockquote>
           <TextField required label="Document Name" defaultValue={selectedDocument} key={selectedDocument}          
@@ -103,7 +103,7 @@ function DocumentHeader(props) {
           </blockquote>
         }
         </Grid>
-        <Grid item xs={9}>
+        <Grid item xs={8}>
           {
             !wordLabelMode && // don't show the standard prediction/label header in word label mode
               <PredictionHeader key={globalConfigHash} {...props}/>

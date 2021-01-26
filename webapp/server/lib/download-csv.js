@@ -23,15 +23,15 @@ module.exports = class DownloadCsv {
     console.log(options)
   }
 
-  async download()
+  async download(path="annotations/")
   {
     var csv = []
 
-    var docs = await this.gcs.listDocuments(".jsonl","annotations/");
+    var docs = await this.gcs.listDocuments(".jsonl",path);
 
     for (var i = 0;i<docs.length;i++)
     {
-      csv.push(`,gs://${this.gcs.bucketName}/annotations/${docs[i]}`);
+      csv.push(`,gs://${this.gcs.bucketName}/${path}${docs[i]}`);
     }
 
     if (!csv.length > 0)
@@ -41,10 +41,14 @@ module.exports = class DownloadCsv {
     return csv.join("\n")
   }
 
+  
   async persist(name)
   {
     var csvData = await this.download()
     var numRecords = csvData.split(/\r\n|\r|\n/).length
+
+    // now word labels
+    wordLabels = csv
     
     console.log("About to persist csv data")
     console.log(csvData)

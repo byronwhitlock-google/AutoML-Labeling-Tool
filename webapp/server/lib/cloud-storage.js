@@ -155,4 +155,11 @@ module.exports = class CloudStorage {
     let file = await this.bucket.file(documentName);
     return await file.delete()
   }
+
+    /**
+   * @param {string} prefix
+   */
+  async deleteMany(prefix) { 
+    return await this.bucket.deleteFiles({ prefix: prefix })
+  }
 }

@@ -64,12 +64,17 @@ the document in this class is an array of these things.
       throw new Error("Invalid Filename")
     }
 
-    var jsonlFilename = `annotations/word-labels/${filename}.jsonl`;
 
-    console.log(`in annotated-word-label-document:save(${jsonlFilename},...) `)
-    console.log(documents)   
-    var docToSave = []
+    
+
+    console.log(`in annotated-word-label-document:save(${filename},...) `)
+    //console.log(documents)   
+    let docsToSave = []
+    let docToSave=[]
     var found = false
+    var labels = []
+
+    var labelPivot = []
     for(var i =0 ; i < documents.length;i++) {
       var document = documents[i]
       if (!document.hasOwnProperty('text_snippet') ||
@@ -79,23 +84,73 @@ the document in this class is an array of these things.
           {
             throw new Error("Cannot save word labels. Document format invalid.")
           }        
+      docToSave.push(JSON.stringify(document))
 
       // if there are no annotations, delete the document completely, otherwise write it out.
-      if (document.annotations.length > 0) { found = true }
-      docToSave.push(JSON.stringify(document))
-    }
+      if (document.annotations.length > 0) 
+      { 
+        found = true
+        for(let j =0; j<document.annotations.length;j++)
+        {
+          let annotation = document.annotations[j]
+          let label = annotation.display_name
+          if (!docsToSave[label]) {
+            docsToSave[label]=[]
+          }
+          /*if (!docsToSave[label][document.text_snippet]) {
+            docsToSave[label][document.text_snippet]=[]
+          }*/
+          let docToWrite = JSON.stringify({annotations: [annotation], text_snippet: document.text_snippet})
+          docsToSave[label].push(docToWrite)
+        }              
+      }      
+    }   
+    
+    console.log("Got docToSave")
+    Dumper(docToSave) // this is for display in ui.
+
+    // delete old training since it is write only
+    var jsonlFilenamePrefix=`annotations/word-labels/${filename}`
+    var jsonlFilename = `${jsonlFilenamePrefix}.jsonl`; //cache file for ui
+    
+    // start by deleting training data
+    // this is because we only write to this data, we never read from it. so if the last label is removed from a sentence, we want the file to go away.
+    //TODO: pass the labels in as an array, and manage each cache file indivudiually
+    //TODO: read from training files directly instead of using main cache file for UI
+    console.log(`sending deletemany for ${jsonlFilenamePrefix}`)
+    await this.gcs.deleteMany(`${jsonlFilenamePrefix}--`)
     
     // if there are no annotations, delete the document completely, otherwise write it out.
     if (!found) {
       console.log(`Sending delete for ${jsonlFilename}`)
       this.gcs.delete(jsonlFilename)
-      return true;
     }
     else
-      return this.gcs.writeDocument(jsonlFilename,docToSave.join("\n"))
+    {
+      this.gcs.writeDocument(jsonlFilename,docToSave.join("\n"))
+
+      console.log("Got docsToSave")
+      Dumper(docsToSave)
+     
+      // save files out with each label for training
+      for (let label in docsToSave) {
+        let doc = docsToSave[label]
+        var cleanLabel = label.replace(/[^a-z0-9+]+/gi, '_');
+        //var cleanLabel = label.replace(/\W+/g, "_")
+
+        console.log('saving doc')
+        //Dumper(doc)
+        jsonlFilename = `${jsonlFilenamePrefix}--${cleanLabel}.jsonl`;   // training data sent to automl
+        this.gcs.writeDocument(jsonlFilename,doc.join("\n"))      
+      }
+    }
+    return true
   }
 
 // Takes a filename to a text file in the users bucket, returns a json automl annotation object
+  /**
+   * @param {string} filename
+   */
   async load(filename)
   {
     var jsonlFilename = `annotations/word-labels/${filename}.jsonl`;
