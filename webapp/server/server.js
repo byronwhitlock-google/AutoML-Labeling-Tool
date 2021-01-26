@@ -142,8 +142,8 @@ app.get('/generate_csv', async (req, res) => {
         var csv = new DownloadCsv(options);   
 
         // persist downloads and saves to bucket
-        var numRecords = await csv.persist("training.csv");        
-        var data = {'data': {"path": `${options.bucketName}/training.csv`, "numRecords":numRecords}}
+        var results = await csv.persist("training.csv");        
+        var data = {'data': results}
         console.log (data);
         res.send(data);
         

@@ -70,10 +70,29 @@ class NavigationDrawer extends Component {
 
   async handleGenerateCsvClick() {
     try {
-      var csv = await this.props.generateCsv()
+      var csvMap = await this.props.generateCsv()
       var gif = process.env.PUBLIC_URL +'/training-animation.gif'
+      var documentLabels=""
+      var wordLabels=""
+      
+      documentLabels = `<font size='+1'><b>gs://${csvMap[0].path}</b></font><br><i>${csvMap[0].numRecords}</i> Documents labeled.<br>`
+      for(let i in csvMap) {
+        let csv = csvMap[i]
+        if (i>0) //HACKYHACKHACK should be idiomatic not magic string
+          wordLabels += `<font size='+1'>${csv.label}</font><br>gs://${csv.path}<br><i>${csv.numRecords}</i> Documents labeled. <p>`
+      }
+
+      if (wordLabels) {
+        documentLabels+= `<h3>Word Labels</h3><blockquote>${wordLabels}</blockquote> `
+      }
+
       this.props.setAlert(
-        ` <img style='float:right' width='50%' src='${gif}'><h3>gs://${csv.path}</h3> <B>${csv.numRecords}</b> Documents Labeled.<p> Please go to <a href='https://console.cloud.google.com/natural-language/datasets'>AutoML Cloud Console</a> to import dataset.`,
+        ` <img style='float:right' width='50%' src='${gif}'>
+        <hr>
+       ${documentLabels}
+       
+       <hr>
+        Please go to <a href='https://console.cloud.google.com/natural-language/datasets'>AutoML Cloud Console</a> to import dataset.`,
         "CSV Generation Success")
     } catch (e)
     {
@@ -140,7 +159,7 @@ class NavigationDrawer extends Component {
         <ListItemText secondary={`gs://${config.bucketName}/`} primary={`Cloud Storage Bucket`}/>
       </ListItem>
       <Divider/>    
-        {this.props.documentList.length> 0 && 
+        {/*this.props.documentList.length> 0 && */
         <Tooltip title="Generate a CSV file for training a new new model in the AutoML API.">     
           <ListItem onClick={this.handleGenerateCsvClick} button key="generate-csv">            
           <AutoMLIcon/>&nbsp;&nbsp;&nbsp;
