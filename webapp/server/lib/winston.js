@@ -1,41 +1,32 @@
 const winston = require('winston');
-const gcpMetadata = require('gcp-metadata');
-const isAvailable = gcpMetadata.isAvailable(); 
-
-const data = gcpMetadata.instance(); 
-console.log(data); 
-
-const project = gcpMetadata.project('project-id'); 
-console.log(project)
-
-console.log("Setup Winston logger")
-
-// Imports the Google Cloud client library for Winston
 const {LoggingWinston} = require('@google-cloud/logging-winston');
+const gcpMetadata = require('gcp-metadata');
 
 const loggingWinston = new LoggingWinston({
-    projectId: 'auto-ml-admin',
-    keyFilename: '../../../terraform.json',
+  projectId: 'auto-ml-admin',
+  keyFilename: '../../../terraform.json'
 });
 
-var options = {
-    console: {
-        level: 'debug',
-        handleExceptions: true,
-        json: false,
-        colorize: true,
-    },
-};
-
-// Create a Winston logger that streams to Stackdriver Logging
-// Logs will be written to: "projects/YOUR_PROJECT_ID/logs/winston_log"
-const logger =  winston.createLogger({
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
   transports: [
-    new winston.transports.Console(options.console),
-    // Add Stackdriver Logging
-    loggingWinston,
-  ],
-  exitOnError: false
+    new winston.transports.Console({
+      format: winston.format.json(),
+    }),
+  ]
 });
+
+const data = gcpMetadata.instance()
+  .then(success => {
+    console.log("GCP Metadata Server Available. Stackdriver logging enabled")
+    logger.add(loggingWinston)
+  })
+  .catch(serverUnavailable => {
+      console.log(
+        "GCP Metadata Server Unavailable." +
+        " Stackdriver logging is disabled as it does not appear you are" +
+        " running the tool inside GCP")
+      })
 
 module.exports = logger;

@@ -17,6 +17,7 @@
 const Dumper = require('dumper').dumper;
 const CloudStorage = require('lib/cloud-storage.js');
 const logger = require('lib/winston.js');
+
 //const { LOGGING_TRACE_KEY } = require('@google-cloud/logging-winston/build/src/common');
 
 module.exports = class AppConfig {
@@ -27,30 +28,30 @@ module.exports = class AppConfig {
    */
     constructor(options) {
         this.gcs = new CloudStorage(options);   
-        //console.log(options)
-        logger.info(options)
+        logger.info(JSON.stringify(options))
     }
 
     async getConfig()
     {
-        //console.log(`Getting ${this.CONFIG_FILENAME}`)
         logger.info(`Getting ${this.CONFIG_FILENAME}`)
         if (await this.gcs.fileExists(this.CONFIG_FILENAME)) {
-            console.log("Found config")
+            logger.info("Found config")
             var data = await this.gcs.readDocument(this.CONFIG_FILENAME);
             try {
                 var jsonData = JSON.parse(data)
             } catch (e) {
-                Dumper(jsonData)
+                // Dumper(jsonData)
+                //logger.error(JSON.stringify(jsonData))
+                logger.error("Parse error, cannot parse config file. getting default")
                 console.log("Parse error, cannot parse config file. getting default")
                 return this.defaultConfig
             }
-            Dumper(jsonData)
-            
+            //Dumper(jsonData)
+            logger.error(JSON.stringify(jsonData))
             return jsonData
         } else {
-            //console.log("Not found, returning default config")
-            logger.info("Not found, returning default config")
+            console.log(`${this.CONFIG_FILENAME} not found, returning default config`)
+            //logger.info("Not found, returning default config")
             return this.defaultConfig
         }
     }
