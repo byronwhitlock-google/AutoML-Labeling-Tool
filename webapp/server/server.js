@@ -27,6 +27,7 @@ const port = process.env.PORT || 5000;
 const AutoML = require('lib/automl.js');
 const DownloadCsv = require('lib/download-csv');
 const AnnotatedDocument = require('lib/annotated-document.js');
+const AnnotatedWordLabelDocument = require('lib/annotated-word-label-document.js');
 const AppConfig = require('lib/app-config.js');
 const BodyParser = require('body-parser');
 const axios = require('axios');
@@ -79,16 +80,27 @@ app.get('/load_document', async (req, res) => {
     try {
         var options = await  get_header_options(req);
         var doc = new AnnotatedDocument(options);    
+        var sentenceDocData = doc.load(req.query.d);
 
-        var data = await doc.load(req.query.d);
-        console.log("We got some data from load_document len:"+ data.length)
-        res.send({'data': data});
+        var options = await  get_header_options(req);
+        var wordLabelDoc = new AnnotatedWordLabelDocument(options);    
+        var wordLabelDocData =  wordLabelDoc.load(req.query.d);
+        
+        console.log("We got some data from AnnotatedDocument::load len:"+ sentenceDocData.length)
+        console.log("We got some data from AnnotatedWordLabelDocument::load len:"+ wordLabelDocData.length)
+        res.send(   
+            {'data': {
+                'sentenceDoc' : await sentenceDocData, 
+                'wordLabelDoc': await wordLabelDocData
+            }});
+
     } catch (e) {
         //  Dumper(e)
         console.error(`${e.message} ${e.stack}`)
           res.send({'error': e.message, 'trace':e.stack });
     }
 });
+
 
 app.post('/save_document',async(req,res) =>{
     //Dumper(req.body)
@@ -107,14 +119,31 @@ app.post('/save_document',async(req,res) =>{
     }
 });
 
+app.post('/save_word_label_document',async(req,res) =>{
+    //Dumper(req.body)
+    try {
+        var options = await  get_header_options(req);
+        var doc = new AnnotatedWordLabelDocument(options);      
+        
+        // TODO: validate json against schema        
+        var data = await doc.save(req.query.d,req.body);
+        //console.log(Dumper(data))
+        res.send({'data': data});
+    } catch (e) {
+       //   Dumper(e)
+       console.error(`${e.message} ${e.stack}`)
+          res.send({'error': e.message, 'trace':e.stack });
+    }
+});
+
 app.get('/generate_csv', async (req, res) => {    
     try {
         var options = await  get_header_options(req);
         var csv = new DownloadCsv(options);   
 
         // persist downloads and saves to bucket
-        var numRecords = await csv.persist("training.csv");        
-        var data = {'data': {"path": `${options.bucketName}/training.csv`, "numRecords":numRecords}}
+        var results = await csv.persist("training.csv");        
+        var data = {'data': results}
         console.log (data);
         res.send(data);
         

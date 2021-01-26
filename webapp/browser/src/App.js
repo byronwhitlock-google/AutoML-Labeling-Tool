@@ -46,6 +46,7 @@ class App extends Component {
     documentList: [],
     autoMLModelList: [],
     autoMLPrediction: false,
+    wordLabelMode:false,
     error : {
       title:null,
       content:null,
@@ -73,6 +74,8 @@ class App extends Component {
     this.handleNextRandom = this.handleNextRandom.bind(this)
     this.handleAddMenuItem = this.handleAddMenuItem.bind(this)
     this.handleSaveConfig = this.handleSaveConfig.bind(this)
+    this.setWordLabelMode = this.setWordLabelMode.bind(this)
+    
 
     //this.loadCsv = this.loadCsv.bind(this)
     this.generateCsv = this.generateCsv.bind(this)
@@ -107,7 +110,28 @@ class App extends Component {
     globalConfigData.menuItems.push(menuItem)
     this.setState({globalConfigData:globalConfigData})
   }
-
+  async handleAddWordLabelMenuItem(menuItem){
+    var globalConfigData = this.state.globalConfigData
+    if (!globalConfigData.menuItems) return
+    for(var i=0;i<globalConfigData.menuItems.length;i++)// actually faster than using a hash or find 
+    {
+      // we in parent
+      if (menuItem.parentLabel == globalConfigData.menuItems[i].text) {
+        for (var j=0;j<globalConfigData.menuItems[i].wordLabels;j++)
+        {
+          var currItem = globalConfigData.menuItems[i].wordLabels[j]
+          if (currItem.text===menuItem.text) {
+            // already exists exit 
+            return;
+          }
+          
+        }
+        globalConfigData.menuItems[i].wordLabels.push(menuItem)
+        this.setState({globalConfigData:globalConfigData})
+        return; // once we find the correct parent menu item bail out
+      }
+    }
+  }
 
   // this is evil but i don't fully understand react cest la vie
   forceUpdateHandler(){    
@@ -264,6 +288,10 @@ class App extends Component {
     }    
   }
 
+  async setWordLabelMode (mode){
+    this.setState({wordLabelMode:mode})
+  }
+
 
   // ====== Generate CSV =====
   async generateCsv() {
@@ -358,6 +386,7 @@ class App extends Component {
         documentList = {this.state.documentList}
         globalConfigData = {this.state.globalConfigData}
         handleSaveConfig = {this.handleSaveConfig}
+        setWordLabelMode={this.setWordLabelMode}
       />
       <hr/>
       <blockquote>
@@ -367,6 +396,8 @@ class App extends Component {
     );
   }
   renderDocument () {   
+    var hash = require('object-hash');
+
     if (!this.config.bucketName)
       return (          
         <FadeIn transitionDuration="100"> 
@@ -391,16 +422,18 @@ class App extends Component {
         )
 
     if (this.canLoadDocument())
+      var documentHash = hash(this.state.selectedDocument+this.state.wordLabelMode)
       return (
         <Document 
           src={this.state.selectedDocument} 
-          key={this.state.selectedDocument} 
+          key={documentHash} 
           accessToken={this.state.accessToken}
           setError = {this.setError}
           setAlert = {this.setAlert}
           autoMLPrediction = {this.state.autoMLPrediction}
           globalConfigData = {this.state.globalConfigData}
           handleAddMenuItem={this.handleAddMenuItem}
+          wordLabelMode={this.state.wordLabelMode}
           /> )
   }
 }

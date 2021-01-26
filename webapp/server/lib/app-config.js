@@ -83,7 +83,18 @@ module.exports = class AppConfig {
         menuItems : [
             {
               text:"Problem",
-              color: "#F2D7D5"
+              color: "#F2D7D5",
+              wordLabelModelName: "problem_model_1",
+              wordLabels: [
+                {
+                    text:"Problem Generic",
+                    color: "orange"
+                },
+                {
+                    text:"Problem Specific",
+                    color: "green"
+                }   
+                ]
               },
             {
               text:"Cause",
