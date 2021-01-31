@@ -123,7 +123,7 @@ class SentenceAnnotator extends Component {
     getWordLabelAnnotationColors(words)
     {
       if(!this.props.wordLabelDoc)return[]
-      
+
       var annotations = this.props.wordLabelDoc.annotations
       if(!annotations || ! annotations.length)return[];
       //console.log("in render "+ this.props.sentenceOffset)
@@ -374,15 +374,7 @@ class SentenceAnnotator extends Component {
         //ugh need to put lookuop or somthing this is bad swe
 
 
-        if (predictedColors.length > 0)
-        {
-          if (predictedColors.hasOwnProperty(idx)) 
-          {
-            word.outline = `${predictedColors[idx].color} double`
-            word.score=predictedColors[idx].score
-            word.label = predictedColors[idx].label 
-          }
-        }
+
 
         if (annotatedColors.length > 0)
         {          
@@ -403,13 +395,23 @@ class SentenceAnnotator extends Component {
           }   
           //word.annotatedColors = annotatedColors
         }
-
-        if (annotatedWordLabelColors.length > 0)
-        {          
-          if (annotatedWordLabelColors[idx].color) //should normally match the word array because tokenized with same tokenizer
+        if (predictedColors.length > 0)
+        {
+          if (predictedColors.hasOwnProperty(idx)) 
           {
-            word.label = annotatedWordLabelColors[idx].label
-            word.color = annotatedWordLabelColors[idx].color
+            word.outline = `${predictedColors[idx].color} double`
+            word.score=predictedColors[idx].score
+            word.label = predictedColors[idx].label 
+          }
+        }
+        if (this.props.wordLabelMode) {
+          if (annotatedWordLabelColors.length > 0)
+          {          
+            if (annotatedWordLabelColors[idx].color) //should normally match the word array because tokenized with same tokenizer
+            {
+              word.label = annotatedWordLabelColors[idx].label
+              word.color = annotatedWordLabelColors[idx].color
+            }
           }
         }
   
