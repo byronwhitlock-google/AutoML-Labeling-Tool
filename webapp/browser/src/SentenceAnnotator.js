@@ -295,18 +295,6 @@ class SentenceAnnotator extends Component {
         var word = new ColoredWordSchema({text: words[idx].text, color:"", outline:"", label:"",score:0})
         //var annotatedColors = this.getAnnotationColorsInRange(words[idx].startOffset,words[idx].endOffset)
         //ugh need to put lookuop or somthing this is bad swe
-
-
-        if (predictedColors.length > 0)
-        {
-          if (predictedColors.hasOwnProperty(idx)) 
-          {
-            word.outline = `${predictedColors[idx].color} double`
-            word.score=predictedColors[idx].score
-            word.label = predictedColors[idx].label 
-          }
-        }
-
         if (annotatedColors.length > 0)
         {
           
@@ -318,6 +306,15 @@ class SentenceAnnotator extends Component {
           //word.annotatedColors = annotatedColors
         }
 
+        if (predictedColors.length > 0)
+        {
+          if (predictedColors.hasOwnProperty(idx)) 
+          {
+            word.outline = `${predictedColors[idx].color} double`
+            word.score=predictedColors[idx].score
+            word.label = predictedColors[idx].label 
+          }
+        }
         //console.log(`idx: ${idx} checkoffset ${checkOffset}`)
         //console.log(this.props.annotations)        
         
