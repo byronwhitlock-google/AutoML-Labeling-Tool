@@ -354,27 +354,11 @@ class SentenceAnnotator extends Component {
         4: {text: "is", startOffset: 23, endOffset: 25}
         */
       var wordsColored = []
-      
       var annotatedColors = this.getAnnotationColorsInRange(sentenceStartOffset,sentenceEndOffset)
-      var predictedColors = []
-      if (this.props.autoMLPrediction) {
-        predictedColors = this.getPredictionInRange(sentenceStartOffset,sentenceEndOffset)
-      }
-
-      var annotatedWordLabelColors = []
-      if (this.props.wordLabelMode) {        
-        annotatedWordLabelColors = this.getWordLabelAnnotationColors(words)
-      }
-
       // compare to the annotations prop
       for (var idx in words)
       {
         var word = new ColoredWordSchema({text: words[idx].text, color:"", outline:"", label:"",score:0})
-        //var annotatedColors = this.getAnnotationColorsInRange(words[idx].startOffset,words[idx].endOffset)
-        //ugh need to put lookuop or somthing this is bad swe
-
-
-
 
         if (annotatedColors.length > 0)
         {          
@@ -386,25 +370,26 @@ class SentenceAnnotator extends Component {
               word.wordLabels = annotatedColors[idx].wordLabels // this is a hack for now.... will need to get actual value, but this will help build the menu 
               // we dont highlight words that don't have configured labels
               if(! word.wordLabels ) {
-                word.color = ''
-                word.label = ''
-                word.outline=''
-                word.score=0
+                  word.color = ''
+                  word.label = ''
+                  word.outline=''
+                  word.score=0
               }
             }
           }   
-          //word.annotatedColors = annotatedColors
         }
-        if (predictedColors.length > 0)
-        {
-          if (predictedColors.hasOwnProperty(idx)) 
-          {
-            word.outline = `${predictedColors[idx].color} double`
-            word.score=predictedColors[idx].score
-            word.label = predictedColors[idx].label 
+
+        if (this.props.wordLabelMode) {          
+          var annotatedWordLabelColors = []
+          var predictedWordLabelColors = []
+
+          annotatedWordLabelColors = this.getWordLabelAnnotationColors(words)
+          
+          if (this.props.autoMLWordLabelPrediction) {
+            predictedWordLabelColors = this.getWordLabelPrediction(words)
           }
-        }
-        if (this.props.wordLabelMode) {
+
+          // in word label mode, we  grab annotated words and update colors/labes
           if (annotatedWordLabelColors.length > 0)
           {          
             if (annotatedWordLabelColors[idx].color) //should normally match the word array because tokenized with same tokenizer
@@ -413,6 +398,32 @@ class SentenceAnnotator extends Component {
               word.color = annotatedWordLabelColors[idx].color
             }
           }
+          if (predictedWordLabelColors.length > 0)
+          {
+            if (predictedWordLabelColors[idx].outline) //should normally match the word array because tokenized with same tokenizer
+            {
+              word.outline = `${predictedWordLabelColors[idx].color} double`
+              word.score=predictedWordLabelColors[idx].score
+              word.label = predictedWordLabelColors[idx].label 
+            }
+          }
+        } else { // ! wordLabelMode 
+
+          var predictedColors = []          
+          if (this.props.autoMLPrediction) {
+            predictedColors = this.getPredictionInRange(sentenceStartOffset,sentenceEndOffset)
+          }
+
+          // handle sentence based predictions
+          if (predictedColors.length > 0)
+          {
+            if (predictedColors.hasOwnProperty(idx)) 
+            {
+              word.outline = `${predictedColors[idx].color} double`
+              word.score=predictedColors[idx].score
+              word.label = predictedColors[idx].label 
+            }
+          }  
         }
   
         //console.log(`idx: ${idx} checkoffset ${checkOffset}`)
@@ -455,6 +466,7 @@ class SentenceAnnotator extends Component {
 
         //TODO: Support dynamic menu items colors 
         if (label && ! menuItemHash.hasOwnProperty(label)) {
+          // don't add word labels
           // menuitem is key,text,score,color
           menuItemHash[label] = {/*key:label,*/text:label,color:'gray'}
           // update menuitem global with unknown label
