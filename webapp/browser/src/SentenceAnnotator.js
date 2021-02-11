@@ -366,6 +366,7 @@ class SentenceAnnotator extends Component {
           {
             word.label = annotatedColors[idx].label
             word.color = annotatedColors[idx].color
+            word.isWordLabel = false
             if (this.props.wordLabelMode){
               word.wordLabels = annotatedColors[idx].wordLabels // this is a hack for now.... will need to get actual value, but this will help build the menu 
               // we dont highlight words that don't have configured labels
@@ -396,6 +397,7 @@ class SentenceAnnotator extends Component {
             {
               word.label = annotatedWordLabelColors[idx].label
               word.color = annotatedWordLabelColors[idx].color
+              word.isWordLabel = true
             }
           }
           if (predictedWordLabelColors.length > 0)
@@ -464,17 +466,18 @@ class SentenceAnnotator extends Component {
         }
         sumScore[label] += wordsColored[i].score
 
+        var isWordLabel = wordsColored[i].isWordLabel   
+          
         //TODO: Support dynamic menu items colors 
-        if (label && ! menuItemHash.hasOwnProperty(label)) {
-          // don't add word labels
-          // menuitem is key,text,score,color
-          menuItemHash[label] = {/*key:label,*/text:label,color:'gray'}
-          // update menuitem global with unknown label
-          this.props.handleAddMenuItem(menuItemHash[label])
+        if (label && ! menuItemHash.hasOwnProperty(label) && !isWordLabel) {          
+            // don't add word labels
+            // menuitem is key,text,score,color
+            menuItemHash[label] = {/*key:label,*/text:label,color:'gray'}
+            // update menuitem global with unknown label
+            this.props.handleAddMenuItem(menuItemHash[label]) 
+          //}
         }
-
       }
-
       for (var k in menuItemHash){    
         if (!sumScore[k]) {
           menuItemHash[k].score = 0 ;
@@ -620,7 +623,7 @@ class SentenceAnnotator extends Component {
                     </MenuItem>                
                   )}            
                   <MenuItem key="none" onClick={(e)=>this.handleMenuClick(e,{text:'None'},this.props.sentenceId)}>             
-                    None (uno)
+                    None
                   </MenuItem>
               </Menu>
           }

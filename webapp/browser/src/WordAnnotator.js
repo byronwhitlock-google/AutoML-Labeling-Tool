@@ -112,7 +112,7 @@ class WordAnnotator extends Component {
               </MenuItem>                
             )}            
             <MenuItem key="none" onClick={(e)=>this.handleMenuClick(e,{text:'None'},this.props.sentenceId,this.props.wordId)}>             
-              None (dos)
+              None
             </MenuItem>
         </Menu>
       }
