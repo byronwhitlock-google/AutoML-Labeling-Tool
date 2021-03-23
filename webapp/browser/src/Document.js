@@ -186,7 +186,8 @@ class Document extends Component {
     var hash = require('object-hash');
     var documentHash = hash(this.props.globalConfigData) +
                        hash(this.state.documentData) +
-                       hash(this.state.sentenceData)
+                       hash(this.state.sentenceData) + 
+                       hash(this.props.autoMLWordLabelPredictions??"")
     return (      
       <div  className="Document-body" key={documentHash}>
       

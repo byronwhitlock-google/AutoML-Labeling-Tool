@@ -82,6 +82,10 @@ class DocumentApi extends BaseApi {
     return actualSplit
   }
 
+/**
+ * @param {} doc
+ * @returns [{type:string,value:string,length:int,range:[],loc:{},raw:string,wordData:{}}] sentenceData
+ */
   async parseDocument(doc) {
     if (doc.hasOwnProperty('text_snippet') && 
     doc.text_snippet.hasOwnProperty('content'))

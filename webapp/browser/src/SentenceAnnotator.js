@@ -22,6 +22,7 @@ import {ColoredWordSchema} from './lib/Schema.js'
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import WordAnnotator from './WordAnnotator.js'
+import PredictionApi from './api/PredictionApi.js'
 
 class SentenceAnnotator extends Component {
     constructor(props) {
@@ -29,6 +30,8 @@ class SentenceAnnotator extends Component {
 
      this.tokenizer = new SentenceTokenizer();
      this.config = new GlobalConfig(this.props.globalConfigData);
+     this.predictionApi = new PredictionApi(this.props.accessToken);
+     
      
      // apply confidence numbers to the right click menu for this sentence
      // wordsColored:[{text: "Problem", color:"#ABCDEF", outline:"", label:"",score:0}]
@@ -334,6 +337,72 @@ class SentenceAnnotator extends Component {
       return coloredAnnotations
 
     }
+/**
+ * 
+ * @param {[string]} words List of words that make up the sentence
+ * @param {string} modelId FQ model name for prediction
+ * @returns {[{
+        annotationSpecId: '403464692300775424',
+        displayName: 'Cause',
+        textExtraction: {
+          score: 0.5008653,
+          textSegment: { startOffset: '156', endOffset: '158', content: 'of' }
+        }]}
+ */
+    getWordLabelPrediction(words, modelName)
+    {
+      var annotations = this.props.autoMLWordLabelPredictions[this.props.sentenceId] 
+      if(!annotations || ! annotations.length)return[];
+      //console.log("in render "+ this.props.sentenceOffset)
+      //console.log(annotations)
+      var coloredAnnotations = []
+      for (var i = 0; i<words.length ; i++ ) 
+      {
+        var coloredAnnotation={}
+        for (var aIdx in annotations)
+        {          
+          var annotation = annotations[aIdx]
+          if (annotation==null) continue;
+
+          // cleanup camelcase/snake case wtf googs.
+          const display_name = annotation.displayName
+          const start_offset = annotation.textExtraction.textSegment.startOffset
+          const end_offset = annotation.textExtraction.textSegment.endOffset
+          const score = annotation.textExtraction.score
+          var wordStartOffset = words[i].startOffset
+          var wordEndOffset = words[i].endOffset
+
+          // so and eo are based on the sentence              
+          var so =  start_offset 
+          // since we can have a start offset before the beginning of this sentence, if so is negative, set it to zero.
+          if (so < wordStartOffset) so = -1;              
+          if (so >= wordEndOffset) so = -1;
+          
+          var eo =  end_offset 
+          // since we can have an end offset after the end of this sentence, if eo > sentenceEndOffset, set it to sentenceEndOffset.
+          if (eo > wordEndOffset) eo = -1;
+          if (eo <= wordStartOffset) eo = -1;
+
+          if (so>0 && eo > 0)
+          {            
+            //  so and eo ažre bounded by the length of the sentence so no out of range errors.
+            //console.log(`${sentenceStartOffset} so ${so} eo ${eo} ${sentenceEndOffset}`)
+            var menuItem = this.config.getWordLabelMenuItemByText(display_name);
+
+            coloredAnnotation = {
+              color: menuItem.color,
+              score: score,
+              label: display_name        
+            }
+            break;
+          }
+        }
+        coloredAnnotations.push(coloredAnnotation)
+      }
+    
+      return coloredAnnotations
+    }
+    
     // merges the perdiected words and labeled words into one coloredWords array
     getWordsColored() {
        // go through the annotations and add labels.
@@ -355,6 +424,39 @@ class SentenceAnnotator extends Component {
         */
       var wordsColored = []
       var annotatedColors = this.getAnnotationColorsInRange(sentenceStartOffset,sentenceEndOffset)
+      var predictedColors = []      
+
+      var annotatedWordLabelColors = []
+      var predictedWordLabelColors = []      
+      var wordLabelModelName = ""
+      /***********/////////***********/////////***********/////////
+      /// this is an ugly hack don't add on or change it. you have been warned.
+      if (annotatedColors && annotatedColors.length > 0 && annotatedColors[0].label) // if there is no label, then there will be no word label predictions for this setnence.
+      {
+        var menuItem = this.config.getMenuItemByText(annotatedColors[0].label);
+        if (menuItem &&  menuItem.wordLabelModelName) {
+          wordLabelModelName = menuItem.wordLabelModelName
+          // a little hack to keep track of what sentences have what labels for later
+          this.props.mapLabel(this.props.sentenceId, wordLabelModelName, annotatedColors[0].label,words)
+        }
+      }
+      /***********/////////***********/////////***********/////////
+
+      if (this.props.wordLabelMode) {    
+        annotatedWordLabelColors = this.getWordLabelAnnotationColors(words)
+        
+        if (this.props.autoMLWordLabelPredictions && wordLabelModelName) {
+          predictedWordLabelColors = this.getWordLabelPrediction(words, wordLabelModelName)  
+        }
+      
+      } else {
+    
+        if (this.props.autoMLPrediction) {
+          predictedColors = this.getPredictionInRange(sentenceStartOffset,sentenceEndOffset)
+        }
+      }
+
+
       // compare to the annotations prop
       for (var idx in words)
       {
@@ -380,16 +482,7 @@ class SentenceAnnotator extends Component {
           }   
         }
 
-        if (this.props.wordLabelMode) {          
-          var annotatedWordLabelColors = []
-          var predictedWordLabelColors = []
-
-          annotatedWordLabelColors = this.getWordLabelAnnotationColors(words)
-          
-          if (this.props.autoMLWordLabelPrediction) {
-            predictedWordLabelColors = this.getWordLabelPrediction(words)
-          }
-
+        if (this.props.wordLabelMode) {                    
           // in word label mode, we  grab annotated words and update colors/labes
           if (annotatedWordLabelColors.length > 0)
           {          
@@ -400,22 +493,17 @@ class SentenceAnnotator extends Component {
               word.isWordLabel = true
             }
           }
-          if (predictedWordLabelColors.length > 0)
-          {
-            if (predictedWordLabelColors[idx].outline) //should normally match the word array because tokenized with same tokenizer
+          if (predictedWordLabelColors.length) {
+            if (predictedWordLabelColors[idx].color) 
             {
+              //word.color=""
               word.outline = `${predictedWordLabelColors[idx].color} double`
               word.score=predictedWordLabelColors[idx].score
               word.label = predictedWordLabelColors[idx].label 
+            
             }
           }
         } else { // ! wordLabelMode 
-
-          var predictedColors = []          
-          if (this.props.autoMLPrediction) {
-            predictedColors = this.getPredictionInRange(sentenceStartOffset,sentenceEndOffset)
-          }
-
           // handle sentence based predictions
           if (predictedColors.length > 0)
           {
@@ -550,10 +638,10 @@ class SentenceAnnotator extends Component {
    return menuItems;
 }
 
-    render()
+     render()
     {
       var hash = require('object-hash');
-      var wordsColored =  this.getWordsColored();
+      var wordsColored = this.getWordsColored();
       var menuItems = null
 
       menuItems = this.calculateMenuItems(wordsColored)

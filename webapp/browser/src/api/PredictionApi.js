@@ -15,11 +15,13 @@
 */
 
 import BaseApi from './BaseApi.js'
+var MemoryCache = require('memory-cache');
 
 class PredictionApi extends BaseApi {
   constructor(accessToken){
     super(accessToken)
   }
+
 
   async loadAutoMLModelList () {
     return this.fetch("/list_models")
@@ -27,6 +29,51 @@ class PredictionApi extends BaseApi {
 
   async requestAutoMLPrediction(modelId, documentName) {
     return this.post("/get_prediction",{documentName:documentName, modelId:modelId})
+  }
+/**
+ * @param {[{text:string;startOffset:integer;endOffset:integer}]} words
+ * @param {string} modelName
+ **/
+  async requestWordLabelModePredictions(words,modelName) {
+    var modelId = await this.getModelIdCached(modelName)
+    
+    var documentContent = []
+    for(var i =0;i<words.length;i++) {
+      documentContent.push(words[i].text) 
+    }
+
+    // get the modelID for each sentence
+    return await this.post("/get_word_label_prediction", {modelId:modelId,documentContent:documentContent.join(" ")})
+  }
+
+    /**
+   * @summary Caching only doesnt work across construction
+   * @param {string} modelName 
+   * @returns Fully Qualified Model ID string
+   */
+  async getModelIdCached(modelName) {
+
+    let modelId =  MemoryCache.get(`modelName:${modelName}`); 
+    if (! modelId) {
+      let models =  MemoryCache.get(`listModels`);
+
+      if (!models || models.length ==0) {
+        models = await this.loadAutoMLModelList()
+        if (models) {
+          MemoryCache.put(`listModels`, models); 
+        }
+      }
+
+      for (var i=0;i<models.length;i++) {
+        var model = models[i]
+        if (model.displayName == modelName) {
+          MemoryCache.put(`modelName:${modelName}`, model.name); 
+          modelId = model.name
+          break;
+        }
+      }
+    }
+    return  modelId
   }
 }
 export default PredictionApi

@@ -46,6 +46,7 @@ class App extends Component {
     documentList: [],
     autoMLModelList: [],
     autoMLPrediction: false,
+    autoMLWordLabelPredictions: false,
     wordLabelMode:false,
     error : {
       title:null,
@@ -57,7 +58,8 @@ class App extends Component {
       content:null,
       isOpen:false
     },
-    globalConfigData: {}
+    globalConfigData: {},
+    labelMap: []
 
   };
   
@@ -75,7 +77,7 @@ class App extends Component {
     this.handleAddMenuItem = this.handleAddMenuItem.bind(this)
     this.handleSaveConfig = this.handleSaveConfig.bind(this)
     this.setWordLabelMode = this.setWordLabelMode.bind(this)
-    
+    this.mapLabel = this.mapLabel.bind(this)
 
     //this.loadCsv = this.loadCsv.bind(this)
     this.generateCsv = this.generateCsv.bind(this)
@@ -144,12 +146,13 @@ class App extends Component {
     console.log("refreshConfig??!?!?")
     try {
       var configApi = new ConfigApi(this.state.accessToken)    
+      if (!configApi.bucketName) return; // no bucket can't refresh
       var data =  await configApi.loadConfig()
       console.log("got data")
       console.log(data)
       this.setState({globalConfigData: data}); 
     } catch (err){
-      this.setError(err.stack,"Could Refresh Config ")
+      this.setError(err.stack,"Could Not Refresh Config ")
     }    
   }
 
@@ -164,7 +167,7 @@ class App extends Component {
         console.log(data)
         this.setState({globalConfigData: data}); 
       } catch (err){
-        this.setError(err.stack,"Could Not Refresh Config ")
+        this.setError(err.stack,"Could Not Save Config ")
         return false
       }    
     } 
@@ -198,14 +201,22 @@ class App extends Component {
     //this.forceUpdateHandler();
   }
 
+
   // we got a new prediction model 
   async handleModelUpdate(newModel) {
     if (newModel && this.state.selectedDocument){
       var selectedModelHash = newModel + this.state.selectedDocument
 
      if (selectedModelHash != this.state.selectedModelHash) { // this prevents infinite loops requesting stuff forever. very important
-      var predictions = await this.requestAutoMLPrediction(newModel)         
-      this.setState({autoMLPrediction: predictions, selectedModelHash: selectedModelHash })
+      var predictions = null
+      var wordLabelPredictions=null
+      if (this.state.wordLabelMode) { //this aint right
+        wordLabelPredictions = await this.requestWordLabelModePrediction()
+      } else {
+        predictions = await this.requestAutoMLPrediction(newModel)                 
+      }
+
+      this.setState({autoMLPrediction: predictions, selectedModelHash: selectedModelHash, autoMLWordLabelPredictions: wordLabelPredictions })
      }
     } else {
       this.setState({autoMLPrediction: false })
@@ -277,7 +288,6 @@ class App extends Component {
         this.setError(err.message,"Could not Refresh Models List")
     }    
   }
-
   async requestAutoMLPrediction(modelId) {
     console.log("requestAutoMLPrediction??!?!?")
     try {
@@ -287,6 +297,43 @@ class App extends Component {
       this.setError(err.message,"Could Request AutoML Prediction")
     }    
   }
+
+  async requestWordLabelModePrediction() {
+    console.log("requestWordLabelModePrediction??!?!? we aint doint nuthin.")
+    var wordLabelPredictions = []
+    // gotta iterate a new data structure that shows what is labeled from first pass.
+    for(var sentenceId in this.state.labelMap) {
+      var modelName =  this.state.labelMap[sentenceId].modelName
+      var label =  this.state.labelMap[sentenceId].label
+      var words =  this.state.labelMap[sentenceId].words
+      try {
+
+        // need a get model id cached call to automl api, we don't actuallly know if we should do alookup on this sentence becasue that hapenes in the annotated coloers lookup.
+        var pApi = new PredictionApi(this.state.accessToken);
+        wordLabelPredictions[sentenceId]=  await pApi.requestWordLabelModePredictions(words, modelName)  
+        
+      } catch (err){
+        this.setError(err.message,"Could Request AutoML WordLabelModePrediction")
+      }    
+    }
+    this.setState({autoMLWordLabelPredictions:wordLabelPredictions})
+  }
+/**
+ * 
+ * @param {int} sentenceId 
+ * @param {string} modelName 
+ * @param {string} label 
+ * @param {[]} words
+ */
+async mapLabel(sentenceId, modelName, label,words) {
+  var labelMap = this.state.labelMap
+
+  if ( !labelMap[sentenceId] ) {
+    labelMap[sentenceId] = {sentenceId:sentenceId, modelName:modelName, label:label,words:words}
+    this.setState({...this.state, labelMap:labelMap} )
+  }
+}
+
 
   async setWordLabelMode (mode){
     this.setState({wordLabelMode:mode})
@@ -431,9 +478,12 @@ class App extends Component {
           setError = {this.setError}
           setAlert = {this.setAlert}
           autoMLPrediction = {this.state.autoMLPrediction}
+          autoMLWordLabelPredictions = {this.state.autoMLWordLabelPredictions}
           globalConfigData = {this.state.globalConfigData}
           handleAddMenuItem={this.handleAddMenuItem}
           wordLabelMode={this.state.wordLabelMode}
+          mapLabel = {this.mapLabel}
+          
           /> )
   }
 }

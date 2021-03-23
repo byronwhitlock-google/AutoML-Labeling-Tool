@@ -191,7 +191,25 @@ app.post('/get_prediction', async (req, res) => {
         res.send({'error': e.message, 'trace':e.stack });
     }
 });
+app.post('/get_word_label_prediction', async (req, res) => {
+    try {        
+   
+        var options = await get_header_options(req);
+        console.log("trying to get_word_label_prediction");
+        Dumper(req.body);
 
+        var automl = new AutoML(options);
+        var data = await automl.getWordLabelPrediction(req.body);
+
+        console.log(`Got some data (below) from get_word_label_prediction `);
+        Dumper(data)
+        res.send({'data': data});
+    } catch (e) {
+      //  Dumper(e);
+      console.error(`${e.message} ${e.stack}`)
+        res.send({'error': e.message, 'trace':e.stack });
+    }
+});
 app.get('/get_config', async (req, res) => {
     try {
         var options = await get_header_options(req)

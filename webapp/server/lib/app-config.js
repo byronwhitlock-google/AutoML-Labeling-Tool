@@ -64,7 +64,7 @@ module.exports = class AppConfig {
         if (config.hasOwnProperty('menuItems'))
         {
              // don't save any menuitems with 'gray' color.
-             // these are missing labels
+             // these are missing labels, only show 
             var configToSave = config
             var menuItems = []
             
