@@ -567,10 +567,24 @@ class SentenceAnnotator extends Component {
         }
       }
       for (var k in menuItemHash){    
-        if (!sumScore[k]) {
-          menuItemHash[k].score = 0 ;
+        // we need to update the score of the wordlabels attached.
+        if (this.props.wordLabelMode) {
+          if (!menuItemHash[k].wordLabels) {
+            continue
+          }          
+          
+          for (var j=0;j< menuItemHash[k].wordLabels.length;j++){
+            if(menuItemHash[k].wordLabels[j].text == label) {
+              menuItemHash[k].wordLabels[j].score = (sumScore[label]*100).toFixed(2);
+            }
+          }
+
         } else {
-          menuItemHash[k].score = (sumScore[k]/wordsColored.length*100).toFixed(2);
+          if (!sumScore[k]) {
+            menuItemHash[k].score = 0 ;
+          } else {
+            menuItemHash[k].score = (sumScore[k]/wordsColored.length*100).toFixed(2);
+          }
         }
       }
 

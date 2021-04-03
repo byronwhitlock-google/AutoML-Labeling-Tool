@@ -91,6 +91,7 @@ class App extends Component {
 
   }
 
+
   async handleAddMenuItem(menuItem){
     var globalConfigData = this.state.globalConfigData
     if (!globalConfigData.menuItems) return
@@ -204,30 +205,33 @@ class App extends Component {
 
   // we got a new prediction model 
   async handleModelUpdate(newModel) {
+    if (this.state.wordLabelMode)
+      return;
+
     if (newModel && this.state.selectedDocument){
       var selectedModelHash = newModel + this.state.selectedDocument
 
-     if (selectedModelHash != this.state.selectedModelHash) { // this prevents infinite loops requesting stuff forever. very important
-      var predictions = null
-      var wordLabelPredictions=null
-      if (this.state.wordLabelMode) { //this aint right
-        wordLabelPredictions = await this.requestWordLabelModePrediction()
-      } else {
+      if (selectedModelHash != this.state.selectedModelHash) { // this prevents infinite loops requesting stuff forever. very important
+        var predictions = null
         predictions = await this.requestAutoMLPrediction(newModel)                 
+        this.setState({autoMLPrediction: predictions, selectedModelHash: selectedModelHash})
       }
-
-      this.setState({autoMLPrediction: predictions, selectedModelHash: selectedModelHash, autoMLWordLabelPredictions: wordLabelPredictions })
-     }
     } else {
       this.setState({autoMLPrediction: false })
     }
   }
-
+  async refreshWordLabelPredictions() {
+    if (this.state.wordLabelMode) {
+      var wordLabelPredictions = await this.requestWordLabelModePrediction()
+      this.setState({autoMLWordLabelPredictions: wordLabelPredictions})
+    }
+  }
   async componentDidMount() {
       // Call our fetch function below once the component mounts   
       await this.refreshConfig()
       this.refreshDocumentList()
       this.refreshAutoMLModelList()
+      this.refreshWordLabelPredictions()
   }
 
   setError(text,title="Error")
@@ -430,10 +434,12 @@ async mapLabel(sentenceId, modelName, label,words) {
         handleModelUpdate={this.handleModelUpdate} 
         handleDocumentUpdate={this.handleDocumentUpdate}
         autoMLPrediction = {this.state.autoMLPrediction}
+        autoMLWordLabelPredictions = {this.state.autoMLWordLabelPredictions}
         documentList = {this.state.documentList}
         globalConfigData = {this.state.globalConfigData}
         handleSaveConfig = {this.handleSaveConfig}
         setWordLabelMode={this.setWordLabelMode}
+        wordLabelMode={this.state.wordLabelMode}
       />
       <hr/>
       <blockquote>

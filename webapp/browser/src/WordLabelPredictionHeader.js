@@ -46,33 +46,41 @@ function WordLabelPredictionHeader(props) {
     // props.selectedAutoMLDataset
     const classes = useStyles();
     var menuItems = config.getMenuItems()
-    return (
+
+    return (     
       <React.Fragment>
         Word Labels
-      { props.canLoadDocument && props.selectedDocument && menuItems.map((menuItem) =>   
-        <React.Fragment>       
-            {menuItem.wordLabels && 
-              <fieldset>
-                <legend style={{backgroundColor: menuItem.color}}>&nbsp;{menuItem.text}</legend>
-                {menuItem.wordLabels.map((wordLabelMenuItem) =>
-                  <span>&nbsp;<span style={{backgroundColor: wordLabelMenuItem.color}}>&nbsp;{wordLabelMenuItem.text}&nbsp;</span>&nbsp;</span>
-                )}
-              </fieldset>
-            }
-          </React.Fragment>
-          )
-        }
+        { props.canLoadDocument && props.selectedDocument && menuItems.map((menuItem) =>   
+          <React.Fragment>       
+              {menuItem.wordLabels && 
+                <fieldset>
+                  <legend style={{backgroundColor: menuItem.color}}>&nbsp;{menuItem.text}</legend>
+                  {menuItem.wordLabels.map((wordLabelMenuItem) =>
+                    <span>&nbsp;<span style={{backgroundColor: wordLabelMenuItem.color}}>&nbsp;{wordLabelMenuItem.text}&nbsp;</span>&nbsp;</span>
+                  )}
+                </fieldset>
+              }
+            </React.Fragment>
+            )
+          }
       
-        {/*props.autoMLPrediction &&
-            <fieldset>
-              <legend>Predictions</legend>
-              {config.getMenuItems().map((menuItem) =>               
-                      <span>&nbsp;<span style={{outline: `${menuItem.color} double`}}>&nbsp;{menuItem.text}&nbsp;</span>&nbsp;</span>
-                  )}&nbsp;
-            </fieldset>
-          */}   
+        {props.autoMLWordLabelPredictions &&            
+              <fieldset>
+                <legend>Predictions</legend>
+                {menuItems.map((menuItem) =>       
+                  <React.Fragment>
+                    {menuItem.wordLabels && menuItem.wordLabels.map((wordLabelMenuItem) =>        
+                        <span>&nbsp;<span style={{outline: `${wordLabelMenuItem.color} double`}}>&nbsp;{wordLabelMenuItem.text}&nbsp;</span>&nbsp;
+                        
+                        </span>
+                      )}
+                    </React.Fragment>
+                  )}&nbsp;              
+              </fieldset>
+          }   
        </React.Fragment>
-    )
+      )
+    
 }
 
 export default WordLabelPredictionHeader;

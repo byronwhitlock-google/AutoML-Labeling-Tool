@@ -104,14 +104,13 @@ function DocumentHeader(props) {
         }
         </Grid>
         <Grid item xs={8}>
-          {
+          {!props.wordLabelMode &&
             //!wordLabelMode && // don't show the standard prediction/label header in word label mode
               <PredictionHeader key={globalConfigHash} {...props}/>
           }
-          {
+          {props.wordLabelMode &&
         //   wordLabelMode && // show the word label header here
-              <WordLabelPredictionHeader key={globalConfigHash} {...props}/>
-              
+              <WordLabelPredictionHeader key={globalConfigHash}  {...props}/>              
           }
           </Grid>
           <Grid item xs={1}>
