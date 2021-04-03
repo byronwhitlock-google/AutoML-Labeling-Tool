@@ -65,6 +65,17 @@ class WordAnnotator extends Component {
       mouseY: null,
     })
   }
+
+  calculateScore(menuItem) {
+    if (this.props.wordLabelMode){
+      if (menuItem.score[this.props.coloredWord.text]) {
+        return menuItem.score[this.props.coloredWord.text]
+      }
+    } else{
+      return menuItem.score
+    } 
+  }
+
   
   render()
   {
@@ -108,7 +119,7 @@ class WordAnnotator extends Component {
               onClick={(e)=>this.handleMenuClick(e,menuItem,this.props.sentenceId,this.props.wordId)}>             
                 <span style={{backgroundColor: menuItem.color}}>              
                 &nbsp;{menuItem.text}&nbsp;
-                </span>{menuItem.score? <React.Fragment>({menuItem.score}%)</React.Fragment> : <React.Fragment/>}
+                </span>{menuItem.score? <React.Fragment>({this.calculateScore(menuItem)}%)</React.Fragment> : <React.Fragment/>}
               </MenuItem>                
             )}            
             <MenuItem key="none" onClick={(e)=>this.handleMenuClick(e,{text:'None'},this.props.sentenceId,this.props.wordId)}>             

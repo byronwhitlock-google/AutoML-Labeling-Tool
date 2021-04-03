@@ -530,6 +530,7 @@ class SentenceAnnotator extends Component {
       var menuItemList = this.config.getMenuItems()
       var menuItemHash = [];
       var sumScore = [];
+      var wordScore=[];
       
       //prepopulate the hash with default menu items
       for (var i =0;i<menuItemList.length;i++){
@@ -540,6 +541,7 @@ class SentenceAnnotator extends Component {
       for (var i =0;i<wordsColored.length;i++) {
         // words labeled is a list of all words with thier labels. the labels coorespond to menu items.
         var label = wordsColored[i].label;
+        var word =  wordsColored[i].text;
         if (!label) {
           continue
         }
@@ -552,6 +554,15 @@ class SentenceAnnotator extends Component {
           wordsColored[i].score = 0
         }
         sumScore[label] += wordsColored[i].score
+
+        
+        if (! wordScore[label]) {
+          wordScore[label] = {};
+        }
+        if (! wordScore[label][word]) {
+          wordScore[label][word] = 0;
+        }
+        wordScore[label][word] = (wordsColored[i].score*100).toFixed(2);
 
         var isWordLabel = wordsColored[i].isWordLabel   
           
@@ -570,11 +581,13 @@ class SentenceAnnotator extends Component {
         if (this.props.wordLabelMode) {
           if (!menuItemHash[k].wordLabels) {
             continue
-          }          
+          }
           
           for (var j=0;j< menuItemHash[k].wordLabels.length;j++){
-            if(menuItemHash[k].wordLabels[j].text == label) {
-              menuItemHash[k].wordLabels[j].score = (sumScore[label]*100).toFixed(2);
+            
+            var wordLabel = menuItemHash[k].wordLabels[j].text
+            if( wordScore[wordLabel] ) {
+              menuItemHash[k].wordLabels[j].score = wordScore[wordLabel]
             }
           }
 
