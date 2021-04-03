@@ -339,9 +339,12 @@ async mapLabel(sentenceId, modelName, label,words) {
 }
 
 
-  async setWordLabelMode (mode){
-    this.setState({wordLabelMode:mode})
-  }
+async setWordLabelMode (mode){
+  this.setState({wordLabelMode:mode})
+  if (mode) {
+    this.requestWordLabelModePrediction() /// this is required because we have to go through this 2x. don't remove this line. the function produces needed side effects
+  }  
+}
 
 
   // ====== Generate CSV =====
