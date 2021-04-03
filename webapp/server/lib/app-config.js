@@ -63,14 +63,32 @@ module.exports = class AppConfig {
         //TODO: implement json validation! for now do it really dirty and nasty
         if (config.hasOwnProperty('menuItems'))
         {
+             // don't save any menuitems with 'gray' color.
+             // these are missing labels, only show 
+            var configToSave = config
+            var menuItems = []
+            
+            for(var i =0;i< config.menuItems.length;i++)
+            {
+                var menuItem = config.menuItems[i];
+
+                if (menuItem.color != 'gray') {
+                    menuItems.push(menuItem)
+                }
+            }
+
+            configToSave.menuItems = menuItems
             if (config.menuItems.length > 2)
             {
                 if (config.menuItems[0].color &&
                     config.menuItems[0].text)
                 {
-                    return this.gcs.writeDocument(this.CONFIG_FILENAME,JSON.stringify(config))    
+                    return this.gcs.writeDocument(this.CONFIG_FILENAME,JSON.stringify(configToSave))    
                 }                
             }
+
+            
+
         }
 
         console.error("Invalid Config. ")
@@ -83,7 +101,18 @@ module.exports = class AppConfig {
         menuItems : [
             {
               text:"Problem",
-              color: "#F2D7D5"
+              color: "#F2D7D5",
+              wordLabelModelName: "problem_model_1",
+              wordLabels: [
+                {
+                    text:"Problem Generic",
+                    color: "orange"
+                },
+                {
+                    text:"Problem Specific",
+                    color: "green"
+                }   
+                ]
               },
             {
               text:"Cause",

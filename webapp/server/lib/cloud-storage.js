@@ -61,6 +61,27 @@ module.exports = class CloudStorage {
     return json;
   }
 
+  async readJsonLDocument(documentName) {
+    var res = await this.readDocument(documentName) 
+
+    var lines = res.split("\n")
+    var jsonl = []
+    for(var i =0;i<lines.length;i++) {      
+      //console.log(`About to push ${lines[i]}`)
+      try {
+        
+        jsonl.push(JSON.parse(lines[i]));
+      } 
+      catch (e) 
+      {
+       // console.error(res)
+        throw new Error("Failed Parsing JSONL document:" +  e.message )
+      }
+    }
+       
+    return jsonl;
+  }
+
   // read from cloud storage syncronously.
   /**
    * @param {string} documentName
@@ -133,5 +154,12 @@ module.exports = class CloudStorage {
   async delete(documentName) { 
     let file = await this.bucket.file(documentName);
     return await file.delete()
+  }
+
+    /**
+   * @param {string} prefix
+   */
+  async deleteMany(prefix) { 
+    return await this.bucket.deleteFiles({ prefix: prefix })
   }
 }

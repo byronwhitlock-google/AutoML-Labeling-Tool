@@ -20,6 +20,7 @@ const CloudStorage = require('lib/cloud-storage.js');
 module.exports = class DownloadCsv {
   constructor(options) {
     this.gcs = new CloudStorage(options);   
+    this.options=options
     console.log(options)
   }
 
@@ -41,16 +42,63 @@ module.exports = class DownloadCsv {
     return csv.join("\n")
   }
 
+  async downloadWordLabels()
+  {
+    var csvMap = []
+
+    var docs = await this.gcs.listDocuments(".jsonl","annotations/word-labels/");
+    var found =false
+    for (var i = 0;i<docs.length;i++)
+    {
+      var docName = docs[i]
+      let [junk, label] = docName.split(/--/ig)
+      if (label)
+      {
+        var cleanLabel = label.replace(/\.jsonl$/,"")
+        found=true
+        if (!csvMap[cleanLabel]) {
+          csvMap[cleanLabel] = []
+        }
+        csvMap[cleanLabel].push(`,gs://${this.gcs.bucketName}/annotations/word-labels/${docName}`);
+      }
+    }
+
+    if (!found)
+    {
+      console.log("****No WORD Labeled Documents Found****")
+    } else {
+      console.log("Got some word label docs")
+      console.log(csvMap)
+    }
+    return csvMap;// .join("\n")
+  }
+  
   async persist(name)
   {
-    var csvData = await this.download()
-    var numRecords = csvData.split(/\r\n|\r|\n/).length
+    var numRecords = 0
+    var toReturn   =[]
     
-    console.log("About to persist csv data")
+    var csvData = await this.download()    
+    numRecords = csvData.split(/\r\n|\r|\n/).length
+
+    console.log("About to persist main csv data")
     console.log(csvData)
+    toReturn.push({"label":name, "path": `${this.options.bucketName}/${name}`, "numRecords":numRecords})
+    
     this.gcs.writeDocument(name,csvData)
-        
-    return numRecords
+    
+    var wordLabelCsvData = await this.downloadWordLabels()
+    for(var label in wordLabelCsvData)
+    {      
+      console.log(`About to persist ${label}-${name} csv data`)
+      console.log(wordLabelCsvData[label])
+      numRecords = wordLabelCsvData[label].length
+      toReturn.push({"label":label, "path": `${this.options.bucketName}/${label}-${name}`, "numRecords":numRecords})
+
+      this.gcs.writeDocument(`${label}-${name}`,wordLabelCsvData[label].join("\n"))
+    }
+  
+    return toReturn
   }
   
 }

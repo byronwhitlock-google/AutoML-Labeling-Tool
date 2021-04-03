@@ -22,6 +22,7 @@
 const Dumper = require('dumper').dumper;
 const {AutoMlClient,PredictionServiceClient} = require('@google-cloud/automl').v1;
 const CloudStorage = require('lib/cloud-storage.js');
+var hash = require('object-hash');
 
 //required options: accessToken, projectId, locationId
 module.exports = class AutoML {
@@ -32,6 +33,7 @@ module.exports = class AutoML {
 
     this.projectId = options.projectId
     this.locationId = options.locationId //'us-central1'
+    this.cachedModels = []
 
     if (!options.projectId || !options.locationId)
       throw new Error("Cannot Construct AutoML. Missing Project or Location")
@@ -60,7 +62,7 @@ module.exports = class AutoML {
   }
 
   /**
-   * @param {{ documentName: any; modelId: any; }} params
+   * @param {{ documentName: string; modelId: string; }} params
    */
   async getPrediction(params)  {
     var documentName = params.documentName;
@@ -74,7 +76,7 @@ module.exports = class AutoML {
     }
     var predictionFileName = `predictions/${modelId}/${documentName}.json`;
     let jsonFileExists= await this.gcs.fileExists(predictionFileName);
-    let predictionData = []
+    let predictionData = null
     console.log("About to read document "+ predictionFileName)
     if (jsonFileExists){
       console.log("FIle exists, trying to read.")
@@ -86,14 +88,54 @@ module.exports = class AutoML {
     return predictionData
   }
 
+  /**
+   * @param {{modelId: string; documentContent:string; documentName:string}} params
+   */
+  async getWordLabelPrediction(params)  {
+    
+    // doc is a single sentence
+    var documentContent = params.documentContent
+
+    // name is the hashed sentence. 
+    var documentName = hash(documentContent)
+
+    // word label model is different for each sentence
+    var modelId = params.modelId ;
+    
+    if (! modelId) {
+      throw new Error('Missing Model Id');
+
+    }
+
+    if (!documentContent) {
+      throw new Error('Missing Document');
+
+    }
+
+    var predictionFileName = `predictions/${modelId}/${documentName}.json`;
+    let jsonFileExists= await this.gcs.fileExists(predictionFileName);
+    
+    console.log("About to read document "+ predictionFileName)
+    if (jsonFileExists){
+      console.log("FIle exists, trying to read.")
+      return  this.gcs.readJsonDocument(predictionFileName)
+    } else {
+      return  this.downloadPrediction({modelId:modelId,documentName:documentName,documentContent:documentContent})
+    }
+
+    return []
+  }
+
+
 
   /**
-   * @param {{ documentName: any; modelId: any; }} params
+   * @param {{ documentName: string; modelId: string; documentContent?:string;}} params
    */
   async downloadPrediction(params)  {
 
     var documentName = params.documentName;
     var modelId = params.modelId ;
+    var documentContent=params.documentContent;
     
     if (! modelId) {
       throw new Error('Missing Model Id');
@@ -104,7 +146,10 @@ module.exports = class AutoML {
     var predictionFileName = `predictions/${modelId}/${documentName}.json`;
     
     // first download the content
-    var documentContent = await this.gcs.readDocument(documentName);
+    if(! documentContent ) {
+      documentContent = await this.gcs.readDocument(documentName);
+    }
+
     var path  = modelId//this.client.modelPath(this.projectId, this.locationId, modelId)
 
     const request = {
@@ -118,14 +163,12 @@ module.exports = class AutoML {
     };
 
     console.log(`about to Predict Post ${path}`)
-    //Dumper(request)
+    Dumper(request)
     const [response] = await this.predictionClient.predict(request);
 
     console.log("Got prediction response")
     let payload = JSON.stringify(response.payload)
-    //Dumper(payload)
-
-    // now save in the predictions folder
+    Dumper(payload)
     this.gcs.writeDocument(predictionFileName,payload);
     return response.payload
 
